@@ -1,0 +1,16 @@
+{
+  "name": "data-static-server",
+  "version": "1.0.0",
+  "description": "Static data server for JSON files",
+  "scripts": {
+    "dev": "http-server -p 3001 public",
+    "build": "echo 'No build needed for static files'",
+    "start": "http-server -p 3001 public"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

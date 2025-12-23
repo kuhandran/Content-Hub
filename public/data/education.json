@@ -1,0 +1,30 @@
+[
+  {
+    "degree": "Master of Business Administration (MBA)",
+    "institution": "Cardiff Metropolitan University",
+    "duration": "April 2022 - August 2024",
+    "location": "United Kingdom (Remote)",
+    "focus": "Business Analytics - Bridging technical expertise with strategic business insights"
+  },
+  {
+    "degree": "Bachelor of Science (BSc)",
+    "institution": "University of Wollongong",
+    "duration": "2014 - 2016",
+    "location": "Malaysia",
+    "focus": "Computer Software Engineering & Digital Systems Security"
+  },
+  {
+    "degree": "Foundation in Information Technology",
+    "institution": "INTI College Subang Jaya",
+    "duration": "2013 - 2014",
+    "location": "Malaysia",
+    "focus": "Core IT fundamentals and programming principles"
+  },
+  {
+    "degree": "GCE Cambridge Advanced Level",
+    "institution": "Wycherley International School",
+    "duration": "2009 - 2011",
+    "location": "Sri Lanka",
+    "focus": "A-Level education preparing for university studies"
+  }
+]
