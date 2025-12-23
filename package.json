@@ -1,7 +1,7 @@
 {
-  "name": "data-static-server",
+  "name": "portfolio-data-api",
   "version": "1.0.0",
-  "description": "Static data server for JSON files",
+  "description": "Static data server for portfolio content and JSON files",
   "scripts": {
     "dev": "http-server -p 3001 public",
     "build": "echo 'No build needed for static files'",
