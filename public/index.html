@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Portfolio Data API</title>
+    <title>Portfolio Data API - Manager</title>
     <style>
         * {
             margin: 0;
@@ -10,21 +10,29 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
         }
 
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
         .header {
-            max-width: 1400px;
-            margin: 0 auto 20px;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
-            color: #333;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
-            margin-bottom: 5px;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 28px;
         }
 
         .header p {
@@ -32,236 +40,587 @@
             font-size: 14px;
         }
 
-        .container {
+        .tabs {
             display: flex;
-            gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .left-panel {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .right-panel {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .endpoint {
+            gap: 10px;
             background: white;
-            margin-bottom: 12px;
             padding: 15px;
-            border-left: 4px solid #667eea;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            border: none;
+            background: #f0f0f0;
+            color: #333;
+            cursor: pointer;
             border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:hover {
+            background: #e0e0e0;
+        }
+
+        .tab-button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background: #f9f9f9;
+            margin-bottom: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        .endpoint:hover {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transform: translateX(5px);
+        .upload-area:hover {
+            background: #f0f5ff;
+            border-color: #764ba2;
         }
 
-        .endpoint-desc {
-            font-weight: bold;
+        .upload-area.drag-over {
+            background: #e8f0ff;
+            border-color: #667eea;
+        }
+
+        .upload-area p {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-area input[type="file"] {
+            display: none;
+        }
+
+        .file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .file-item {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .file-name {
+            font-weight: 600;
             color: #333;
             margin-bottom: 8px;
-        }
-
-        .endpoint-path {
-            font-family: monospace;
-            font-size: 12px;
-            color: #667eea;
-            margin-bottom: 10px;
             word-break: break-all;
         }
 
-        button {
-            background-color: #667eea;
+        .file-url {
+            font-family: monospace;
+            font-size: 12px;
+            color: #667eea;
+            background: #f0f5ff;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            word-break: break-all;
+            cursor: pointer;
+        }
+
+        .file-url:hover {
+            background: #e8ecff;
+        }
+
+        .copy-btn {
+            background: #667eea;
             color: white;
             padding: 8px 16px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
             width: 100%;
         }
 
-        button:hover {
-            background-color: #764ba2;
+        .copy-btn:hover {
+            background: #764ba2;
         }
 
-        .response-box {
-            background: white;
-            padding: 15px;
+        .test-btn {
+            background: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border: none;
             border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .test-btn:hover {
+            background: #218838;
+        }
+
+        .api-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .api-card {
+            background: #f9f9f9;
             border: 1px solid #ddd;
-            min-height: 400px;
-            display: flex;
-            flex-direction: column;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .response-title {
-            font-weight: bold;
+        .api-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .api-desc {
+            font-weight: 600;
             color: #333;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #667eea;
+            margin-bottom: 8px;
         }
 
-        .response {
-            white-space: pre-wrap;
+        .api-path {
             font-family: monospace;
             font-size: 12px;
-            flex: 1;
-            overflow-y: auto;
-            color: #333;
-        }
-
-        .response.success {
-            color: #155724;
-        }
-
-        .response.error {
-            color: #721c24;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
+            color: #667eea;
+            background: #f0f5ff;
+            padding: 8px;
             border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
             margin-bottom: 10px;
+            word-break: break-all;
         }
 
-        .status-badge.success {
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-group button {
+            flex: 1;
+        }
+
+        .preview-box {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .preview-box img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 4px;
+        }
+
+        .preview-json {
+            font-family: monospace;
+            font-size: 12px;
+            color: #333;
+            white-space: pre-wrap;
+        }
+
+        .success-msg {
             background: #d4edda;
             color: #155724;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: none;
         }
 
-        .status-badge.error {
+        .error-msg {
             background: #f8d7da;
             color: #721c24;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: none;
         }
 
-        /* Mobile responsive */
         @media (max-width: 768px) {
-            .container {
+            .file-list, .api-list {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
                 flex-direction: column;
             }
 
-            .left-panel,
-            .right-panel {
-                flex: 1;
-            }
-
-            .response-box {
-                min-height: 300px;
+            .tab-button {
+                width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🚀 Portfolio Data API</h1>
-        <p>Click any API to test and see response</p>
-    </div>
-
     <div class="container">
-        <div class="left-panel">
-            <div id="endpoints-container"></div>
+        <div class="header">
+            <h1>🚀 Portfolio Data API - Manager</h1>
+            <p>Manage your API endpoints, upload files, and get URLs easily</p>
         </div>
 
-        <div class="right-panel">
-            <div class="response-box">
-                <div class="response-title">Response</div>
-                <div id="status-badge"></div>
-                <div id="response" class="response">Select an API to test...</div>
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('apis')">📡 APIs</button>
+            <button class="tab-button" onclick="switchTab('data')">📄 Data Files</button>
+            <button class="tab-button" onclick="switchTab('images')">🖼️ Images</button>
+            <button class="tab-button" onclick="switchTab('config')">⚙️ Config</button>
+            <button class="tab-button" onclick="switchTab('resume')">📋 Resume</button>
+        </div>
+
+        <!-- APIs Tab -->
+        <div id="apis" class="tab-content active">
+            <div class="section">
+                <div class="section-title">📊 Data Endpoints</div>
+                <div class="api-list" id="data-apis"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">⚙️ Configuration Endpoints</div>
+                <div class="api-list" id="config-apis"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🖼️ Image Endpoints</div>
+                <div class="api-list" id="image-apis"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🏥 Health Check</div>
+                <div class="api-list" id="health-apis"></div>
+            </div>
+        </div>
+
+        <!-- Data Files Tab -->
+        <div id="data" class="tab-content">
+            <div class="section">
+                <div class="section-title">📤 Upload JSON Data File</div>
+                <div class="upload-area" onclick="document.getElementById('data-upload').click()">
+                    <p>📁 Drop your JSON file here or click to browse</p>
+                    <small>Supported: .json files</small>
+                    <input type="file" id="data-upload" accept=".json" onchange="handleDataUpload(event)">
+                </div>
+                <div class="success-msg" id="data-success-msg"></div>
+                <div class="error-msg" id="data-error-msg"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📋 Available Data Files</div>
+                <div class="file-list" id="data-files"></div>
+            </div>
+        </div>
+
+        <!-- Images Tab -->
+        <div id="images" class="tab-content">
+            <div class="section">
+                <div class="section-title">📤 Upload Image</div>
+                <div class="upload-area" onclick="document.getElementById('image-upload').click()">
+                    <p>🖼️ Drop your image here or click to browse</p>
+                    <small>Supported: .png, .webp, .jpg, .jpeg, .gif</small>
+                    <input type="file" id="image-upload" accept=".png,.webp,.jpg,.jpeg,.gif" onchange="handleImageUpload(event)">
+                </div>
+                <div class="success-msg" id="image-success-msg"></div>
+                <div class="error-msg" id="image-error-msg"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🖼️ Available Images</div>
+                <div class="file-list" id="image-files"></div>
+            </div>
+        </div>
+
+        <!-- Config Tab -->
+        <div id="config" class="tab-content">
+            <div class="section">
+                <div class="section-title">📤 Upload Config File</div>
+                <div class="upload-area" onclick="document.getElementById('config-upload').click()">
+                    <p>⚙️ Drop your config file here or click to browse</p>
+                    <small>Supported: .json files</small>
+                    <input type="file" id="config-upload" accept=".json" onchange="handleConfigUpload(event)">
+                </div>
+                <div class="success-msg" id="config-success-msg"></div>
+                <div class="error-msg" id="config-error-msg"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">⚙️ Available Config Files</div>
+                <div class="file-list" id="config-files"></div>
+            </div>
+        </div>
+
+        <!-- Resume Tab -->
+        <div id="resume" class="tab-content">
+            <div class="section">
+                <div class="section-title">📤 Upload Resume File</div>
+                <div class="upload-area" onclick="document.getElementById('resume-upload').click()">
+                    <p>📋 Drop your resume file here or click to browse</p>
+                    <small>Supported: .pdf, .doc, .docx, .txt</small>
+                    <input type="file" id="resume-upload" accept=".pdf,.doc,.docx,.txt" onchange="handleResumeUpload(event)">
+                </div>
+                <div class="success-msg" id="resume-success-msg"></div>
+                <div class="error-msg" id="resume-error-msg"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📋 Available Resume Files</div>
+                <div class="file-list" id="resume-files"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const endpoints = [
-            { path: '/data/achievements.json', desc: 'Achievements Data' },
-            { path: '/data/education.json', desc: 'Education Data' },
-            { path: '/data/experience.json', desc: 'Experience Data' },
-            { path: '/data/projects.json', desc: 'Projects Data' },
-            { path: '/data/skills.json', desc: 'Skills Data' },
-            { path: '/data/contentLabels.json', desc: 'Content Labels' },
-            { path: '/data/chatConfig.json', desc: 'Chat Config' },
-            { path: '/config/apiConfig.json', desc: 'API Config' },
-            { path: '/config/pageLayout.json', desc: 'Page Layout Config' },
-            { path: '/image/profile.webp', desc: 'Profile Image (WebP)' },
-            { path: '/image/profile.png', desc: 'Profile Image (PNG)' },
-            { path: '/image/fwd-logo.webp', desc: 'FWD Logo (WebP)' },
-            { path: '/image/fwd-logo.png', desc: 'FWD Logo (PNG)' },
-            { path: '/image/maybank-logo.webp', desc: 'Maybank Logo (WebP)' },
-            { path: '/image/maybank-logo.png', desc: 'Maybank Logo (PNG)' },
-            { path: '/image/Project1.webp', desc: 'Project 1 (WebP)' },
-            { path: '/image/Project1.png', desc: 'Project 1 (PNG)' },
-            { path: '/image/Project2.webp', desc: 'Project 2 (WebP)' },
-            { path: '/image/Project2.png', desc: 'Project 2 (PNG)' },
-            { path: '/image/Project3.webp', desc: 'Project 3 (WebP)' },
-            { path: '/image/Project3.png', desc: 'Project 3 (PNG)' },
-            { path: '/image/Project4.webp', desc: 'Project 4 (WebP)' },
-            { path: '/image/Project4.png', desc: 'Project 4 (PNG)' },
-            { path: '/image/Project5.webp', desc: 'Project 5 (WebP)' },
-            { path: '/image/Project5.png', desc: 'Project 5 (PNG)' },
-            { path: '/image/Project6.webp', desc: 'Project 6 (WebP)' },
-            { path: '/image/Project6.png', desc: 'Project 6 (PNG)' }
-        ];
+        // API Endpoints Configuration
+        const apiEndpoints = {
+            data: [
+                { path: '/data/achievements.json', desc: 'Achievements' },
+                { path: '/data/education.json', desc: 'Education' },
+                { path: '/data/experience.json', desc: 'Experience' },
+                { path: '/data/projects.json', desc: 'Projects' },
+                { path: '/data/skills.json', desc: 'Skills' },
+                { path: '/data/contentLabels.json', desc: 'Content Labels' },
+                { path: '/data/chatConfig.json', desc: 'Chat Config' }
+            ],
+            config: [
+                { path: '/config/apiConfig.json', desc: 'API Config' },
+                { path: '/config/pageLayout.json', desc: 'Page Layout' }
+            ],
+            images: [
+                { path: '/image/profile.png', desc: 'Profile (PNG)' },
+                { path: '/image/profile.webp', desc: 'Profile (WebP)' },
+                { path: '/image/fwd-logo.png', desc: 'FWD Logo (PNG)' },
+                { path: '/image/fwd-logo.webp', desc: 'FWD Logo (WebP)' },
+                { path: '/image/maybank-logo.png', desc: 'Maybank Logo (PNG)' },
+                { path: '/image/maybank-logo.webp', desc: 'Maybank Logo (WebP)' },
+                { path: '/image/Project1.png', desc: 'Project 1 (PNG)' },
+                { path: '/image/Project1.webp', desc: 'Project 1 (WebP)' },
+                { path: '/image/Project2.png', desc: 'Project 2 (PNG)' },
+                { path: '/image/Project2.webp', desc: 'Project 2 (WebP)' },
+                { path: '/image/Project3.png', desc: 'Project 3 (PNG)' },
+                { path: '/image/Project3.webp', desc: 'Project 3 (WebP)' },
+                { path: '/image/Project4.png', desc: 'Project 4 (PNG)' },
+                { path: '/image/Project4.webp', desc: 'Project 4 (WebP)' },
+                { path: '/image/Project5.png', desc: 'Project 5 (PNG)' },
+                { path: '/image/Project5.webp', desc: 'Project 5 (WebP)' },
+                { path: '/image/Project6.png', desc: 'Project 6 (PNG)' },
+                { path: '/image/Project6.webp', desc: 'Project 6 (WebP)' }
+            ],
+            health: [
+                { path: '/health', desc: 'Server Health Check' }
+            ]
+        };
 
-        function renderEndpoints() {
-            const container = document.getElementById('endpoints-container');
-            endpoints.forEach((ep, i) => {
-                const div = document.createElement('div');
-                div.className = 'endpoint';
-                div.innerHTML = `
-                    <div class="endpoint-desc">${ep.desc}</div>
-                    <div class="endpoint-path">${ep.path}</div>
-                    <button onclick="testApi(${i})">Test API</button>
-                `;
-                container.appendChild(div);
+        // Get base URL
+        const baseUrl = window.location.origin;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderApis();
+            loadFiles();
+        });
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
             });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
         }
 
-        async function testApi(index) {
-            const endpoint = endpoints[index];
-            const responseDiv = document.getElementById('response');
-            const statusDiv = document.getElementById('status-badge');
+        // Render API endpoints
+        function renderApis() {
+            renderApiSection('data-apis', apiEndpoints.data);
+            renderApiSection('config-apis', apiEndpoints.config);
+            renderApiSection('image-apis', apiEndpoints.images);
+            renderApiSection('health-apis', apiEndpoints.health);
+        }
 
-            responseDiv.textContent = 'Loading...';
-            responseDiv.className = 'response';
-            statusDiv.innerHTML = '';
+        function renderApiSection(containerId, endpoints) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = endpoints.map(ep => {
+                const fullUrl = baseUrl + ep.path;
+                return `
+                    <div class="api-card">
+                        <div class="api-desc">${ep.desc}</div>
+                        <div class="api-path" title="${fullUrl}">${ep.path}</div>
+                        <div class="btn-group">
+                            <button class="copy-btn" onclick="copyToClipboard('${fullUrl}')">📋 Copy URL</button>
+                            <button class="test-btn" onclick="testApi('${ep.path}')">🧪 Test</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
+        // Load files
+        async function loadFiles() {
             try {
-                const response = await fetch(endpoint.path);
-                
-                // Check if it's an image
-                if (endpoint.path.includes('/image/')) {
-                    const blob = await response.blob();
-                    const imageUrl = URL.createObjectURL(blob);
-                    responseDiv.innerHTML = `<img src="${imageUrl}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
-                    responseDiv.className = 'response success';
-                    statusDiv.innerHTML = `<span class="status-badge success">✓ ${response.status} OK - ${endpoint.desc}</span>`;
-                } else {
-                    const data = await response.json();
-                    responseDiv.textContent = JSON.stringify(data, null, 2);
-                    responseDiv.className = 'response success';
-                    statusDiv.innerHTML = `<span class="status-badge success">✓ ${response.status} OK - ${endpoint.desc}</span>`;
-                }
+                const response = await fetch('/api');
+                const data = await response.json();
+                renderFileList('data-files', data.data, 'data');
+                renderFileList('config-files', data.config, 'config');
+                renderFileList('image-files', data.images, 'image');
             } catch (error) {
-                responseDiv.textContent = 'Error: ' + error.message;
-                responseDiv.className = 'response error';
-                statusDiv.innerHTML = `<span class="status-badge error">✗ Error - ${endpoint.desc}</span>`;
+                console.error('Error loading files:', error);
             }
         }
 
-        renderEndpoints();
+        function renderFileList(containerId, files, prefix) {
+            const container = document.getElementById(containerId);
+            if (!files || files.length === 0) {
+                container.innerHTML = '<p style="color: #999;">No files available</p>';
+                return;
+            }
+
+            container.innerHTML = files.map(file => {
+                const fullUrl = baseUrl + file;
+                const fileName = file.split('/').pop();
+                return `
+                    <div class="file-item">
+                        <div class="file-name">${fileName}</div>
+                        <div class="file-url" title="${fullUrl}" onclick="copyToClipboard('${fullUrl}')">${fullUrl}</div>
+                        <button class="copy-btn" onclick="copyToClipboard('${fullUrl}')">📋 Copy URL</button>
+                        <button class="test-btn" onclick="testApi('${file}')">🧪 Test</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ URL copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Test API
+        async function testApi(path) {
+            try {
+                const response = await fetch(path);
+                
+                if (path.includes('/image/')) {
+                    const blob = await response.blob();
+                    const imageUrl = URL.createObjectURL(blob);
+                    alert(`✅ Image loaded successfully!\n\nURL: ${baseUrl}${path}`);
+                } else {
+                    const data = await response.json();
+                    console.log('Response:', data);
+                    alert(`✅ API test successful!\n\nStatus: ${response.status}\nURL: ${baseUrl}${path}\n\nCheck browser console for full response`);
+                }
+            } catch (error) {
+                alert(`❌ Error testing API: ${error.message}`);
+            }
+        }
+
+        // Upload handlers
+        function handleDataUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                showMessage('data-success-msg', `✅ ${file.name} is ready to upload (TODO: Add backend upload endpoint)`);
+            }
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                showMessage('image-success-msg', `✅ ${file.name} is ready to upload (TODO: Add backend upload endpoint)`);
+            }
+        }
+
+        function handleConfigUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                showMessage('config-success-msg', `✅ ${file.name} is ready to upload (TODO: Add backend upload endpoint)`);
+            }
+        }
+
+        function handleResumeUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                showMessage('resume-success-msg', `✅ ${file.name} is ready to upload (TODO: Add backend upload endpoint)`);
+            }
+        }
+
+        function showMessage(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+
+        // Drag and drop support
+        document.querySelectorAll('.upload-area').forEach(area => {
+            area.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                area.classList.add('drag-over');
+            });
+
+            area.addEventListener('dragleave', () => {
+                area.classList.remove('drag-over');
+            });
+
+            area.addEventListener('drop', (e) => {
+                e.preventDefault();
+                area.classList.remove('drag-over');
+            });
+        });
     </script>
 </body>
 </html>
