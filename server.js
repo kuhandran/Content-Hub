@@ -9,12 +9,26 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(cors());
 
-// Image serving with proper cache headers
+// Image serving with proper cache headers and MIME types
 app.use('/image', (req, res, next) => {
+  // Detect MIME type from file extension
+  const filePath = req.path.toLowerCase();
+  let mimeType = 'application/octet-stream';
+  
+  if (filePath.endsWith('.png')) {
+    mimeType = 'image/png';
+  } else if (filePath.endsWith('.webp')) {
+    mimeType = 'image/webp';
+  } else if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
+    mimeType = 'image/jpeg';
+  } else if (filePath.endsWith('.gif')) {
+    mimeType = 'image/gif';
+  }
+  
   // Set cache headers for images
   res.set({
     'Cache-Control': 'public, max-age=31536000, immutable',
-    'Content-Type': 'image/*'
+    'Content-Type': mimeType
   });
   next();
 });
