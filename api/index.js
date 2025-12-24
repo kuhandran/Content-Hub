@@ -62,25 +62,43 @@ app.get('/image/:filename', (req, res, next) => {
   res.sendFile(realPath);
 });
 
-// Serve static files from public directory (images, index.html, etc)
-app.use(express.static(publicPath, {
-  setHeaders: (res, filepath) => {
-    // Ensure images get correct MIME type
-    if (filepath.endsWith('.png')) {
-      res.setHeader('Content-Type', 'image/png');
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    } else if (filepath.endsWith('.webp')) {
-      res.setHeader('Content-Type', 'image/webp');
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    } else if (filepath.endsWith('.jpg') || filepath.endsWith('.jpeg')) {
-      res.setHeader('Content-Type', 'image/jpeg');
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    } else if (filepath.endsWith('.gif')) {
-      res.setHeader('Content-Type', 'image/gif');
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    }
+// Serve other static files from public directory (but not images - handled above)
+// Use a custom middleware to avoid serving files before routes are checked
+app.use((req, res, next) => {
+  // Skip if already handled by routes
+  if (req.route) {
+    return next();
   }
-}));
+  
+  const filePath = path.join(publicPath, req.path);
+  const realPath = path.resolve(filePath);
+  const allowedPath = path.resolve(publicPath);
+  
+  // Security check
+  if (!realPath.startsWith(allowedPath)) {
+    return next();
+  }
+  
+  // Check if file exists and serve it
+  if (fs.existsSync(realPath) && fs.statSync(realPath).isFile()) {
+    // Set MIME type
+    const ext = path.extname(realPath).toLowerCase();
+    if (ext === '.html') {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    } else if (ext === '.json') {
+      res.setHeader('Content-Type', 'application/json');
+    } else if (ext === '.css') {
+      res.setHeader('Content-Type', 'text/css');
+    } else if (ext === '.js') {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+    
+    return res.sendFile(realPath);
+  }
+  
+  // If not a file, continue to next middleware/route
+  next();
+});
 
 /**
  * Dynamically read JSON files without caching
