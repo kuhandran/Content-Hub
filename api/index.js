@@ -20,9 +20,10 @@ app.use((req, res, next) => {
 const publicPath = path.join(__dirname, '../public');
 
 // Explicit route handlers for images - MUST be before express.static
-app.get(/^\/image\/.+/, (req, res, next) => {
-  console.log(`[IMAGE ROUTE] Handling request for: ${req.path}`);
-  const filePath = req.path;
+// Using string pattern instead of regex
+app.get('/image/:filename', (req, res, next) => {
+  console.log(`[IMAGE ROUTE] Handling request for: /image/${req.params.filename}`);
+  const filePath = `/image/${req.params.filename}`;
   const fullPath = path.join(publicPath, filePath);
   
   // Security check
