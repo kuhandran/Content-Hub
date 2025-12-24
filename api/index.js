@@ -11,7 +11,46 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Custom middleware to set proper MIME types for images
+const publicPath = path.join(__dirname, '../public');
+
+// Explicit route handlers for images - MUST be before express.static
+app.get('/image/*', (req, res, next) => {
+  const filePath = req.path;
+  const fullPath = path.join(publicPath, filePath);
+  
+  // Security check
+  const realPath = path.resolve(fullPath);
+  const allowedPath = path.resolve(publicPath);
+  
+  if (!realPath.startsWith(allowedPath)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  
+  // Check if file exists
+  if (!fs.existsSync(realPath)) {
+    return res.status(404).json({ error: 'Image not found' });
+  }
+  
+  // Set proper MIME type
+  const ext = path.extname(filePath).toLowerCase();
+  const mimeTypes = {
+    '.png': 'image/png',
+    '.webp': 'image/webp',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif'
+  };
+  
+  if (mimeTypes[ext]) {
+    res.setHeader('Content-Type', mimeTypes[ext]);
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+  
+  // Serve the file
+  res.sendFile(realPath);
+});
+
+// Custom middleware to set proper MIME types for other static files
 app.use((req, res, next) => {
   // Get file extension
   const ext = path.extname(req.path).toLowerCase();
@@ -34,7 +73,6 @@ app.use((req, res, next) => {
 });
 
 // Serve static files from public directory (images, index.html, etc)
-const publicPath = path.join(__dirname, '../public');
 app.use(express.static(publicPath, {
   setHeaders: (res, path) => {
     // Additional safety: ensure images get correct MIME type
