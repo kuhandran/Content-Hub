@@ -1,7 +1,10 @@
 {
   "buildCommand": "npm run build",
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "ALLOWED_IP": "@allowed_ip",
+    "AUTH_USER": "@auth_user",
+    "AUTH_PASS": "@auth_pass"
   },
   "functions": {
     "api/index.js": {
