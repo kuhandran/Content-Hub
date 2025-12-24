@@ -21,6 +21,7 @@ const publicPath = path.join(__dirname, '../public');
 
 // Explicit route handlers for images - MUST be before express.static
 app.get(/^\/image\/.+/, (req, res, next) => {
+  console.log(`[IMAGE ROUTE] Handling request for: ${req.path}`);
   const filePath = req.path;
   const fullPath = path.join(publicPath, filePath);
   
@@ -29,14 +30,18 @@ app.get(/^\/image\/.+/, (req, res, next) => {
   const allowedPath = path.resolve(publicPath);
   
   if (!realPath.startsWith(allowedPath)) {
+    console.log(`[IMAGE ROUTE] Security check failed for: ${realPath}`);
     return res.status(403).json({ error: 'Forbidden' });
   }
   
   // Check if file exists
+  console.log(`[IMAGE ROUTE] Checking if file exists: ${realPath}`);
   if (!fs.existsSync(realPath)) {
+    console.log(`[IMAGE ROUTE] File NOT found: ${realPath}`);
     return res.status(404).json({ error: 'Image not found' });
   }
   
+  console.log(`[IMAGE ROUTE] File FOUND, serving: ${realPath}`);
   // Set proper MIME type
   const ext = path.extname(filePath).toLowerCase();
   const mimeTypes = {
