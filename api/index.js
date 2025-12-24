@@ -10,33 +10,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Image serving with proper cache headers and MIME types - MUST be before express.static
-app.use('/image', (req, res, next) => {
-  // Detect MIME type from file extension
-  const filePath = req.path.toLowerCase();
-  let mimeType = 'application/octet-stream';
-  
-  if (filePath.endsWith('.png')) {
-    mimeType = 'image/png';
-  } else if (filePath.endsWith('.webp')) {
-    mimeType = 'image/webp';
-  } else if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
-    mimeType = 'image/jpeg';
-  } else if (filePath.endsWith('.gif')) {
-    mimeType = 'image/gif';
-  }
-  
-  // Set cache headers for images BEFORE express.static serves the file
-  res.set({
-    'Cache-Control': 'public, max-age=31536000, immutable',
-    'Content-Type': mimeType
-  });
-  next();
-});
-
-// Serve static files from public directory
-app.use(express.static(path.join(__dirname, '../public')));
-
 /**
  * Dynamically read JSON files without caching
  * This ensures updated JSON files are reflected without server restart
@@ -116,6 +89,27 @@ app.get('/health', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString()
   });
+});
+
+// Debug endpoint to list files
+app.get('/debug/files', (req, res) => {
+  try {
+    const publicPath = path.join(__dirname, '../public');
+    const imagePath = path.join(publicPath, 'image');
+    
+    const files = fs.readdirSync(imagePath);
+    const imageDir = fs.readdirSync(imagePath);
+    
+    res.json({
+      publicPath,
+      imagePath,
+      imageExists: fs.existsSync(imagePath),
+      imagesInFolder: imageDir.filter(f => !f.startsWith('.')),
+      environment: process.env.NODE_ENV
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // List available endpoints

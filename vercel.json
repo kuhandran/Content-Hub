@@ -20,14 +20,6 @@
     {
       "src": "/health",
       "dest": "/api"
-    },
-    {
-      "src": "/image/(.*)",
-      "dest": "/image/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/public/$1"
     }
   ],
   "headers": [
