@@ -114,10 +114,8 @@ app.get('/config/:file', (req, res) => {
 
 // === STATIC FILES - AFTER API ROUTES ===
 
-// Protect index.html with IP whitelist + password
-app.get('/', basicAuthMiddleware, (req, res) => {
-  res.sendFile(path.join(publicPath, 'index.html'));
-});
+// Protect ALL static files with authentication (including index.html)
+app.use(basicAuthMiddleware);
 
 app.use(express.static(publicPath, {
   setHeaders: (res, filepath) => {
