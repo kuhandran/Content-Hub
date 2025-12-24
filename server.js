@@ -87,21 +87,9 @@ app.get('/config/:file', (req, res) => {
   res.json(data);
 });
 
-// Image serving with proper cache headers
-app.get('/image/:file', (req, res, next) => {
-  const { file } = req.params;
-  
-  // Validate file type
-  const validExtensions = ['.png', '.webp', '.jpg', '.jpeg', '.gif'];
-  const hasValidExt = validExtensions.some(ext => file.toLowerCase().endsWith(ext));
-  
-  if (!hasValidExt) {
-    return res.status(400).json({ error: 'Invalid image format' });
-  }
-
-  // Use express static for images
-  express.static(path.join(__dirname, 'public'))(req, res, next);
-});
+// Image serving with proper cache headers - served via express.static
+// Cache control headers are set in vercel.json for /image/* routes
+// No need for additional route handler since express.static handles it
 
 // Health check endpoint
 app.get('/health', (req, res) => {
