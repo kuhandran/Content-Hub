@@ -8,6 +8,17 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
+
+// Image serving with proper cache headers
+app.use('/image', (req, res, next) => {
+  // Set cache headers for images
+  res.set({
+    'Cache-Control': 'public, max-age=31536000, immutable',
+    'Content-Type': 'image/*'
+  });
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Cache management - prevents stale data
