@@ -50,40 +50,22 @@ app.get(/^\/image\/.+/, (req, res, next) => {
   res.sendFile(realPath);
 });
 
-// Custom middleware to set proper MIME types for other static files
-app.use((req, res, next) => {
-  // Get file extension
-  const ext = path.extname(req.path).toLowerCase();
-  
-  // Map extensions to MIME types
-  const mimeTypes = {
-    '.png': 'image/png',
-    '.webp': 'image/webp',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.gif': 'image/gif'
-  };
-  
-  // Set content type if it's an image
-  if (mimeTypes[ext]) {
-    res.type(mimeTypes[ext]);
-  }
-  
-  next();
-});
-
 // Serve static files from public directory (images, index.html, etc)
 app.use(express.static(publicPath, {
-  setHeaders: (res, path) => {
-    // Additional safety: ensure images get correct MIME type
-    if (path.endsWith('.png')) {
+  setHeaders: (res, filepath) => {
+    // Ensure images get correct MIME type
+    if (filepath.endsWith('.png')) {
       res.setHeader('Content-Type', 'image/png');
-    } else if (path.endsWith('.webp')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else if (filepath.endsWith('.webp')) {
       res.setHeader('Content-Type', 'image/webp');
-    } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else if (filepath.endsWith('.jpg') || filepath.endsWith('.jpeg')) {
       res.setHeader('Content-Type', 'image/jpeg');
-    } else if (path.endsWith('.gif')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else if (filepath.endsWith('.gif')) {
       res.setHeader('Content-Type', 'image/gif');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     }
   }
 }));
