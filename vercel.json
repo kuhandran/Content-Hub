@@ -1,6 +1,14 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "public",
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "server.js"
+    }
+  ],
   "headers": [
     {
       "source": "/data/(.*)",

@@ -9,6 +9,13 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(cors());
 
+// Parse JSON bodies
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Image serving with proper cache headers and MIME types
 app.use('/image', (req, res, next) => {
   // Detect MIME type from file extension
@@ -32,8 +39,6 @@ app.use('/image', (req, res, next) => {
   });
   next();
 });
-
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Cache management - prevents stale data
 const dataCache = new Map();
