@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const mime = require('mime-types');
 
 const app = express();
 
@@ -10,9 +11,44 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Custom middleware to set proper MIME types for images
+app.use((req, res, next) => {
+  // Get file extension
+  const ext = path.extname(req.path).toLowerCase();
+  
+  // Map extensions to MIME types
+  const mimeTypes = {
+    '.png': 'image/png',
+    '.webp': 'image/webp',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif'
+  };
+  
+  // Set content type if it's an image
+  if (mimeTypes[ext]) {
+    res.type(mimeTypes[ext]);
+  }
+  
+  next();
+});
+
 // Serve static files from public directory (images, index.html, etc)
 const publicPath = path.join(__dirname, '../public');
-app.use(express.static(publicPath));
+app.use(express.static(publicPath, {
+  setHeaders: (res, path) => {
+    // Additional safety: ensure images get correct MIME type
+    if (path.endsWith('.png')) {
+      res.setHeader('Content-Type', 'image/png');
+    } else if (path.endsWith('.webp')) {
+      res.setHeader('Content-Type', 'image/webp');
+    } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+      res.setHeader('Content-Type', 'image/jpeg');
+    } else if (path.endsWith('.gif')) {
+      res.setHeader('Content-Type', 'image/gif');
+    }
+  }
+}));
 
 /**
  * Dynamically read JSON files without caching
