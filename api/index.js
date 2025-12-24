@@ -11,6 +11,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Add unique deployment marker
+app.use((req, res, next) => {
+  res.setHeader('X-Deployment-Time', new Date().toISOString());
+  next();
+});
+
 const publicPath = path.join(__dirname, '../public');
 
 // Explicit route handlers for images - MUST be before express.static
