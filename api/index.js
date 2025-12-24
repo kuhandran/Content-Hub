@@ -227,9 +227,14 @@ app.get('/api', (req, res) => {
   res.json(endpoints);
 });
 
-// Catch-all route - serve index.html for SPA routing
+// Catch-all route - serve index.html for SPA routing (but NOT for missing files)
 app.get('*', (req, res) => {
-  // Don't serve index.html for API/image requests - let them 404 properly
+  // Don't serve HTML for image/data/config requests that don't exist
+  if (req.path.startsWith('/image/') || req.path.startsWith('/data/') || req.path.startsWith('/config/')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  
+  // Serve index.html for other routes (SPA routing)
   const indexPath = path.join(publicPath, 'index.html');
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
