@@ -194,7 +194,25 @@
             { path: '/data/contentLabels.json', desc: 'Content Labels' },
             { path: '/data/chatConfig.json', desc: 'Chat Config' },
             { path: '/config/apiConfig.json', desc: 'API Config' },
-            { path: '/config/pageLayout.json', desc: 'Page Layout Config' }
+            { path: '/config/pageLayout.json', desc: 'Page Layout Config' },
+            { path: '/image/profile.webp', desc: 'Profile Image (WebP)' },
+            { path: '/image/profile.png', desc: 'Profile Image (PNG)' },
+            { path: '/image/fwd-logo.webp', desc: 'FWD Logo (WebP)' },
+            { path: '/image/fwd-logo.png', desc: 'FWD Logo (PNG)' },
+            { path: '/image/maybank-logo.webp', desc: 'Maybank Logo (WebP)' },
+            { path: '/image/maybank-logo.png', desc: 'Maybank Logo (PNG)' },
+            { path: '/image/Project1.webp', desc: 'Project 1 (WebP)' },
+            { path: '/image/Project1.png', desc: 'Project 1 (PNG)' },
+            { path: '/image/Project2.webp', desc: 'Project 2 (WebP)' },
+            { path: '/image/Project2.png', desc: 'Project 2 (PNG)' },
+            { path: '/image/Project3.webp', desc: 'Project 3 (WebP)' },
+            { path: '/image/Project3.png', desc: 'Project 3 (PNG)' },
+            { path: '/image/Project4.webp', desc: 'Project 4 (WebP)' },
+            { path: '/image/Project4.png', desc: 'Project 4 (PNG)' },
+            { path: '/image/Project5.webp', desc: 'Project 5 (WebP)' },
+            { path: '/image/Project5.png', desc: 'Project 5 (PNG)' },
+            { path: '/image/Project6.webp', desc: 'Project 6 (WebP)' },
+            { path: '/image/Project6.png', desc: 'Project 6 (PNG)' }
         ];
 
         function renderEndpoints() {
@@ -222,10 +240,20 @@
 
             try {
                 const response = await fetch(endpoint.path);
-                const data = await response.json();
-                responseDiv.textContent = JSON.stringify(data, null, 2);
-                responseDiv.className = 'response success';
-                statusDiv.innerHTML = `<span class="status-badge success">✓ ${response.status} OK - ${endpoint.desc}</span>`;
+                
+                // Check if it's an image
+                if (endpoint.path.includes('/image/')) {
+                    const blob = await response.blob();
+                    const imageUrl = URL.createObjectURL(blob);
+                    responseDiv.innerHTML = `<img src="${imageUrl}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+                    responseDiv.className = 'response success';
+                    statusDiv.innerHTML = `<span class="status-badge success">✓ ${response.status} OK - ${endpoint.desc}</span>`;
+                } else {
+                    const data = await response.json();
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                    responseDiv.className = 'response success';
+                    statusDiv.innerHTML = `<span class="status-badge success">✓ ${response.status} OK - ${endpoint.desc}</span>`;
+                }
             } catch (error) {
                 responseDiv.textContent = 'Error: ' + error.message;
                 responseDiv.className = 'response error';

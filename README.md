@@ -366,17 +366,145 @@ To change the port, modify `package.json`:
 | `/config/apiConfig.json` | GET | API config | 200 |
 | `/config/pageLayout.json` | GET | Layout config | 200 |
 
-## CORS
+## Dynamic Loading (No Server Restart Required)
 
-CORS is disabled by default. To enable CORS, modify `package.json`:
+### Challenge Solution ✅
 
-```json
+This API implements **hot-loading** of JSON and image files without requiring server restarts or Vercel rebuilds.
+
+### How It Works
+
+**Dynamic File Reading**
+- The server reads JSON files fresh from disk on each request
+- No in-memory caching of file contents
+- Updated JSON files are immediately reflected without server restart
+
+**Smart Cache Headers**
+- **JSON/Config files**: `Cache-Control: max-age=0, must-revalidate`
+  - Browsers must revalidate with the server before using cached version
+  - Always fetches fresh data on client side
+  
+- **Images**: `Cache-Control: max-age=31536000, immutable`
+  - Images are cached for 1 year (images don't change often)
+  - Safe to cache aggressively since filenames are unique
+
+**Vercel Configuration**
+- `.vercelignore` prevents rebuilds when public folder contents change
+- Only actual code changes trigger new deployments
+- Server code is deployed once, data is served dynamically
+
+### Workflow: Adding or Updating JSON Files
+
+```bash
+# Just push your changes to the public folder
+git add public/data/your-file.json
+git commit -m "Update data"
+git push
+
+# ✨ No rebuild needed!
+# The next request to your API will fetch the fresh data
+```
+
+### Example: Adding New Skill Category
+
+```bash
+# 1. Edit public/data/skills.json
+vim public/data/skills.json
+
+# 2. Add your new category
 {
-  "scripts": {
-    "dev": "http-server -p 3001 --cors public"
+  "newCategory": {
+    "name": "My New Skills",
+    "icon": "🚀",
+    "skills": [...]
   }
 }
+
+# 3. Commit and push
+git add public/data/skills.json
+git commit -m "Add new skill category"
+git push
+
+# 4. Your clients fetch fresh data on next request
+# No server downtime, no rebuilds!
 ```
+
+### How Clients Get Updated Data
+
+1. Client requests `/data/skills.json`
+2. Server reads the current file from disk
+3. Server sends `must-revalidate` header
+4. Client receives fresh data
+5. No server restart required ✨
+
+### Additional Endpoints
+
+#### Health Check
+```
+GET /health
+```
+Returns server status and uptime.
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2024-12-24T10:30:45.123Z",
+  "uptime": 3600.5
+}
+```
+
+#### List All Endpoints
+```
+GET /api
+```
+Returns available data, config, and image endpoints.
+
+#### Image Endpoints
+```
+GET /image/profile.webp
+GET /image/profile.png
+GET /image/fwd-logo.webp
+GET /image/fwd-logo.png
+GET /image/maybank-logo.webp
+GET /image/maybank-logo.png
+GET /image/Project1.webp
+GET /image/Project1.png
+GET /image/Project2.webp
+... (all other project images)
+```
+
+### Security Features
+
+✅ **Path Traversal Protection** - Can't access files outside public folder  
+✅ **File Type Validation** - Only .json files served as data, only valid image types  
+✅ **CORS Enabled** - Cross-origin requests allowed for frontend apps  
+✅ **Error Handling** - Graceful error responses for missing files  
+
+### Performance Optimization Tips
+
+1. **Client-side caching**: Implement browser caching with your framework
+2. **CDN**: Deploy behind a CDN (Vercel already does this)
+3. **ETag support**: Server generates ETags for efficient client caching
+4. **Gzip**: Express automatically compresses responses
+
+### Troubleshooting
+
+**Q: My changes to JSON don't appear?**  
+A: Clear browser cache (Cmd+Shift+R on Mac) or check network tab - should see 304 Not Modified responses when data hasn't changed.
+
+**Q: Are images cached?**  
+A: Yes! Images are cached for 1 year. This is fine since you're using content-addressable filenames. For updates, use new filenames.
+
+**Q: Does each request read from disk?**  
+A: Yes, by design. This ensures you always get fresh data without server restart.
+
+**Q: Will this affect performance?**  
+A: No. Disk reads are very fast, and Vercel's infrastructure is optimized for this. Results are sent within milliseconds.
+
+## CORS
+
+CORS is enabled by default and works seamlessly with frontend applications. All endpoints accept cross-origin requests from any origin.
 
 ## Error Handling
 
