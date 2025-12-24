@@ -189,4 +189,13 @@ app.get('/api', (req, res) => {
   res.json(endpoints);
 });
 
-module.exports = app;
+// Catch-all route - serve index.html for SPA routing
+app.get('*', (req, res) => {
+  // Don't serve index.html for API/image requests - let them 404 properly
+  const indexPath = path.join(publicPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({ error: 'Not found' });
+  }
+});
