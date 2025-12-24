@@ -11,28 +11,9 @@ const ALLOWED_IP = process.env.ALLOWED_IP || '2001:f40:95a:20d0:841b:9e16:c19f:5
 const AUTH_USER = process.env.AUTH_USER || 'Kuhandran';
 const AUTH_PASS = process.env.AUTH_PASS || 'TDM2025';
 
-// Helper function to get client IP (handles proxies like Vercel)
-const getClientIP = (req) => {
-  return (
-    req.headers['x-forwarded-for']?.split(',')[0].trim() ||
-    req.headers['x-real-ip'] ||
-    req.socket.remoteAddress ||
-    req.connection.remoteAddress
-  );
-};
-
 // Basic Auth Middleware for index.html
 const basicAuthMiddleware = (req, res, next) => {
-  const clientIP = getClientIP(req);
-  const isLocalhost = clientIP === '127.0.0.1' || clientIP === '::1' || clientIP?.includes('127.0.0.1');
-  const isAllowedIP = clientIP?.includes(ALLOWED_IP.split(':').slice(0, -1).join(':')) || clientIP === ALLOWED_IP;
-  
-  // Allow without auth if from whitelisted IP or localhost
-  if (isLocalhost || isAllowedIP) {
-    return next();
-  }
-  
-  // Otherwise require authentication
+  // Always require authentication (no IP bypass for security)
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Basic ')) {
     res.setHeader('WWW-Authenticate', 'Basic realm="Portfolio"');
