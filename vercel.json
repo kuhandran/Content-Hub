@@ -1,10 +1,6 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": ".",
-  "serverlessFunctionUrlPath": "/api",
-  "env": {
-    "NODE_ENV": "production"
-  },
+  "outputDirectory": "public",
   "headers": [
     {
       "source": "/data/(.*)",
@@ -61,12 +57,6 @@
           "value": "*"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/server.js"
     }
   ]
 }
