@@ -1,0 +1,3 @@
+# Ignore public folder changes - they shouldn't trigger deploys
+# but the files will still be included in the deployment
+public/**
