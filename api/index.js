@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 const publicPath = path.join(__dirname, '../public');
 
 // Explicit route handlers for images - MUST be before express.static
-app.get('/image/*', (req, res, next) => {
+app.get(/^\/image\/.+/, (req, res, next) => {
   const filePath = req.path;
   const fullPath = path.join(publicPath, filePath);
   
