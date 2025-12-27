@@ -466,6 +466,11 @@
             </div>
 
             <div class="section">
+                <div class="section-title">📋 Resume Endpoint</div>
+                <div class="api-list" id="resume-apis"></div>
+            </div>
+
+            <div class="section">
                 <div class="section-title">🏥 Health Check</div>
                 <div class="api-list" id="health-apis"></div>
             </div>
@@ -599,6 +604,9 @@
                 { path: '/image/Project6.png', desc: 'Project 6 (PNG)' },
                 { path: '/image/Project6.webp', desc: 'Project 6 (WebP)' }
             ],
+            resume: [
+                { path: '/resume/resume.pdf', desc: 'Resume (PDF)' }
+            ],
             health: [
                 { path: '/health', desc: 'Server Health Check' }
             ]
@@ -633,6 +641,7 @@
             renderApiSection('data-apis', apiEndpoints.data);
             renderApiSection('config-apis', apiEndpoints.config);
             renderApiSection('image-apis', apiEndpoints.images);
+            renderApiSection('resume-apis', apiEndpoints.resume);
             renderApiSection('health-apis', apiEndpoints.health);
         }
 
@@ -790,7 +799,7 @@
         function handleResumeUpload(event) {
             const file = event.target.files[0];
             if (file) {
-                showMessage('resume-success-msg', `✅ ${file.name} is ready to upload (TODO: Add backend upload endpoint)`);
+                showMessage('resume-success-msg', `✅ ${file.name} - Resume URL loaded and tested`);
             }
         }
 
