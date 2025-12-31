@@ -27,7 +27,7 @@ app.set('views', path.join(__dirname, '../views'));
 
 // Import routes
 const authRoutes = require('../src/routes/auth');
-const fileRoutes = require('../src/routes/files');
+const fileRoutes = require('../src/routes/files-redis');
 const configRoutes = require('../src/routes/config');
 const scannerRoutes = require('../src/routes/scanner');
 const adminRoutes = require('../src/routes/admin');
