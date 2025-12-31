@@ -1438,7 +1438,7 @@
 
     function getFileIcon(item) {
       if (item.isDirectory) return '📂';
-      const ext = item.ext.toLowerCase();
+      const ext = (item.ext || '').toLowerCase();
       if (['.json'].includes(ext)) return '📄';
       if (['.png', '.jpg', '.jpeg', '.webp', '.gif'].includes(ext)) return '🖼️';
       if (['.pdf', '.doc', '.docx'].includes(ext)) return '📃';
@@ -1504,10 +1504,10 @@
 
       // Search across all files
       const filtered = allFilesFlat.filter(file => {
-        const name = file.name.toLowerCase();
-        const path = file.path.toLowerCase();
-        const locale = file.locale.toLowerCase();
-        const category = file.category.toLowerCase();
+        const name = (file.name || '').toLowerCase();
+        const path = (file.path || '').toLowerCase();
+        const locale = (file.locale || '').toLowerCase();
+        const category = (file.category || '').toLowerCase();
         
         return name.includes(query) || 
                path.includes(query) || 
