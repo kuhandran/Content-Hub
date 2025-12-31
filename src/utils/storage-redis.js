@@ -182,14 +182,16 @@ async function getStats() {
   });
 
   const completedLocales = locales.size;
-  const totalLocales = 11; // en, es, fr, de, hi, id, my, si, ta, th, ar-AE, en-AU, en-CA, en-GB, en-MY, en-NZ, en-US
+  const totalLocales = 11; // en, es, fr, de, hi, id, my, si, ta, th, ar-AE
   const completeness = totalLocales > 0 ? Math.round((completedLocales / totalLocales) * 100) : 0;
 
   return {
     totalFiles: files.length,
-    totalLocales: locales.size,
+    totalLocales,
+    completedLocales,
     completeness,
     filesByType: types,
+    localeList: Array.from(locales).sort(),
     locales: Array.from(locales).sort(),
     storage: redisConnected ? 'redis' : 'filesystem'
   };

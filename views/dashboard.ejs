@@ -1428,6 +1428,7 @@
           <div class="actions">
             <button class="action-btn" onclick="copyPath('${item.path}')" title="Copy Path">📋</button>
             ${!item.isDirectory ? `
+              <button class="action-btn" onclick="viewFile('${item.path}')" title="View">👁️</button>
               <button class="action-btn" onclick="editFile('${item.path}')" title="Edit">✏️</button>
               <button class="action-btn" onclick="deleteFile('${item.path}')" title="Delete">🗑️</button>
             ` : ''}
@@ -1452,8 +1453,54 @@
       });
     }
 
+    async function viewFile(path) {
+      try {
+        const ext = path.toLowerCase().split('.').pop();
+        const endpoints = {
+          'config': `/api/config-file/${path.split('/').pop()}`,
+          'image': `/api/image/${path.split('/').pop()}`,
+          'resume': `/api/resume/${path.split('/').pop()}`,
+          'files': `/api/storage-files/${path.split('/').pop()}`
+        };
+        
+        const folder = path.split('/')[0];
+        const endpoint = endpoints[folder];
+        
+        if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext)) {
+          // Open image in new window
+          window.open(endpoint, '_blank');
+        } else if (['pdf', 'doc', 'docx'].includes(ext)) {
+          // Open PDF in new window or download
+          window.open(endpoint, '_blank');
+        } else if (ext === 'json') {
+          // Show JSON in modal
+          const res = await fetch(endpoint);
+          if (!res.ok) throw new Error('Failed to load file');
+          const data = await res.json();
+          const content = JSON.stringify(data, null, 2);
+          document.getElementById('modalTitle').textContent = `View: ${path}`;
+          document.getElementById('jsonEditor').value = content;
+          document.getElementById('jsonEditor').readOnly = true;
+          document.getElementById('editModal').style.display = 'flex';
+        } else {
+          alert('Preview not supported for this file type');
+        }
+      } catch (error) {
+        alert('Error viewing file: ' + error.message);
+      }
+    }
+
     function editFile(path) {
-      alert('Edit feature coming soon for: ' + path);
+      const ext = path.toLowerCase().split('.').pop();
+      if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) {
+        alert('Image files cannot be edited. Use an image editor or view the file.');
+      } else if (['pdf', 'doc', 'docx'].includes(ext)) {
+        alert('Binary files cannot be edited in this interface.');
+      } else if (ext === 'json') {
+        alert('JSON editing is read-only via this interface. Edit through collections instead.');
+      } else {
+        alert('Edit feature coming soon for: ' + path);
+      }
     }
 
     async function deleteFile(path) {
