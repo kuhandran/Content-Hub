@@ -121,7 +121,9 @@ router.get('/files', authMiddleware, async (req, res) => {
         completedLocales++;
       }
       localeFiles.forEach(file => {
-        const ext = file.path?.split('.')?.pop() || 'unknown';
+        const ext = (file.path && typeof file.path === 'string') 
+          ? file.path.split('.').pop() || 'unknown'
+          : 'unknown';
         filesByType[ext] = (filesByType[ext] || 0) + 1;
       });
     });
