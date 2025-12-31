@@ -41,11 +41,14 @@ router.get('/*', async (req, res) => {
       return res.status(404).json({ error: 'File not found', path: filePath });
     }
 
+    // Decode from base64 (files are stored as base64 in Redis)
+    const decodedContent = Buffer.from(content, 'base64').toString('utf8');
+
     if (filePath.endsWith('.json')) {
-      return res.json(JSON.parse(content));
+      return res.json(JSON.parse(decodedContent));
     }
 
-    res.type('text/plain').send(content);
+    res.type('text/plain').send(decodedContent);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

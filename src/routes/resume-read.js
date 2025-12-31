@@ -41,7 +41,7 @@ router.get('/*', async (req, res) => {
       return res.status(404).json({ error: 'File not found', path: filePath });
     }
 
-    // Return base64 decoded binary content
+    // Decode from base64 (files stored as base64 in Redis)
     const buffer = Buffer.from(content, 'base64');
     
     // Determine content type based on extension
