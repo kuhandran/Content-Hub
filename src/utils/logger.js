@@ -7,27 +7,31 @@ const fs = require('fs');
 const path = require('path');
 
 // Try to create logs directory if it doesn't exist
-// On Vercel, /tmp is writable
-const logsDir = process.env.VERCEL ? '/tmp/logs' : path.join(__dirname, '../../logs');
+// On Vercel, /tmp is writable; on read-only systems, skip logging
+let logsDir = null;
 let canWriteLogs = false;
 
 try {
-  if (!fs.existsSync(logsDir)) {
+  // On Vercel, /tmp is writable
+  logsDir = process.env.VERCEL ? '/tmp/logs' : path.join(__dirname, '../../logs');
+  
+  if (logsDir && !fs.existsSync(logsDir)) {
     fs.mkdirSync(logsDir, { recursive: true });
   }
-  canWriteLogs = true;
+  canWriteLogs = !!logsDir;
 } catch (error) {
-  console.warn('[LOGGER] Cannot write logs to disk:', error.message);
+  console.warn('[LOGGER] Cannot create logs directory:', error.message);
   canWriteLogs = false;
+  logsDir = null;
 }
 
-// Log file paths
-const logFiles = {
+// Log file paths - only set if we can write
+const logFiles = canWriteLogs ? {
   request: path.join(logsDir, 'requests.log'),
   error: path.join(logsDir, 'errors.log'),
   kv: path.join(logsDir, 'kv-operations.log'),
   auth: path.join(logsDir, 'auth.log')
-};
+} : {};
 
 /**
  * Format timestamp

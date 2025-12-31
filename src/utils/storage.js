@@ -14,11 +14,12 @@ let kvStorage = null;
 // Initialize KV storage if on Vercel
 if (isVercel && process.env.KV_URL) {
   try {
-    const VercelKVStorage = require('../../lib/vercel-kv-storage');
+    const VercelKVStorage = require('../lib/vercel-kv-storage');
     kvStorage = new VercelKVStorage();
     console.log('[STORAGE] Using Vercel KV for file storage');
   } catch (error) {
-    console.error('[STORAGE] Failed to initialize KV storage:', error.message);
+    console.warn('[STORAGE] Failed to initialize KV storage:', error.message);
+    console.log('[STORAGE] Falling back to filesystem (note: Vercel has read-only filesystem)');
   }
 }
 
