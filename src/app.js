@@ -33,7 +33,7 @@ const scannerRoutes = require('./routes/scanner');
 app.use('/api/auth', authRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/config', configRoutes);
-app.use('/api/collections', collectionsRoutes(cache));
+app.use('/api/collections', collectionsRoutes);
 app.use('/api/backup', backupRoutes);
 app.use('/api/scanner', scannerRoutes);
 
