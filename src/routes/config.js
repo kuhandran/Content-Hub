@@ -201,93 +201,33 @@ router.get('/file-types', (req, res) => {
   }
 });
 
-// Get system statistics
-router.get('/statistics', (req, res) => {
+// Get system statistics (uses Redis-based data)
+router.get('/statistics', async (req, res) => {
   try {
-    const collectionsPath = path.join(__dirname, '../../public/collections');
-    
-    // Return empty stats if collections doesn't exist
-    if (!fs.existsSync(collectionsPath)) {
-      return res.json({
-        status: 'success',
-        data: {
-          totalFiles: 0,
-          totalLocales: 0,
-          completedLocales: 0,
-          totalSize: 0,
-          filesByType: {},
-          localeStats: []
-        },
-        timestamp: new Date(),
-        message: 'Collections directory not found'
-      });
-    }
-    
-    // Get all locales
-    const locales = fs.readdirSync(collectionsPath)
-      .filter(dir => {
-        try {
-          return fs.statSync(path.join(collectionsPath, dir)).isDirectory();
-        } catch {
-          return false;
-        }
-      });
-    
-    let totalFiles = 0;
-    let completedLocales = 0;
-    let totalSize = 0;
-    let filesByType = {};
-    
-    locales.forEach(locale => {
-      const dataPath = path.join(collectionsPath, locale, 'data');
-      const configPath = path.join(collectionsPath, locale, 'config');
-      
-      // Count data files
-      if (fs.existsSync(dataPath)) {
-        const dataFiles = fs.readdirSync(dataPath).filter(f => !f.startsWith('.'));
-        totalFiles += dataFiles.length;
-        dataFiles.forEach(file => {
-          const fileType = path.extname(file) || 'unknown';
-          filesByType[fileType] = (filesByType[fileType] || 0) + 1;
-        });
-        
-        if (dataFiles.length === 7) {
-          completedLocales++;
-        }
-      }
-      
-      // Calculate size
-      [dataPath, configPath].forEach(dir => {
-        if (fs.existsSync(dir)) {
-          fs.readdirSync(dir).forEach(file => {
-            const filePath = path.join(dir, file);
-            const stat = fs.statSync(filePath);
-            totalSize += stat.size;
-          });
-        }
-      });
-    });
+    const storage = require('../utils/storage-redis');
+    const stats = await storage.getStats();
     
     res.json({
       status: 'success',
       data: {
-        totalLocales: locales.length,
-        completedLocales: completedLocales,
-        totalFiles: totalFiles,
-        totalSize: totalSize,
-        totalSizeKB: (totalSize / 1024).toFixed(2),
-        averageFileSizeKB: totalFiles > 0 ? (totalSize / totalFiles / 1024).toFixed(2) : 0,
-        filesByType: filesByType,
-        localeList: locales,
+        totalLocales: stats.totalLocales,
+        completedLocales: stats.completedLocales,
+        totalFiles: stats.totalFiles,
+        totalSize: 0,
+        totalSizeKB: 0,
+        averageFileSizeKB: 0,
+        filesByType: {},
+        localeList: stats.localeList || [],
         systemHealth: {
           uptime: process.uptime(),
           memoryUsage: process.memoryUsage(),
-          completeness: `${Math.round((completedLocales / locales.length) * 100)}%`
+          completeness: `${stats.completeness}%`
         }
       },
       timestamp: new Date()
     });
   } catch (error) {
+    console.error('Statistics error:', error);
     res.status(500).json({ 
       status: 'error', 
       error: error.message 
