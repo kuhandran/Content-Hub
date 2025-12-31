@@ -35,10 +35,16 @@ router.get('/list/config', async (req, res) => {
       const keys = await redis.keys('cms:config:*');
       for (const key of keys) {
         const filename = key.replace('cms:config:', '');
+        const content = await redis.get(key);
+        const size = content ? Buffer.byteLength(content, 'utf8') : 0;
+        
         items.push({
           name: filename,
           path: `config/${filename}`,
-          type: 'file'
+          type: 'file',
+          size: size,
+          modified: new Date().toISOString(),
+          ext: `.${filename.split('.').pop()}`
         });
         count++;
       }
@@ -73,10 +79,16 @@ router.get('/list/image', async (req, res) => {
       const keys = await redis.keys('cms:image:*');
       for (const key of keys) {
         const filename = key.replace('cms:image:', '');
+        const content = await redis.get(key);
+        const size = content ? Buffer.byteLength(content, 'utf8') : 0;
+        
         items.push({
           name: filename,
           path: `image/${filename}`,
-          type: 'file'
+          type: 'file',
+          size: size,
+          modified: new Date().toISOString(),
+          ext: `.${filename.split('.').pop()}`
         });
         count++;
       }
@@ -111,10 +123,16 @@ router.get('/list/resume', async (req, res) => {
       const keys = await redis.keys('cms:resume:*');
       for (const key of keys) {
         const filename = key.replace('cms:resume:', '');
+        const content = await redis.get(key);
+        const size = content ? Buffer.byteLength(content, 'utf8') : 0;
+        
         items.push({
           name: filename,
           path: `resume/${filename}`,
-          type: 'file'
+          type: 'file',
+          size: size,
+          modified: new Date().toISOString(),
+          ext: `.${filename.split('.').pop()}`
         });
         count++;
       }
@@ -149,10 +167,16 @@ router.get('/list/files', async (req, res) => {
       const keys = await redis.keys('cms:files:*');
       for (const key of keys) {
         const filename = key.replace('cms:files:', '');
+        const content = await redis.get(key);
+        const size = content ? Buffer.byteLength(content, 'utf8') : 0;
+        
         items.push({
           name: filename,
           path: `files/${filename}`,
-          type: 'file'
+          type: 'file',
+          size: size,
+          modified: new Date().toISOString(),
+          ext: `.${filename.split('.').pop()}`
         });
         count++;
       }

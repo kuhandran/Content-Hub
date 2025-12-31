@@ -1171,7 +1171,7 @@
             <div class="file-icon">📄</div>
             <div class="file-details">
               <div class="file-name">${file.name}</div>
-              <div class="file-meta">${(file.size / 1024).toFixed(2)} KB</div>
+              <div class="file-meta">${file.size ? (file.size / 1024).toFixed(2) + ' KB' : '0 KB'}</div>
             </div>
           </div>
           <div class="file-actions">
@@ -1420,8 +1420,8 @@
             <div class="file-details">
               <div class="file-name">${item.name}</div>
               <div class="file-meta">
-                ${item.isDirectory ? 'Folder' : `${(item.size / 1024).toFixed(2)} KB`}
-                • ${new Date(item.modified).toLocaleDateString()}
+                ${item.isDirectory ? 'Folder' : `${item.size ? (item.size / 1024).toFixed(2) : '0'} KB`}
+                • ${item.modified ? new Date(item.modified).toLocaleDateString() : 'N/A'}
               </div>
             </div>
           </div>
