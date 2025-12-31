@@ -32,9 +32,12 @@ app.use('/api/files', fileRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/scanner', scannerRoutes);
 
+// Import middleware
+const authMiddleware = require('../src/middleware/authMiddleware');
+
 // Dashboard route
-app.get('/dashboard', (req, res) => {
-  res.render('dashboard');
+app.get('/dashboard', authMiddleware, (req, res) => {
+  res.render('dashboard', { user: req.user });
 });
 
 // Login page
