@@ -30,12 +30,14 @@ const authRoutes = require('../src/routes/auth');
 const fileRoutes = require('../src/routes/files');
 const configRoutes = require('../src/routes/config');
 const scannerRoutes = require('../src/routes/scanner');
+const adminRoutes = require('../src/routes/admin');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/scanner', scannerRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Import middleware
 const authMiddleware = require('../src/middleware/authMiddleware');
