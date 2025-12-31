@@ -6,10 +6,19 @@
 const fs = require('fs');
 const path = require('path');
 
-// Create logs directory if it doesn't exist
-const logsDir = path.join(__dirname, '../../logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
+// Try to create logs directory if it doesn't exist
+// On Vercel, /tmp is writable
+const logsDir = process.env.VERCEL ? '/tmp/logs' : path.join(__dirname, '../../logs');
+let canWriteLogs = false;
+
+try {
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
+  canWriteLogs = true;
+} catch (error) {
+  console.warn('[LOGGER] Cannot write logs to disk:', error.message);
+  canWriteLogs = false;
 }
 
 // Log file paths
@@ -47,28 +56,42 @@ function formatLog(level, category, message, data = {}) {
  */
 function writeLog(logType, level, category, message, data) {
   try {
+    if (!canWriteLogs) {
+      // Fallback to console only
+      logToConsole(level, category, message, data);
+      return;
+    }
+
     const logFile = logFiles[logType] || logFiles.request;
     const logLine = formatLog(level, category, message, data) + '\n';
     
     fs.appendFileSync(logFile, logLine, { flag: 'a' });
     
     // Also log to console in development
-    if (process.env.NODE_ENV !== 'production') {
-      const color = {
-        ERROR: '\x1b[31m',
-        WARN: '\x1b[33m',
-        INFO: '\x1b[36m',
-        DEBUG: '\x1b[90m',
-        SUCCESS: '\x1b[32m'
-      }[level] || '\x1b[0m';
-      const reset = '\x1b[0m';
-      
-      console.log(`${color}[${level}] ${category}: ${message}${reset}`, 
-        Object.keys(data).length > 0 ? data : '');
-    }
+    logToConsole(level, category, message, data);
   } catch (error) {
-    console.error('LOGGER ERROR:', error.message);
+    // If file write fails, just use console
+    logToConsole(level, category, `[FILE_WRITE_FAILED] ${message}`, data);
   }
+}
+
+/**
+ * Log to console
+ */
+function logToConsole(level, category, message, data) {
+  if (process.env.NODE_ENV === 'production') return; // Skip console logs in production
+
+  const color = {
+    ERROR: '\x1b[31m',
+    WARN: '\x1b[33m',
+    INFO: '\x1b[36m',
+    DEBUG: '\x1b[90m',
+    SUCCESS: '\x1b[32m'
+  }[level] || '\x1b[0m';
+  const reset = '\x1b[0m';
+  
+  console.log(`${color}[${level}] ${category}: ${message}${reset}`, 
+    Object.keys(data).length > 0 ? data : '');
 }
 
 const logger = {

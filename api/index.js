@@ -91,7 +91,5 @@ app.use((err, req, res, next) => {
 });
 
 logger.info('APP', 'Express app configured successfully');
-  res.status(500).json({ error: err.message });
-});
 
 module.exports = app;
