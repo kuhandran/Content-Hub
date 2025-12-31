@@ -1,13 +1,31 @@
 /**
- * Admin API to seed KV database from deployed code
- * This endpoint reads from /public/collections and uploads to KV
+ * Admin API to seed Redis database from uploaded files or filesystem
  * Only available in development or with admin token
  */
 
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const { createClient } = require('redis');
 const router = express.Router();
+
+let redis = null;
+
+// Initialize Redis
+async function initRedis() {
+  try {
+    if (!redis) {
+      const redisUrl = process.env.REDIS_URL;
+      if (!redisUrl) return false;
+      redis = createClient({ url: redisUrl });
+      await redis.connect();
+    }
+    return true;
+  } catch (err) {
+    console.error('[ADMIN] Redis init failed:', err.message);
+    return false;
+  }
+}
 
 // Middleware to protect the seed endpoint
 const adminAuth = (req, res, next) => {
@@ -20,22 +38,20 @@ const adminAuth = (req, res, next) => {
   next();
 };
 
-// Seed endpoint - accepts JSON file uploads
+// Seed endpoint - accepts JSON file uploads or seeds from filesystem
 router.post('/seed-collections', adminAuth, async (req, res) => {
   try {
+    const connected = await initRedis();
+    if (!connected || !redis) {
+      return res.status(500).json({ error: 'Redis not available' });
+    }
+
     // Check if files are being uploaded
     if (!req.files || !req.files.file) {
       return res.status(400).json({ 
         error: 'No files uploaded',
         usage: 'POST /api/admin/seed-collections with form-data file[] or raw JSON body'
       });
-    }
-
-    let kv;
-    try {
-      kv = require('@vercel/kv').kv;
-    } catch (e) {
-      return res.status(500).json({ error: 'KV storage not configured' });
     }
 
     const files = Array.isArray(req.files.file) ? req.files.file : [req.files.file];
@@ -46,10 +62,10 @@ router.post('/seed-collections', adminAuth, async (req, res) => {
     // Upload each file
     for (const uploadedFile of files) {
       try {
-        const content = uploadedFile.data.toString('utf8');
+        const content = uploadedFile.data.toString('base64');
         const key = `cms:file:${uploadedFile.name}`;
         
-        await kv.set(key, content, { ex: 7776000 });
+        await redis.setEx(key, 7776000, content);
         successCount++;
       } catch (err) {
         errorCount++;
