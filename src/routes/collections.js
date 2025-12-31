@@ -5,7 +5,6 @@
 
 const express = require('express');
 const { createClient } = require('redis');
-const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
 let redis = null;
@@ -26,9 +25,6 @@ async function initRedis() {
 }
 
 initRedis();
-
-// All routes require auth
-router.use(authMiddleware);
 
 // GET /api/collections/* - Read any collection file
 router.get('/*', async (req, res) => {

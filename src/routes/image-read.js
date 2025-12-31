@@ -5,7 +5,6 @@
 
 const express = require('express');
 const { createClient } = require('redis');
-const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
 let redis = null;
@@ -24,8 +23,6 @@ async function initRedis() {
 }
 
 initRedis();
-
-router.use(authMiddleware);
 
 router.get('/*', async (req, res) => {
   try {
