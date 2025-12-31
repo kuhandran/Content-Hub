@@ -9,6 +9,7 @@ const path = require('path');
 const fs = require('fs');
 const authMiddleware = require('../middleware/authMiddleware');
 const storage = require('../utils/storage');
+const logger = require('../utils/logger');
 
 /**
  * Recursively scan directory and get all JSON files with their paths
@@ -55,42 +56,84 @@ function scanCollectionsFolder(dir, baseDir = '') {
  * Returns all JSON files from collections folder with their paths
  */
 router.get('/files', authMiddleware, async (req, res) => {
-  console.log('[SCANNER] GET /api/scanner/files - Request received');
+  const startTime = Date.now();
+  const userId = req.user?.username || 'unknown';
+  
   try {
+    logger.info('SCANNER', `[${userId}] GET /api/scanner/files - Request started`);
+
+    // List collection files with timing
+    const filesStartTime = Date.now();
     const files = await storage.listCollectionFiles();
+    const filesDuration = Date.now() - filesStartTime;
     
+    logger.debug('SCANNER', `File listing completed`, {
+      userId,
+      duration: filesDuration,
+      filesCount: files?.length || 0,
+      storage: storage.useFilesystem ? 'filesystem' : 'KV'
+    });
+
     if (!files || files.length === 0) {
-      console.log('[SCANNER] No collection files found');
+      logger.warn('SCANNER', `[${userId}] No collection files found`, {
+        duration: Date.now() - startTime
+      });
+      
       return res.status(200).json({ 
+        success: true,
         files: [],
         count: 0,
-        grouped: {}
+        grouped: {},
+        message: 'No collection files found'
       });
     }
-    
-    console.log('[SCANNER] Found total files:', files.length);
-    
+
+    logger.debug('SCANNER', `Found ${files.length} files`, { count: files.length });
+
     // Group files by locale
     const grouped = {};
     files.forEach(file => {
-      if (!grouped[file.locale]) {
-        grouped[file.locale] = [];
+      try {
+        if (!grouped[file.locale]) {
+          grouped[file.locale] = [];
+        }
+        grouped[file.locale].push(file);
+      } catch (groupError) {
+        logger.error('SCANNER', `Error grouping file ${file.path}`, groupError, { file });
       }
-      grouped[file.locale].push(file);
     });
-    
-    console.log('[SCANNER] Grouped by locales:', Object.keys(grouped));
-    
+
+    const locales = Object.keys(grouped);
+    logger.success('SCANNER', `[${userId}] Successfully loaded ${files.length} files from ${locales.length} locales`, {
+      locales,
+      duration: Date.now() - startTime
+    });
+
     res.json({
       success: true,
       total: files.length,
-      locales: Object.keys(grouped).length,
+      locales: locales.length,
+      localesList: locales,
       grouped,
-      files: files.sort((a, b) => a.path.localeCompare(b.path))
+      files: files.sort((a, b) => a.path.localeCompare(b.path)),
+      metadata: {
+        duration: Date.now() - startTime,
+        storage: storage.useFilesystem ? 'filesystem' : 'KV',
+        timestamp: new Date().toISOString()
+      }
     });
   } catch (error) {
-    console.error('[SCANNER] Error:', error);
-    res.status(500).json({ error: error.message });
+    logger.error('SCANNER', `[${userId}] Error scanning files`, error, {
+      duration: Date.now() - startTime,
+      stack: error.stack
+    });
+
+    res.status(500).json({ 
+      success: false,
+      error: error.message,
+      errorType: error.constructor.name,
+      timestamp: new Date().toISOString()
+    });
   }
 });
 

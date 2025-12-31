@@ -6,8 +6,13 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
 const jwt = require('jsonwebtoken');
+const logger = require('../src/utils/logger');
+const loggingMiddleware = require('../src/middleware/loggingMiddleware');
 
 const app = express();
+
+// Logging middleware - log all requests/responses
+app.use(loggingMiddleware);
 
 // Middleware
 app.use(fileUpload({ limits: { fileSize: 50 * 1024 * 1024 } }));
@@ -47,17 +52,45 @@ app.get('/login', (req, res) => {
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  logger.info('HEALTH', 'Health check endpoint called');
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    version: '1.0.0'
+  });
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ error: 'Not found' });
+  logger.warn('NOT_FOUND', `404 for ${req.method} ${req.path}`, { 
+    method: req.method, 
+    path: req.path 
+  });
+  res.status(404).json({ 
+    error: 'Not found',
+    path: req.path,
+    method: req.method
+  });
 });
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
+  logger.error('APP_ERROR', `Unhandled error: ${req.method} ${req.path}`, err, {
+    method: req.method,
+    path: req.path,
+    body: req.body
+  });
+
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal server error',
+    status: err.status || 500,
+    timestamp: new Date().toISOString(),
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
+});
+
+logger.info('APP', 'Express app configured successfully');
   res.status(500).json({ error: err.message });
 });
 
