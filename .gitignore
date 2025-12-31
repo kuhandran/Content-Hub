@@ -8,6 +8,7 @@ yarn-error.log*
 .env.*.local
 .vercel
 dist/
+logs/
 
 # TinaCMS
 .tina

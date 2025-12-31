@@ -84,6 +84,12 @@ router.get('/files', authMiddleware, async (req, res) => {
         files: [],
         count: 0,
         grouped: {},
+        statistics: {
+          totalFiles: 0,
+          totalLocales: 0,
+          completeness: 0,
+          filesByType: {}
+        },
         message: 'No collection files found'
       });
     }
@@ -104,6 +110,24 @@ router.get('/files', authMiddleware, async (req, res) => {
     });
 
     const locales = Object.keys(grouped);
+    
+    // Calculate statistics
+    const filesByType = {};
+    let completedLocales = 0;
+    locales.forEach(locale => {
+      const localeFiles = grouped[locale] || [];
+      const expectedFiles = 8; // Expected number of files per locale
+      if (localeFiles.length >= expectedFiles) {
+        completedLocales++;
+      }
+      localeFiles.forEach(file => {
+        const ext = file.path?.split('.')?.pop() || 'unknown';
+        filesByType[ext] = (filesByType[ext] || 0) + 1;
+      });
+    });
+    
+    const completeness = locales.length > 0 ? Math.round((completedLocales / locales.length) * 100) : 0;
+    
     logger.success('SCANNER', `[${userId}] Successfully loaded ${files.length} files from ${locales.length} locales`, {
       locales,
       duration: Date.now() - startTime
@@ -116,6 +140,13 @@ router.get('/files', authMiddleware, async (req, res) => {
       localesList: locales,
       grouped,
       files: files.sort((a, b) => a.path.localeCompare(b.path)),
+      statistics: {
+        totalFiles: files.length,
+        totalLocales: locales.length,
+        completedLocales,
+        completeness,
+        filesByType
+      },
       metadata: {
         duration: Date.now() - startTime,
         storage: storage.useFilesystem ? 'filesystem' : 'KV',
