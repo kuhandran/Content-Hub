@@ -8,6 +8,7 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const authMiddleware = require('../middleware/authMiddleware');
+const storage = require('../utils/storage');
 
 /**
  * Recursively scan directory and get all JSON files with their paths
@@ -53,19 +54,20 @@ function scanCollectionsFolder(dir, baseDir = '') {
  * GET /api/scanner/files
  * Returns all JSON files from collections folder with their paths
  */
-router.get('/files', authMiddleware, (req, res) => {
+router.get('/files', authMiddleware, async (req, res) => {
   console.log('[SCANNER] GET /api/scanner/files - Request received');
   try {
-    const collectionsPath = path.join(__dirname, '../../public/collections');
-    console.log('[SCANNER] Collections path:', collectionsPath);
+    const files = await storage.listCollectionFiles();
     
-    if (!fs.existsSync(collectionsPath)) {
-      console.log('[SCANNER] Collections path does not exist');
-      return res.status(404).json({ error: 'Collections folder not found' });
+    if (!files || files.length === 0) {
+      console.log('[SCANNER] No collection files found');
+      return res.status(200).json({ 
+        files: [],
+        count: 0,
+        grouped: {}
+      });
     }
     
-    console.log('[SCANNER] Scanning collections folder...');
-    const files = scanCollectionsFolder(collectionsPath);
     console.log('[SCANNER] Found total files:', files.length);
     
     // Group files by locale
