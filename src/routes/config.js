@@ -32,8 +32,29 @@ router.get('/languages', (req, res) => {
 router.get('/locales', (req, res) => {
   try {
     const collectionsPath = path.join(__dirname, '../../public/collections');
+    
+    // Return empty if collections doesn't exist
+    if (!fs.existsSync(collectionsPath)) {
+      return res.json({
+        status: 'success',
+        data: {
+          totalLocales: 0,
+          completeLocales: 0,
+          locales: []
+        },
+        timestamp: new Date(),
+        message: 'Collections directory not found'
+      });
+    }
+
     const locales = fs.readdirSync(collectionsPath)
-      .filter(dir => fs.statSync(path.join(collectionsPath, dir)).isDirectory())
+      .filter(dir => {
+        try {
+          return fs.statSync(path.join(collectionsPath, dir)).isDirectory();
+        } catch {
+          return false;
+        }
+      })
       .map(locale => {
         const dataPath = path.join(collectionsPath, locale, 'data');
         const files = fs.existsSync(dataPath) 
@@ -185,9 +206,32 @@ router.get('/statistics', (req, res) => {
   try {
     const collectionsPath = path.join(__dirname, '../../public/collections');
     
+    // Return empty stats if collections doesn't exist
+    if (!fs.existsSync(collectionsPath)) {
+      return res.json({
+        status: 'success',
+        data: {
+          totalFiles: 0,
+          totalLocales: 0,
+          completedLocales: 0,
+          totalSize: 0,
+          filesByType: {},
+          localeStats: []
+        },
+        timestamp: new Date(),
+        message: 'Collections directory not found'
+      });
+    }
+    
     // Get all locales
     const locales = fs.readdirSync(collectionsPath)
-      .filter(dir => fs.statSync(path.join(collectionsPath, dir)).isDirectory());
+      .filter(dir => {
+        try {
+          return fs.statSync(path.join(collectionsPath, dir)).isDirectory();
+        } catch {
+          return false;
+        }
+      });
     
     let totalFiles = 0;
     let completedLocales = 0;

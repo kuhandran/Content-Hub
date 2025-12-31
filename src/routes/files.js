@@ -67,8 +67,14 @@ router.get('/list/*', (req, res) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
+    // Return empty array if path doesn't exist (instead of 404)
     if (!fs.existsSync(fullPath)) {
-      return res.status(404).json({ error: 'Path not found' });
+      return res.json({ 
+        items: [], 
+        count: 0, 
+        path: requestPath,
+        message: 'Directory not found or empty'
+      });
     }
 
     const stats = fs.statSync(fullPath);
