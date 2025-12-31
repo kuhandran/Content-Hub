@@ -1,0 +1,48 @@
+{
+  "awards": [
+    {
+      "name": "Ganador de CodeFest 3.0",
+      "organization": "Hackathon de 24 Horas",
+      "year": "2023",
+      "icon": "🏆",
+      "description": "Competí entre 150 estudiantes en desafío de codificación intensivo de 24 horas"
+    },
+    {
+      "name": "IFLIX Hack (Jom Hack)",
+      "organization": "IFLIX",
+      "year": "2022",
+      "icon": "💻",
+      "description": "Finalista en competencia nacional de hackathon"
+    },
+    {
+      "name": "ICT Project Trade Show",
+      "organization": "Proyecto Altamente Recomendado",
+      "year": "2017",
+      "icon": "⭐",
+      "description": "Reconocido por solución de proyecto TIC innovadora"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Desarrollo en AWS",
+      "provider": "Amazon Web Services",
+      "year": "2023",
+      "icon": "☁️",
+      "credentialUrl": "#"
+    },
+    {
+      "name": "Análisis y Visualización de Datos con Microsoft Power BI",
+      "provider": "Microsoft",
+      "year": "2022",
+      "icon": "📊",
+      "credentialUrl": "#"
+    },
+    {
+      "name": "Creación de Microservicios Java Escalables con Spring Boot y Spring Cloud",
+      "provider": "Spring Framework",
+      "year": "2021",
+      "icon": "⚙️",
+      "credentialUrl": "#"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+[Unit]
+Description=Portfolio Collections CMS
+After=network.target
+
+[Service]
+Type=simple
+User=cms-user
+WorkingDirectory=/opt/portfolio-cms
+Environment="NODE_ENV=production"
+Environment="PORT=3001"
+EnvironmentFile=/opt/portfolio-cms/.env.production
+ExecStart=/usr/bin/node src/server.js
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/portfolio-cms/app.log
+StandardError=append:/var/log/portfolio-cms/app.log
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/portfolio-cms/public/collections /var/log/portfolio-cms /opt/portfolio-cms/backups
+
+# Resource limits
+LimitNOFILE=65535
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target

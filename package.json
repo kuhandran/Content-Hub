@@ -1,19 +1,49 @@
 {
-  "name": "portfolio-data-api",
+  "name": "portfolio-cms",
   "version": "1.0.0",
-  "description": "Static data server for portfolio content with Decap CMS admin",
-  "main": "server.js",
+  "description": "Express-based CMS with smart caching, Vercel-compatible",
+  "main": "api/index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "build": "echo 'No build needed'",
+    "prod": "NODE_ENV=production node src/server.js",
+    "prod-secure": "NODE_ENV=production node --max-old-space-size=512 src/server.js",
+    "docker:build": "docker build -t portfolio-cms:latest .",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f app",
+    "docker:restart": "docker-compose restart",
+    "lint": "echo 'No linter configured'",
+    "test": "echo 'No tests configured'",
+    "backup": "node scripts/backup.js",
+    "monitor": "node scripts/monitor.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "cms",
+    "express",
+    "cache",
+    "hot-reload"
+  ],
+  "author": "kuhandran",
   "license": "ISC",
   "dependencies": {
+    "@vercel/kv": "^0.2.4",
+    "archiver": "^7.0.1",
+    "chokidar": "^3.5.3",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "decap-cms-app": "^3.9.0",
     "dompurify": "^3.3.1",
-    "express": "^4.18.2"
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.18.2",
+    "express-fileupload": "^1.4.0",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "vercel": "^33.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

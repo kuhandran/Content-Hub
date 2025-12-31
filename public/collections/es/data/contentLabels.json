@@ -1,0 +1,299 @@
+{
+  "navigation": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "skills": "Habilidades",
+    "experience": "Experiencia",
+    "projects": "Proyectos",
+    "achievements": "Logros",
+    "education": "Educación",
+    "contact": "Contacto"
+  },
+  "hero": {
+    "greeting": "Hola, soy Kuhandran",
+    "badge": "Hola, soy Kuhandran",
+    "mainHeading": "Líder Técnico Impulsando la Transformación Digital",
+    "roles": {
+      "primary": "Gerente de Entrega Técnica",
+      "secondary": "Ingeniero Full-Stack",
+      "tertiary": "Entusiasta de Datos"
+    },
+    "description": "Especializado en aplicaciones empresariales, desarrollo de React Native y visualización de datos. Combinando 8+ años de experiencia técnica con información comercial estratégica para impulsar eficiencia operativa e innovación.",
+    "highlights": {
+      "experience": "8+ Años de Experiencia",
+      "location": "Basado en Malasia",
+      "relocation": "Abierto a Reubicación"
+    },
+    "cta": {
+      "primary": "Ver Mi Trabajo",
+      "secondary": "Conectemos"
+    },
+    "stats": {
+      "experience": {
+        "value": "8+",
+        "label": "Años de Experiencia"
+      },
+      "efficiency": {
+        "value": "15%",
+        "label": "Ganancias de Eficiencia"
+      },
+      "countries": {
+        "value": "2",
+        "label": "Países"
+      },
+      "education": {
+        "value": "MBA",
+        "label": "Análisis Comercial"
+      }
+    },
+    "scroll": {
+      "text": "Desplazarse Hacia Abajo",
+      "ariaLabel": "Desplazarse a sección acerca de"
+    }
+  },
+  "about": {
+    "subtitle": "Quién Soy",
+    "title": "Conectando Tecnología y Estrategia Comercial",
+    "description": "Líder técnico apasionado por construir soluciones escalables",
+    "image": {
+      "src": "/image/profile.png",
+      "alt": "Kuhandran SamudraPandiyan"
+    },
+    "stats": [
+      {
+        "icon": "Users",
+        "value": "8+",
+        "label": "Años de Experiencia"
+      },
+      {
+        "icon": "Briefcase",
+        "value": "2",
+        "label": "Países"
+      },
+      {
+        "icon": "TrendingUp",
+        "value": "15%",
+        "label": "Ganancias de Eficiencia"
+      }
+    ],
+    "paragraphs": {
+      "current_role": "Actualmente trabajando como Gerente de Proyecto Técnico en FWD Insurance, lidero equipos de entrega transfronterizos e impulso iniciativas de mejora continua que han reducido tiquetes de incidentes antiguos en un 15%. Mi rol combina arquitectura técnica, análisis de sistemas y gestión estratégica de proyectos.",
+      "previous_experience": "Con más de 6 años en Maybank, progresé de Desarrollador Junior a Ingeniero de Software Senior, construyendo aplicaciones React.js, implementando APIs RESTful y optimizando experiencias de usuario que mejoraron velocidades de carga en un 15%.",
+      "education": "Tengo una MBA en Análisis Comercial de la Universidad Metropolitan de Cardiff, lo que me permite conectar experiencia técnica con información comercial estratégica—una combinación única que impulsa innovación en entornos empresariales."
+    },
+    "highlights": {
+      "heading": "Puntos Clave",
+      "items": [
+        "Gestión de equipo transfronterizo y metodologías Ágiles",
+        "Desarrollo full-stack: React, React Native, Spring Boot",
+        "Visualización de datos y análisis con Power BI",
+        "Desarrollador certificado por AWS con experiencia en nube",
+        "Experiencia de dominio: Sectores de banca y seguros",
+        "Srilanqués con EP en Malasia - Abierto a reubicación"
+      ]
+    },
+    "cta": {
+      "resume": "Descargar Currículum",
+      "linkedin": "Ver LinkedIn"
+    }
+  },
+  "skills": {
+    "subtitle": "Habilidades y Experiencia",
+    "title": "Competencia Técnica",
+    "description": "Capacidades full-stack con experiencia en tecnologías modernas",
+    "tabs": {
+      "frontend": "Desarrollo Frontend",
+      "backend": "Backend y APIs",
+      "data": "Datos y Análisis",
+      "cloud": "Nube y DevOps"
+    }
+  },
+  "projects": {
+    "subtitle": "Portafolio",
+    "title": "Proyectos Destacados",
+    "description": "Demostrando soluciones impactantes en aplicaciones empresariales",
+    "empty": "No se encontraron proyectos"
+  },
+  "experience": {
+    "subtitle": "Carrera Profesional",
+    "title": "Experiencia Profesional",
+    "description": "Un historial de impulsar innovación y entregar resultados",
+    "empty": "No se encontraron entradas de experiencia"
+  },
+  "achievements": {
+    "subtitle": "Reconocimiento",
+    "title": "Premios y Logros",
+    "description": "Hitos y reconocimientos a lo largo de mi carrera",
+    "empty": "No se encontraron logros",
+    "sections": {
+      "awards": "Premios y Honores",
+      "certifications": "Certificaciones Profesionales"
+    }
+  },
+  "education": {
+    "subtitle": "Antecedentes Académicos",
+    "title": "Educación",
+    "description": "Educación formal y viaje de aprendizaje continuo",
+    "labels": {
+      "degree": "Grado",
+      "field": "Campo de Estudio",
+      "graduated": "Graduado",
+      "cgpa": "CGPA",
+      "activities": "Actividades"
+    },
+    "empty": "No se encontraron entradas de educación"
+  },
+  "contact": {
+    "subtitle": "Ponte en Contacto",
+    "title": "Trabajemos Juntos",
+    "description": "Abierto a nuevas oportunidades y colaboraciones",
+    "form": {
+      "heading": "Envíame un Mensaje",
+      "labels": {
+        "name": "Tu Nombre",
+        "email": "Correo Electrónico",
+        "subject": "Asunto",
+        "message": "Mensaje",
+        "file": "Adjuntar Archivo (Opcional)"
+      },
+      "placeholders": {
+        "name": "Juan Pérez",
+        "email": "juan@ejemplo.com",
+        "subject": "Consulta de Proyecto",
+        "message": "Cuéntame sobre tu proyecto..."
+      },
+      "fileUpload": {
+        "text": "Haz clic para cargar PDF o DOCX (Máx 5MB)",
+        "invalidType": "Solo se permiten archivos PDF y DOCX",
+        "invalidSize": "El tamaño del archivo debe ser menor a 5MB",
+        "removeButton": "Eliminar archivo"
+      },
+      "buttons": {
+        "submit": "Enviar Mensaje",
+        "submitting": "Enviando..."
+      },
+      "messages": {
+        "successTitle": "¡Mensaje enviado exitosamente!",
+        "successDescription": "Gracias por contactarme. Te responderé pronto.",
+        "errorTitle": "Error al enviar el mensaje",
+        "errorDescription": "Por favor intenta más tarde o contáctame directamente por correo."
+      }
+    },
+    "contactInfo": {
+      "heading": "Información de Contacto",
+      "description": "Siéntete libre de contactarme a través de cualquiera de estos canales. Siempre estoy abierto a discutir nuevos proyectos, oportunidades o colaboraciones.",
+      "email": {
+        "label": "Correo Electrónico",
+        "value": "skuhandran@yahoo.com"
+      },
+      "phone": {
+        "label": "Teléfono",
+        "value": "+60 14 933 7280"
+      },
+      "location": {
+        "label": "Ubicación",
+        "value": "Kuala Lumpur, Malasia"
+      },
+      "linkedin": {
+        "label": "LinkedIn",
+        "value": "Conecta conmigo"
+      }
+    },
+    "availability": {
+      "title": "Disponible para Oportunidades",
+      "description": "Abierto a posiciones de tiempo completo, consultoría y oportunidades de reubicación globales."
+    }
+  },
+  "chatbot": {
+    "subtitle": "Asistente IA",
+    "title": "Chatea Conmigo",
+    "description": "Pregúntame cualquier cosa sobre mi experiencia, habilidades o proyectos",
+    "placeholder": "Escribe tu mensaje...",
+    "sessionExpiry": "La sesión expirará en",
+    "sendButton": "Enviar mensaje",
+    "ariaLabel": "Enviar mensaje",
+    "toggleChat": "Alternar chat",
+    "closeChat": "Cerrar chat",
+    "initialMessage": "¡Hola! Soy el asistente de IA de Kuhandran. ¡Pregúntame cualquier cosa sobre su experiencia, habilidades o proyectos!",
+    "quickActions": [
+      "Cuéntame sobre tus proyectos",
+      "¿Cuáles son tus habilidades?",
+      "Experiencia profesional",
+      "¿Cómo contactarte?"
+    ],
+    "header": {
+      "title": "Asistente IA",
+      "subtitle": "Pregúntame cualquier cosa sobre Kuhandran"
+    },
+    "messages": {
+      "sessionExpired": "Sesión expirada o no verificada. Por favor actualiza y verifica tu correo nuevamente.",
+      "sessionExpiredOtp": "Tu sesión ha expirado. Por favor reingresa el OTP enviado a tu correo.",
+      "noResponse": "Lo siento, no entendí la respuesta.",
+      "connectionError": "Lo siento, tengo problemas para conectar. Por favor intenta más tarde.",
+      "captchaRequired": "Por favor completa el captcha.",
+      "otpSent": "OTP enviado a tu correo. Por favor revisa tu bandeja.",
+      "otpFailed": "Falló enviar OTP. Intenta de nuevo.",
+      "otpError": "Error enviando OTP. Intenta de nuevo.",
+      "verifySuccess": "¡Correo verificado! Ahora puedes chatear.",
+      "otpError2": "Error verificando OTP. Intenta de nuevo."
+    },
+    "otp": {
+      "label": "Ingresa el OTP enviado a tu correo",
+      "placeholder": "OTP de 6 dígitos",
+      "verifyButton": "Verificar OTP",
+      "verifying": "Verificando...",
+      "changeEmail": "Cambiar correo"
+    }
+  },
+  "buttons": {
+    "viewMore": "Ver Más",
+    "learnMore": "Saber Más",
+    "viewProject": "Ver Proyecto",
+    "visitWebsite": "Visitar Sitio Web",
+    "viewCode": "Ver Código",
+    "download": "Descargar",
+    "sendMessage": "Enviar Mensaje",
+    "explore": "Explorar",
+    "getInTouch": "Ponte en Contacto"
+  },
+  "common": {
+    "date": "Fecha",
+    "duration": "Duración",
+    "location": "Ubicación",
+    "company": "Empresa",
+    "role": "Rol",
+    "technologies": "Tecnologías",
+    "techStack": "Stack Técnico",
+    "description": "Descripción",
+    "metrics": "Métricas",
+    "loading": "Cargando...",
+    "error": "Error",
+    "noData": "Sin datos disponibles",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "more": "Más",
+    "less": "Menos"
+  },
+  "footer": {
+    "copyright": "© 2024 Kuhandran Samudrapandiyan. Todos los derechos reservados.",
+    "links": {
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio",
+      "sitemap": "Mapa del Sitio"
+    },
+    "social": {
+      "github": "GitHub",
+      "linkedin": "LinkedIn",
+      "twitter": "Twitter",
+      "email": "Correo Electrónico"
+    }
+  },
+  "messages": {
+    "welcome": "Bienvenido a mi portafolio",
+    "thanks": "Gracias por visitarme",
+    "connecting": "Conectando...",
+    "connected": "Conectado",
+    "offline": "Estás desconectado"
+  }
+}

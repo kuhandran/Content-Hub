@@ -1,0 +1,34 @@
+{
+  "frontend": [
+    "React",
+    "React Native",
+    "Vue.js",
+    "TypeScript",
+    "Redux",
+    "Axios",
+    "HTML5",
+    "CSS3"
+  ],
+  "backend": [
+    "Node.js",
+    "Spring Boot",
+    "Java",
+    "RESTful APIs",
+    "Microservices",
+    "PostgreSQL",
+    "MongoDB"
+  ],
+  "data": [
+    "Power BI",
+    "SQL",
+    "Data Visualization",
+    "DAX",
+    "Analytics"
+  ],
+  "cloud": [
+    "AWS",
+    "Docker",
+    "DevOps",
+    "CI/CD"
+  ]
+}

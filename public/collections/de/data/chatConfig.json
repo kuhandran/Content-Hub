@@ -1,0 +1,13 @@
+{
+  "placeholder": "Geben Sie Ihre Nachricht ein...",
+  "sessionExpiry": "Sitzung läuft ab in",
+  "sendButton": "Nachricht senden",
+  "quickActions": [
+    "Erzählen Sie mir von Ihren Projekten",
+    "Was sind Ihre Fähigkeiten?",
+    "Berufserfahrung",
+    "Wie kann ich Sie kontaktieren?"
+  ],
+  "initialMessage": "Hallo! Ich bin Kuhandrans KI-Assistent. Wie kann ich Ihnen heute helfen?",
+  "ariaLabel": "Nachricht senden"
+}

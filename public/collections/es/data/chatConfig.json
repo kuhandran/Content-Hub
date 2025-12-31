@@ -1,0 +1,29 @@
+{
+  "placeholder": "Escribe tu mensaje...",
+  "sessionExpiry": "La sesión expirará en",
+  "sendButton": "Enviar mensaje",
+  "quickActions": [
+    "Cuéntame sobre tus proyectos",
+    "¿Cuáles son tus habilidades?",
+    "Experiencia profesional",
+    "¿Cómo ponerse en contacto contigo?"
+  ],
+  "initialMessage": "¡Hola! Soy el asistente de IA de Kuhandran. ¿Cómo puedo ayudarte hoy?",
+  "ariaLabel": "Enviar mensaje"
+}
+
+      "year": "2023",
+      "icon": "🏆",
+      "description": "Competí entre 150 estudiantes en desafío de codificación intensivo de 24 horas"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Desarrollo en AWS",
+      "provider": "Amazon Web Services",
+      "year": "2023",
+      "icon": "☁️",
+      "credentialUrl": "#"
+    }
+  ]
+}
