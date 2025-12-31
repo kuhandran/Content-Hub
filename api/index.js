@@ -24,7 +24,8 @@ app.use((req, res, next) => {
     'http://localhost:5174',
     'https://static-api-opal.vercel.app',
     'https://opal-tau.vercel.app',
-    'https://opal.vercel.app'
+    'https://opal.vercel.app',
+    'https://www.kuhandranchatbot.info'
   ];
   
   if (allowedOrigins.includes(origin)) {
