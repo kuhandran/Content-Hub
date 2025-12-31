@@ -6,12 +6,20 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 const ALLOWED_IPS = (process.env.ALLOWED_IPS || '').split(',').map(ip => ip.trim()).filter(ip => ip);
 const AUTH_USER = process.env.AUTH_USER;
 const AUTH_PASS = process.env.AUTH_PASS;
+const SKIP_IP_CHECK = process.env.SKIP_IP_CHECK === 'true'; // For Vercel/serverless deployments
 
 function getClientIp(req) {
-  return req.headers['x-forwarded-for']?.split(',')[0] || 
-         req.connection.remoteAddress || 
-         req.socket.remoteAddress || 
-         req.ip;
+  const xForwardedFor = req.headers['x-forwarded-for']?.split(',')[0];
+  const remoteAddress = req.connection?.remoteAddress || req.socket?.remoteAddress || req.ip;
+  const clientIp = xForwardedFor || remoteAddress;
+  
+  console.log(`[IP_DEBUG] x-forwarded-for: ${xForwardedFor}`);
+  console.log(`[IP_DEBUG] remoteAddress: ${remoteAddress}`);
+  console.log(`[IP_DEBUG] req.ip: ${req.ip}`);
+  console.log(`[IP_DEBUG] Final clientIp: ${clientIp}`);
+  console.log(`[IP_DEBUG] All headers:`, req.headers);
+  
+  return clientIp;
 }
 
 function isIpAllowed(clientIp) {
@@ -29,19 +37,24 @@ router.post('/login', (req, res) => {
   const { username, password } = req.body;
   const clientIp = getClientIp(req);
 
-  console.log(`\n[AUTH] 🔐 LOGIN REQUEST RECEIVED`);
+  console.log(`[AUTH] 🔐 LOGIN REQUEST RECEIVED`);
   console.log(`[AUTH] ├─ Username: ${username}`);
   console.log(`[AUTH] ├─ Password: ${password ? '***' : 'MISSING'}`);
   console.log(`[AUTH] ├─ Client IP: ${clientIp}`);
+  console.log(`[AUTH] ├─ IP Check Enabled: ${!SKIP_IP_CHECK}`);
   console.log(`[AUTH] └─ Allowed IPs: [${ALLOWED_IPS.join(', ')}]`);
 
-  // Verify IP
-  if (!isIpAllowed(clientIp)) {
+  // Verify IP (can be skipped for serverless deployments)
+  if (!SKIP_IP_CHECK && !isIpAllowed(clientIp)) {
     console.log(`[AUTH] ❌ IP REJECTED - ${clientIp} not in allowed list`);
     return res.status(403).json({ error: 'IP not allowed' });
   }
 
-  console.log(`[AUTH] ✅ IP Verified: ${clientIp}`);
+  if (!SKIP_IP_CHECK) {
+    console.log(`[AUTH] ✅ IP Verified: ${clientIp}`);
+  } else {
+    console.log(`[AUTH] ⚠️  IP Check Skipped (SKIP_IP_CHECK=true)`);
+  }
 
   // Verify credentials
   if (username !== AUTH_USER) {
