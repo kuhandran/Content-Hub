@@ -6,6 +6,36 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 
+// CORS middleware - Allow requests from localhost and production
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:8080',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://static-api-opal.vercel.app',
+    'https://opal-tau.vercel.app',
+    'https://opal.vercel.app'
+  ];
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '3600');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
+
 // Middleware
 app.use(fileUpload());
 app.use(express.json({ limit: '50mb' }));

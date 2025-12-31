@@ -24,6 +24,34 @@ async function initRedis() {
 
 initRedis();
 
+// Add CORS headers to all responses
+router.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:8080',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://static-api-opal.vercel.app',
+    'https://opal-tau.vercel.app',
+    'https://opal.vercel.app'
+  ];
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Max-Age', '3600');
+  
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
+
 router.get('/*', async (req, res) => {
   try {
     const filePath = req.params[0];
@@ -52,3 +80,4 @@ router.get('/*', async (req, res) => {
 });
 
 module.exports = router;
+
