@@ -20,85 +20,56 @@ const adminAuth = (req, res, next) => {
   next();
 };
 
-// Seed endpoint
+// Seed endpoint - accepts JSON file uploads
 router.post('/seed-collections', adminAuth, async (req, res) => {
   try {
-    console.log('🌱 Starting collection seed...');
-    
-    // Only use KV if available
+    // Check if files are being uploaded
+    if (!req.files || !req.files.file) {
+      return res.status(400).json({ 
+        error: 'No files uploaded',
+        usage: 'POST /api/admin/seed-collections with form-data file[] or raw JSON body'
+      });
+    }
+
     let kv;
     try {
       kv = require('@vercel/kv').kv;
     } catch (e) {
-      console.error('KV not available');
       return res.status(500).json({ error: 'KV storage not configured' });
     }
 
-    const collectionsPath = path.join(__dirname, '../../public/collections');
-    
-    if (!fs.existsSync(collectionsPath)) {
-      return res.status(404).json({ error: 'Collections folder not found' });
-    }
-
-    let totalFiles = 0;
+    const files = Array.isArray(req.files.file) ? req.files.file : [req.files.file];
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
 
-    // Collect all files
-    function walkDir(dir, prefix = '') {
-      const files = fs.readdirSync(dir);
-      
-      for (const file of files) {
-        const fullPath = path.join(dir, file);
-        const stat = fs.statSync(fullPath);
-        const relativePath = prefix ? `${prefix}/${file}` : file;
-
-        if (stat.isDirectory()) {
-          walkDir(fullPath, relativePath);
-        } else if (file.endsWith('.json')) {
-          totalFiles++;
-          
-          try {
-            const content = fs.readFileSync(fullPath, 'utf8');
-            const key = `cms:file:${relativePath}`;
-            
-            // Synchronous KV call not available, so we queue them
-            kv.set(key, content, { ex: 7776000 })
-              .then(() => {
-                successCount++;
-              })
-              .catch(err => {
-                errorCount++;
-                errors.push(`${relativePath}: ${err.message}`);
-              });
-          } catch (err) {
-            errorCount++;
-            errors.push(`${relativePath}: ${err.message}`);
-          }
-        }
+    // Upload each file
+    for (const uploadedFile of files) {
+      try {
+        const content = uploadedFile.data.toString('utf8');
+        const key = `cms:file:${uploadedFile.name}`;
+        
+        await kv.set(key, content, { ex: 7776000 });
+        successCount++;
+      } catch (err) {
+        errorCount++;
+        errors.push(`${uploadedFile.name}: ${err.message}`);
       }
     }
 
-    walkDir(collectionsPath);
-
-    // Wait for uploads to complete
-    await new Promise(resolve => setTimeout(resolve, 10000));
-
     res.json({
-      status: 'seeding_initiated',
-      totalFiles,
+      status: 'upload_complete',
+      totalFiles: files.length,
       successCount,
       errorCount,
-      errors: errors.slice(0, 10), // Show first 10 errors
-      message: 'Seed started. Check logs for progress.'
+      errors: errors.slice(0, 5),
+      message: `Uploaded ${successCount}/${files.length} files`
     });
 
   } catch (error) {
     console.error('Seed error:', error);
     res.status(500).json({ 
-      error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: error.message
     });
   }
 });
