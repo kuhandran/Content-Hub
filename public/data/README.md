@@ -151,7 +151,7 @@ localhost:3000/data/projects.json
 ```
 If localhost:3000 → Fetches from /data/ (local testing)
 If kuhandranchatbot.info → Fetches from CDN:
-  https://static.kuhandranchatbot.info/data/projects.json
+  https://static-api-opal.vercel.app/data/projects.json
 ```
 
 **Configuration**: `src/lib/config/dataConfig.ts`
@@ -165,7 +165,7 @@ export function getDataSourceUrl(filename: string): string {
     return `/data/${filename}`;
   }
   
-  return `https://static.kuhandranchatbot.info/data/${filename}`;
+  return `https://static-api-opal.vercel.app/data/${filename}`;
 }
 ```
 
@@ -175,8 +175,8 @@ All image paths in JSON are **absolute CDN URLs**:
 
 ```json
 {
-  "image": "https://static.kuhandranchatbot.info/image/Project1.png",
-  "logo": "https://static.kuhandranchatbot.info/image/fwd-logo.png"
+  "image": "https://static-api-opal.vercel.app/image/Project1.png",
+  "logo": "https://static-api-opal.vercel.app/image/fwd-logo.png"
 }
 ```
 
@@ -277,7 +277,7 @@ This downloads all JSON files from the CDN:
 - Source: `/public/data/` folder
 
 ### Production (Deployed to `kuhandranchatbot.info`)
-- URL: `https://static.kuhandranchatbot.info/data/projects.json`
+- URL: `https://static-api-opal.vercel.app/data/projects.json`
 - Source: AWS S3 (CDN-fronted)
 
 ### Production (Local Testing: `npm run start`)
