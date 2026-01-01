@@ -1,13 +1,20 @@
 {
-  "baseUrl": "https://api-gateway-9unh.onrender.com",
+  "description": "API Configuration - Use apiRouter.js for automatic routing",
+  "apiGateway": "https://api-gateway-9unh.onrender.com",
+  "staticExtensions": [".json", ".png", ".webp", ".pdf"],
   "endpoints": {
     "chatbot": "/api/chatbot",
     "contact": "/api/contact",
     "otp": "/api/otp"
   },
-  "fullUrls": {
-    "chatSend": "https://api-gateway-9unh.onrender.com/api/chatbot",
-    "requestOtp": "https://api-gateway-9unh.onrender.com/api/otp",
-    "contact": "https://api-gateway-9unh.onrender.com/api/contact"
+  "usage": {
+    "staticContent": "Paths ending with .json, .png, .webp, .pdf are served from public folder",
+    "apiEndpoints": "Paths without file extensions are routed to API gateway",
+    "helper": "Use APIRouter class from /js/apiRouter.js for automatic routing"
+  },
+  "examples": {
+    "getStaticData": "new APIRouter().getUrl('/data/skills.json') → /data/skills.json",
+    "callAPI": "new APIRouter().getUrl('/api/chatbot') → https://api-gateway-9unh.onrender.com/api/chatbot",
+    "makeRequest": "await new APIRouter().request('/api/chatbot', {method: 'POST', body: ...})"
   }
 }
