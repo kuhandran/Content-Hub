@@ -33,6 +33,67 @@ async function initRedis() {
 
 initRedis();
 
+/**
+ * Attempt to seed a file to Redis when it's not found
+ */
+async function ensureFileSeededed(filePath) {
+  try {
+    console.error('[FILES-STORAGE] 🔄 Attempting to seed file:', filePath);
+    
+    // Try to read from embedded static files first
+    let embeddedFiles = {};
+    try {
+      embeddedFiles = require('../data/embedded-static-files');
+    } catch (err) {
+      console.error('[FILES-STORAGE] Could not load embedded files:', err.message);
+    }
+    
+    const fileName = path.basename(filePath);
+    let content = null;
+    let source = 'unknown';
+    
+    // Try embedded files
+    if (embeddedFiles[fileName]) {
+      content = embeddedFiles[fileName];
+      source = 'embedded';
+      console.error('[FILES-STORAGE] ✅ Got from embedded files:', fileName);
+    }
+    
+    // Try filesystem as fallback
+    if (!content) {
+      const diskPath = path.join(__dirname, '../../public/files', fileName);
+      if (fs.existsSync(diskPath)) {
+        try {
+          content = fs.readFileSync(diskPath, 'utf8');
+          source = 'filesystem';
+          console.error('[FILES-STORAGE] ✅ Got from filesystem:', fileName);
+        } catch (err) {
+          console.error('[FILES-STORAGE] Error reading file:', err.message);
+        }
+      }
+    }
+    
+    // If we got content, seed it to Redis
+    if (content && redis) {
+      try {
+        const key = `cms:files:${fileName}`;
+        await redis.set(key, content);
+        console.error('[FILES-STORAGE] ✅ Seeded to Redis:', fileName, `(${source})`);
+        return content;
+      } catch (err) {
+        console.error('[FILES-STORAGE] Error seeding to Redis:', err.message);
+        // Even if seeding fails, we can still use the content
+        return content;
+      }
+    }
+    
+    return content;
+  } catch (err) {
+    console.error('[FILES-STORAGE] Error ensuring file seeded:', err.message);
+    return null;
+  }
+}
+
 router.get('/*', async (req, res) => {
   try {
     const filePath = req.params[0];
@@ -55,16 +116,27 @@ router.get('/*', async (req, res) => {
           source = 'redis';
           console.error('[FILES-STORAGE] ✅ Found in Redis');
         } else {
-          console.error('[FILES-STORAGE] ⚠️  Not found in Redis');
+          console.error('[FILES-STORAGE] ⚠️  Not found in Redis, attempting to seed...');
+          // Try to seed from embedded/filesystem
+          content = await ensureFileSeededed(filePath);
+          if (content) {
+            source = 'seeded-cache';
+            console.error('[FILES-STORAGE] ✅ File seeded successfully');
+          }
         }
       } catch (err) {
         console.error('[FILES-STORAGE] ❌ Redis read error:', err.message);
       }
     } else {
-      console.error('[FILES-STORAGE] ⚠️  Redis not available');
+      console.error('[FILES-STORAGE] ⚠️  Redis not available, attempting to seed...');
+      // Try to seed even without Redis
+      content = await ensureFileSeededed(filePath);
+      if (content) {
+        source = 'seeded-memory';
+      }
     }
 
-    // Try filesystem if not in Redis
+    // Try filesystem if not seeded and no redis
     if (!content) {
       const diskPath = path.join(__dirname, '../../public/files', filePath);
       console.error('[FILES-STORAGE] 🔍 Checking filesystem at:', diskPath);
@@ -124,19 +196,15 @@ router.get('/*', async (req, res) => {
     const contentType = mimeTypes[ext] || 'application/octet-stream';
     
     // Handle response based on source
-    if (source === 'redis') {
-      // Decode from base64 (files stored as base64 in Redis)
-      const buffer = Buffer.from(content, 'base64');
-      
-      // For JSON, decode and parse
+    if (source === 'redis' || source === 'seeded-cache') {
+      // Redis content is served as-is
       if (ext === 'json') {
-        const decodedStr = buffer.toString('utf8');
-        console.error('[FILES-STORAGE] ✅ Serving JSON from Redis');
-        return res.json(JSON.parse(decodedStr));
+        console.error('[FILES-STORAGE] ✅ Serving JSON from Redis cache');
+        return res.json(JSON.parse(content));
       }
       
-      console.error('[FILES-STORAGE] ✅ Serving from Redis');
-      return res.type(contentType).send(buffer);
+      console.error('[FILES-STORAGE] ✅ Serving from Redis cache');
+      return res.type(contentType).send(content);
     } else {
       // Serve directly from filesystem
       if (ext === 'json') {

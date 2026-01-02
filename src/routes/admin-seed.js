@@ -631,9 +631,10 @@ async function autoSeed() {
   }
 }
 
-// Trigger auto-seeding after a short delay (allows Redis to connect first)
-setTimeout(() => {
+// Trigger auto-seeding immediately in background (allows Redis to connect first)
+// Run in parallel without blocking server startup
+setImmediate(() => {
   autoSeed().catch(err => console.error('[ADMIN-SEED] Uncaught auto-seed error:', err));
-}, 2000);
+});
 
 module.exports = { router, kvGet, kvSet };
