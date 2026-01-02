@@ -328,6 +328,18 @@ async function seedFileContents(files, directory) {
         }
       } else {
         console.error('[ADMIN-SEED] ⚠️  File not found at:', filePath);
+        
+        // Try alternative path for production
+        const altPath = path.join(__dirname, `../../../public/${directory}`, file.path.split('/').pop());
+        if (fs.existsSync(altPath)) {
+          try {
+            content = fs.readFileSync(altPath, 'utf8');
+            source = 'filesystem-alt';
+            console.error('[ADMIN-SEED] ✅ Read from alternative path:', file.name);
+          } catch (readErr) {
+            console.error('[ADMIN-SEED] ⚠️  Error reading from alt path:', readErr.message);
+          }
+        }
       }
       
       // If we got content, seed it to Redis
@@ -540,8 +552,18 @@ async function autoSeed() {
     // Check if data is already seeded
     const existingData = await kvGet('cms:list:files');
     if (existingData?.items?.length > 0) {
-      console.error('[ADMIN-SEED] ✅ Data already seeded, skipping');
-      return;
+      // Check if file contents are also seeded
+      const firstFile = existingData.items[0];
+      if (firstFile && firstFile.path) {
+        const fileName = firstFile.path.split('/').pop();
+        const fileContent = await kvGet(`cms:files:${fileName}`);
+        if (fileContent) {
+          console.error('[ADMIN-SEED] ✅ Data and file contents already seeded, skipping');
+          return;
+        } else {
+          console.error('[ADMIN-SEED] ⚠️  Metadata exists but file contents missing, re-seeding...');
+        }
+      }
     }
     
     console.error('[ADMIN-SEED] 📝 Seeding file metadata...');
@@ -557,9 +579,16 @@ async function autoSeed() {
       await kvSet('cms:list:files', filesData);
       console.error('[ADMIN-SEED] ✅ Seeded files metadata:', manifest.files.files.length);
       
-      // Seed file contents
-      console.error('[ADMIN-SEED] 📦 Seeding file contents...');
-      await seedFileContents(manifest.files.files, 'files');
+      // Seed file contents - try multiple paths
+      console.error('[ADMIN-SEED] 📦 Seeding file contents from disk...');
+      let contentCount = await seedFileContents(manifest.files.files, 'files');
+      
+      if (contentCount === 0) {
+        console.error('[ADMIN-SEED] ⚠️  Could not seed any files from filesystem, files may not be deployed');
+        console.error('[ADMIN-SEED] 💡 Ensure public/files/* are included in Vercel deployment');
+      } else {
+        console.error('[ADMIN-SEED] ✅ Seeded', contentCount, 'file contents');
+      }
     }
     
     // Seed other metadata
