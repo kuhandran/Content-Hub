@@ -22,7 +22,13 @@ try {
   if (process.env.REDIS_URL) {
     console.log('[FILES] Redis URL detected, initializing redis client');
     redis = createClient({ url: process.env.REDIS_URL });
-    // Connection will be established asynchronously
+    // Connect asynchronously but don't block initialization
+    redis.connect().then(() => {
+      console.log('[FILES] ✅ Redis connected successfully');
+    }).catch((err) => {
+      console.error('[FILES] ❌ Redis connection failed:', err.message);
+      redis = null;
+    });
   } else if (process.env.KV_REST_API_URL) {
     // Fallback to Vercel KV with REST API
     const kvModule = require('@vercel/kv');
@@ -33,46 +39,51 @@ try {
   console.log('[FILES] KV/Redis initialization note:', err.message);
 }
 
-// Initialize Redis connection (for local development)
-async function initRedis() {
-  try {
-    const redisUrl = process.env.REDIS_URL;
-    if (!redisUrl) return false;
-
-    redis = createClient({ url: redisUrl });
-    await redis.connect();
-    console.log('[FILES] Redis connected');
-    return true;
-  } catch (err) {
-    console.error('[FILES] Redis init failed:', err.message);
-    return false;
-  }
-}
-
-initRedis();
+// Legacy function removed - Redis is now initialized above
 
 /**
  * Get file listing from KV store (production)
  */
 async function getFromKV(key) {
+  console.error('[FILES] 🔍 getFromKV called for key:', key);
+  console.error('[FILES] 🔍 redis available:', !!redis, 'kv available:', !!kv);
+  
   try {
     // Try Redis first if available
     if (redis && typeof redis.get === 'function') {
-      const data = await redis.get(key);
-      if (data) {
-        return typeof data === 'string' ? JSON.parse(data) : data;
+      console.error('[FILES] 📖 Attempting to get from Redis');
+      try {
+        const data = await redis.get(key);
+        console.error('[FILES] 📖 Redis get result:', data ? `${Buffer.byteLength(JSON.stringify(data))} bytes` : 'null');
+        if (data) {
+          const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+          console.error('[FILES] ✅ Got data from Redis, items count:', parsed?.items?.length || 0);
+          return parsed;
+        }
+      } catch (err) {
+        console.error('[FILES] ❌ Redis get error:', err.message);
       }
     }
     
     // Try Vercel KV as fallback
     if (kv && typeof kv.get === 'function') {
-      const data = await kv.get(key);
-      if (data) {
-        return typeof data === 'string' ? JSON.parse(data) : data;
+      console.error('[FILES] 📖 Attempting to get from Vercel KV');
+      try {
+        const data = await kv.get(key);
+        console.error('[FILES] 📖 Vercel KV get result:', data ? 'found' : 'null');
+        if (data) {
+          const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+          console.error('[FILES] ✅ Got data from Vercel KV, items count:', parsed?.items?.length || 0);
+          return parsed;
+        }
+      } catch (err) {
+        console.error('[FILES] ❌ Vercel KV get error:', err.message);
       }
     }
+    
+    console.error('[FILES] ⚠️  No data found from Redis or KV');
   } catch (err) {
-    console.error('[FILES] KV get error:', err.message);
+    console.error('[FILES] ❌ Unexpected error in getFromKV:', err.message);
   }
   return null;
 }
@@ -404,34 +415,84 @@ router.get('/list/resume', async (req, res) => {
 // GET /api/files/list/files - List files from Redis
 router.get('/list/files', async (req, res) => {
   try {
-    const items = [];
-    let count = 0;
+    console.error('[FILES] 🚀 /list/files endpoint called');
+    let items = [];
+    let source = 'unknown';
 
-    if (redis) {
-      const keys = await redis.keys('cms:files:*');
-      for (const key of keys) {
-        const filename = key.replace('cms:files:', '');
-        const content = await redis.get(key);
-        const size = content ? Buffer.byteLength(content, 'utf8') : 0;
-        
-        items.push({
-          name: filename,
-          path: `files/${filename}`,
-          type: 'file',
-          size: size,
-          modified: new Date().toISOString(),
-          ext: `.${filename.split('.').pop()}`
-        });
-        count++;
+    // Try KV (production serverless) - prioritize this
+    console.error('[FILES] 🔍 Trying to get from KV/Redis');
+    const kvData = await getFromKV('cms:list:files');
+    if (kvData?.items) {
+      items = kvData.items;
+      source = 'vercel-kv';
+      console.error('[FILES] ✅ Got items from KV:', items.length);
+    }
+
+    // Fallback to Redis individual files if no manifest
+    if (items.length === 0 && redis) {
+      console.error('[FILES] 🔍 Trying individual redis files');
+      try {
+        const keys = await redis.keys('cms:files:*');
+        console.error('[FILES] 🔍 Found redis keys:', keys.length);
+        for (const key of keys) {
+          const filename = key.replace('cms:files:', '');
+          const content = await redis.get(key);
+          const size = content ? Buffer.byteLength(content, 'utf8') : 0;
+          
+          items.push({
+            name: filename,
+            path: `files/${filename}`,
+            type: 'file',
+            size: size,
+            modified: new Date().toISOString(),
+            ext: `.${filename.split('.').pop()}`
+          });
+        }
+        if (items.length > 0) source = 'redis-individual';
+      } catch (err) {
+        console.error('[FILES] ❌ Error listing redis files:', err.message);
       }
     }
 
+    // Fallback to filesystem (local development)
+    if (items.length === 0) {
+      console.error('[FILES] 🔍 Trying filesystem');
+      const filesDir = path.join(__dirname, '../../public/files');
+      if (fs.existsSync(filesDir)) {
+        const files = fs.readdirSync(filesDir);
+        for (const file of files) {
+          const filePath = path.join(filesDir, file);
+          const stat = fs.statSync(filePath);
+          if (!stat.isDirectory()) {
+            items.push({
+              name: file,
+              path: `files/${file}`,
+              type: 'file',
+              size: stat.size,
+              modified: stat.mtime.toISOString(),
+              ext: path.extname(file)
+            });
+          }
+        }
+        if (items.length > 0) source = 'filesystem';
+      }
+    }
+
+    // Fallback to manifest
+    if (items.length === 0 && manifest?.files?.files) {
+      items = manifest.files.files;
+      source = 'manifest';
+      console.error('[FILES] ✅ Got items from manifest:', items.length);
+    }
+
+    console.error('[FILES] 📊 Final result - items:', items.length, 'source:', source);
     res.json({
       success: true,
       path: 'files',
       items,
-      count,
-      message: count > 0 ? `Found ${count} files` : 'No files'
+      count: items.length,
+      source,
+      message: items.length > 0 ? `Found ${items.length} files (${source})` : 'No files'
     });
   } catch (err) {
     console.error('[FILES] Error listing files:', err);
