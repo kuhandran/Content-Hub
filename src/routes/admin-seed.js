@@ -1,13 +1,12 @@
 /**
  * File Management Admin Endpoint
- * POST /api/admin/seed-files - Seed Redis/KV with file listings
- * Uses REDIS_URL for storage (works with Vercel KV REST API or any Redis)
+ * POST /api/admin/seed-files - Seed KV with file listings
+ * Works with Vercel KV or fallback to in-memory storage
  */
 
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
 const router = express.Router();
 
 // Add CORS headers for admin routes
@@ -23,60 +22,31 @@ router.use((req, res, next) => {
   next();
 });
 
-// Get Redis URL from environment
-const REDIS_URL = process.env.REDIS_URL || process.env.VERCEL_KV_REST_API_URL;
-
-console.log('[ADMIN-SEED] Initialized with storage:', REDIS_URL ? '✅ Redis/KV URL found' : '❌ No storage URL');
-
-// In-memory fallback
+// Try to use Vercel KV first, then fallback to in-memory
+let kv = null;
 let memoryStore = {};
 
+// Try to load Vercel KV
+try {
+  kv = require('@vercel/kv');
+  console.log('[ADMIN-SEED] Using Vercel KV storage');
+} catch (err) {
+  console.log('[ADMIN-SEED] Vercel KV not available, using in-memory fallback');
+}
+
 /**
- * Write to Redis/KV or memory
+ * Write to KV or memory
  */
 async function kvSet(key, value) {
   const data = typeof value === 'string' ? value : JSON.stringify(value);
   
-  if (REDIS_URL) {
+  if (kv) {
     try {
-      const params = {
-        key: key,
-        value: data
-      };
-      
-      const reqBody = JSON.stringify(params);
-      
-      return new Promise((resolve, reject) => {
-        const url = new URL(REDIS_URL);
-        const options = {
-          hostname: url.hostname,
-          port: url.port || 443,
-          path: `/set`,
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': reqBody.length,
-            'Authorization': `Bearer ${url.password || ''}`
-          }
-        };
-        
-        const req = https.request(options, (res) => {
-          let data = '';
-          res.on('data', chunk => data += chunk);
-          res.on('end', () => resolve(true));
-        });
-        
-        req.on('error', (err) => {
-          console.error('[ADMIN-SEED] KV set error:', err.message);
-          memoryStore[key] = data;
-          resolve(true);
-        });
-        
-        req.write(reqBody);
-        req.end();
-      });
+      await kv.set(key, data);
+      return true;
     } catch (err) {
-      console.error('[ADMIN-SEED] KV write error:', err.message);
+      console.error('[ADMIN-SEED] KV set error:', err.message);
+      // Fallback to memory
       memoryStore[key] = data;
       return true;
     }
@@ -87,45 +57,14 @@ async function kvSet(key, value) {
 }
 
 /**
- * Read from Redis/KV or memory
+ * Read from KV or memory
  */
 async function kvGet(key) {
-  if (REDIS_URL) {
+  if (kv) {
     try {
-      return new Promise((resolve) => {
-        const url = new URL(REDIS_URL);
-        const options = {
-          hostname: url.hostname,
-          port: url.port || 443,
-          path: `/get?key=${encodeURIComponent(key)}`,
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${url.password || ''}`
-          }
-        };
-        
-        const req = https.request(options, (res) => {
-          let data = '';
-          res.on('data', chunk => data += chunk);
-          res.on('end', () => {
-            try {
-              const response = JSON.parse(data);
-              resolve(response.value || null);
-            } catch (e) {
-              resolve(null);
-            }
-          });
-        });
-        
-        req.on('error', (err) => {
-          console.error('[ADMIN-SEED] KV get error:', err.message);
-          resolve(memoryStore[key] || null);
-        });
-        
-        req.end();
-      });
+      return await kv.get(key);
     } catch (err) {
-      console.error('[ADMIN-SEED] KV read error:', err.message);
+      console.error('[ADMIN-SEED] KV get error:', err.message);
       return memoryStore[key] || null;
     }
   } else {
@@ -209,7 +148,7 @@ router.post('/seed-files', async (req, res) => {
 
     console.log('[ADMIN] Seeding complete:', results);
     
-    const storageName = REDIS_URL ? 'Redis/KV' : 'In-Memory';
+    const storageName = kv ? 'Vercel KV' : 'In-Memory';
     
     res.json({
       success: true,
@@ -240,7 +179,7 @@ router.get('/seed-status', async (req, res) => {
     const collectionsData = await kvGet('cms:list:collections');
     const manifestData = await kvGet('cms:manifest');
 
-    const storageName = REDIS_URL ? 'Redis/KV' : 'In-Memory';
+    const storageName = kv ? 'Vercel KV' : 'In-Memory';
     
     const status = {
       storage: storageName,
