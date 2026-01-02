@@ -105,6 +105,48 @@ router.get('/list-public/data', async (req, res) => {
   }
 });
 
+router.get('/list-public/files', async (req, res) => {
+  try {
+    const filesDir = path.join(__dirname, '../../public/files');
+    const items = [];
+
+    if (fs.existsSync(filesDir)) {
+      const files = fs.readdirSync(filesDir);
+      for (const file of files) {
+        const filePath = path.join(filesDir, file);
+        const stat = fs.statSync(filePath);
+        if (!stat.isDirectory()) {
+          items.push({
+            name: file,
+            path: `files/${file}`,
+            type: 'file',
+            size: stat.size,
+            modified: stat.mtime.toISOString(),
+            ext: path.extname(file)
+          });
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      path: 'files',
+      items,
+      count: items.length,
+      message: items.length > 0 ? `Found ${items.length} files` : 'No files'
+    });
+  } catch (err) {
+    console.error('[FILES] Error listing files:', err);
+    res.json({
+      success: true,
+      path: 'files',
+      items: [],
+      count: 0,
+      message: 'Directory not found or empty'
+    });
+  }
+});
+
 // Protected routes require auth
 router.use(authMiddleware);
 

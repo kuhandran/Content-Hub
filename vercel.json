@@ -8,18 +8,14 @@
       "maxDuration": 30
     }
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "^/api/(.*)",
-      "dest": "/api/index.js"
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
     },
     {
-      "src": "^/(.*\\.(js|css|html|json|xml|txt|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|pdf))$",
-      "dest": "/public/$1"
-    },
-    {
-      "src": "^/(.*)$",
-      "dest": "/api/index.js"
+      "source": "/(.*)",
+      "destination": "/api/index.js"
     }
   ]
 }
