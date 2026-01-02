@@ -9,6 +9,15 @@ const fs = require('fs');
 const path = require('path');
 const router = express.Router();
 
+// Load embedded static files as fallback for Vercel
+let embeddedStaticFiles = {};
+try {
+  embeddedStaticFiles = require('../data/embedded-static-files');
+  console.error('[ADMIN-SEED] ✅ Loaded embedded static files');
+} catch (err) {
+  console.error('[ADMIN-SEED] ⚠️  Could not load embedded static files:', err.message);
+}
+
 // Embedded manifest data for Vercel serverless (no filesystem access)
 const EMBEDDED_MANIFEST = {
   "generated": "2026-01-02T03:04:51.776Z",
@@ -314,8 +323,10 @@ async function seedFileContents(files, directory) {
       let content = null;
       let source = 'unknown';
       
+      const fileName = file.path.split('/').pop();
+      
       // Attempt 1: Direct filesystem path
-      const filePath = path.join(__dirname, `../../public/${directory}`, file.path.split('/').pop());
+      const filePath = path.join(__dirname, `../../public/${directory}`, fileName);
       console.error('[ADMIN-SEED] 🔍 Attempting to read file from:', filePath);
       
       if (fs.existsSync(filePath)) {
@@ -330,7 +341,7 @@ async function seedFileContents(files, directory) {
         console.error('[ADMIN-SEED] ⚠️  File not found at:', filePath);
         
         // Try alternative path for production
-        const altPath = path.join(__dirname, `../../../public/${directory}`, file.path.split('/').pop());
+        const altPath = path.join(__dirname, `../../../public/${directory}`, fileName);
         if (fs.existsSync(altPath)) {
           try {
             content = fs.readFileSync(altPath, 'utf8');
@@ -342,9 +353,16 @@ async function seedFileContents(files, directory) {
         }
       }
       
+      // If still no content, try embedded static files
+      if (!content && embeddedStaticFiles[fileName]) {
+        content = embeddedStaticFiles[fileName];
+        source = 'embedded';
+        console.error('[ADMIN-SEED] ✅ Got from embedded static files:', file.name);
+      }
+      
       // If we got content, seed it to Redis
       if (content) {
-        const key = `cms:files:${file.path.split('/').pop()}`;
+        const key = `cms:files:${fileName}`;
         await kvSet(key, content);
         console.error('[ADMIN-SEED] 📦 Seeded file content to Redis:', file.name, `(${source})`);
         seedCount++;
