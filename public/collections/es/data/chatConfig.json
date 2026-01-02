@@ -12,18 +12,3 @@
   "ariaLabel": "Enviar mensaje"
 }
 
-      "year": "2023",
-      "icon": "🏆",
-      "description": "Competí entre 150 estudiantes en desafío de codificación intensivo de 24 horas"
-    }
-  ],
-  "certifications": [
-    {
-      "name": "Desarrollo en AWS",
-      "provider": "Amazon Web Services",
-      "year": "2023",
-      "icon": "☁️",
-      "credentialUrl": "#"
-    }
-  ]
-}

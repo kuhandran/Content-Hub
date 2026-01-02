@@ -1,0 +1,123 @@
+{
+  "services": {
+    "cdn": {
+      "protocol": "https",
+      "domain": "static.kuhandranchatbot.info",
+      "paths": {
+        "data": "/data",
+        "images": "/images",
+        "config": "/config"
+      }
+    },
+    "primary": {
+      "protocol": "https",
+      "domain": "www.kuhandranchatbot.info",
+      "paths": {
+        "home": "/",
+        "canonical": "/"
+      }
+    },
+    "api": {
+      "resume_chatbot_v2": {
+        "protocol": "https",
+        "domain": "resume-chatbot-services-v2-0.onrender.com",
+        "paths": {
+          "contact": "/api/contact"
+        }
+      },
+      "gateway_1": {
+        "protocol": "https",
+        "domain": "api-gateway-715i.onrender.com",
+        "paths": {
+          "base": "/api"
+        }
+      },
+      "gateway_2": {
+        "protocol": "https",
+        "domain": "api-gateway-9unh.onrender.com",
+        "paths": {
+          "base": "/api"
+        }
+      }
+    },
+    "external": {
+      "analytics": {
+        "protocol": "https",
+        "domain": "www.google-analytics.com"
+      },
+      "tagManager": {
+        "protocol": "https",
+        "domain": "www.googletagmanager.com"
+      },
+      "google": {
+        "protocol": "https",
+        "domain": "www.google.com"
+      },
+      "gstatic": {
+        "protocol": "https",
+        "domain": "www.gstatic.com"
+      },
+      "googleFonts": {
+        "protocol": "https",
+        "domain": "fonts.gstatic.com"
+      },
+      "vercelScripts": {
+        "protocol": "https",
+        "domain": "va.vercel-scripts.com"
+      },
+      "linkedin": {
+        "protocol": "https",
+        "domain": "linkedin.com",
+        "paths": {
+          "profile": "/in/kuhandran-samudrapandiyan"
+        }
+      }
+    }
+  },
+  "fullUrls": {
+    "cdnBase": "https://static-api-opal.vercel.app",
+    "cdnDataBase": "https://static-api-opal.vercel.app/data",
+    "cdnConfigBase": "https://static-api-opal.vercel.app/config",
+    "cdnImagesBase": "https://static-api-opal.vercel.app/images",
+    "contentLabels": "https://static-api-opal.vercel.app/data/contentLabels.json",
+    "errorMessages": "https://static-api-opal.vercel.app/data/errorMessages.json",
+    "achievements": "https://static-api-opal.vercel.app/data/achievements.json",
+    "education": "https://static-api-opal.vercel.app/data/education.json",
+    "experience": "https://static-api-opal.vercel.app/data/experience.json",
+    "projects": "https://static-api-opal.vercel.app/data/projects.json",
+    "skills": "https://static-api-opal.vercel.app/data/skills.json",
+    "profileImage": "https://static-api-opal.vercel.app/images/profile.png",
+    "siteUrl": "https://www.kuhandranchatbot.info",
+    "siteCanonical": "https://www.kuhandranchatbot.info",
+    "contact": "https://resume-chatbot-services-v2-0.onrender.com/api/contact",
+    "linkedinProfile": "https://linkedin.com/in/kuhandran-samudrapandiyan"
+  },
+  "csp": {
+    "connectSources": [
+      "https://static-api-opal.vercel.app",
+      "https://resume-chatbot-services-v2-0.onrender.com",
+      "https://www.google.com",
+      "https://www.gstatic.com",
+      "https://api-gateway-715i.onrender.com",
+      "https://api-gateway-9unh.onrender.com"
+    ],
+    "scriptSources": [
+      "https://www.googletagmanager.com",
+      "https://www.google-analytics.com",
+      "https://www.google.com",
+      "https://www.gstatic.com",
+      "https://va.vercel-scripts.com"
+    ],
+    "frameSources": [
+      "https://www.google.com",
+      "https://www.gstatic.com"
+    ]
+  },
+  "preconnect": [
+    "https://static-api-opal.vercel.app",
+    "https://www.google-analytics.com",
+    "https://resume-chatbot-services-v2-0.onrender.com",
+    "https://api-gateway-715i.onrender.com",
+    "https://api-gateway-9unh.onrender.com"
+  ]
+}

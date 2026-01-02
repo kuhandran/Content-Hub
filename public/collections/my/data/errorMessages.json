@@ -1,0 +1,92 @@
+{
+  "errors": {
+    "common": {
+      "unknownError": "An unexpected error occurred. Please try again.",
+      "tryAgain": "Please try again later.",
+      "contactDirectly": "Please contact me directly."
+    },
+    "network": {
+      "connectionError": "Connection error. Please check your internet connection.",
+      "timeout": "Request timeout. Please try again.",
+      "notFound": "Resource not found.",
+      "httpError": "HTTP error occurred"
+    },
+    "validation": {
+      "required": "This field is required",
+      "invalidFormat": "Invalid format",
+      "invalidEmail": "Invalid email format",
+      "tooShort": "Input is too short",
+      "tooLong": "Input is too long"
+    },
+    "file": {
+      "invalidType": "Invalid file type. Only PDF and DOCX files are allowed.",
+      "invalidSize": "File size exceeds maximum limit (5MB)",
+      "uploadFailed": "Failed to upload file",
+      "noFile": "No file selected"
+    },
+    "contact": {
+      "validation": {
+        "missingFields": "All fields are required",
+        "invalidEmail": "Invalid email format"
+      },
+      "file": {
+        "invalidType": "Only PDF and DOCX files are allowed",
+        "invalidSize": "File size must be less than 5MB"
+      },
+      "submission": {
+        "failed": "Failed to send message",
+        "failedWithDetails": "Failed to send message. Please try again later or contact me directly.",
+        "success": "Your message has been sent successfully! I will respond within 24-48 hours."
+      }
+    },
+    "data": {
+      "loadingFailed": "Failed to load data from server",
+      "contentLabels": "Failed to load content labels",
+      "defaultLabels": "Failed to load default labels",
+      "achievements": "Error fetching achievements data",
+      "education": "Error fetching education data",
+      "experience": "Error fetching experience data",
+      "projects": "Error fetching projects data",
+      "skills": "Error fetching skills data",
+      "pageLayout": "Error fetching page layout",
+      "apiConfig": "Error fetching API config",
+      "httpError": "HTTP error occurred"
+    },
+    "chatbot": {
+      "connectionError": "Unable to connect to chatbot service. Please try again later.",
+      "otpError": "Failed to send OTP. Please try again.",
+      "otpError2": "Failed to verify OTP. Please check and try again.",
+      "otpFailed": "OTP verification failed. Please request a new OTP.",
+      "sendError": "Failed to send message. Please try again."
+    }
+  },
+  "warnings": {
+    "fallbackUsed": "Using fallback data - CDN content may be unavailable",
+    "defaultLabels": "Failed to load default labels from file, using empty object",
+    "projectsData": "Failed to fetch projects data from CDN, using default data",
+    "skillsData": "Failed to fetch skills data from CDN, using default data",
+    "experienceData": "Failed to fetch experience data from CDN, using default data",
+    "educationData": "Failed to fetch education data from CDN, using default data",
+    "sectionNotFound": "Section type not found in section registry",
+    "componentNotFound": "Component type not found in component map"
+  },
+  "info": {
+    "processing": "Processing your request...",
+    "loading": "Loading data...",
+    "submitting": "Submitting form...",
+    "sending": "Sending email...",
+    "verifying": "Verifying information..."
+  },
+  "messages": {
+    "success": {
+      "contactForm": "Your message has been sent successfully! I will respond within 24-48 hours.",
+      "fileUploaded": "File uploaded successfully",
+      "dataLoaded": "Data loaded successfully",
+      "formSubmitted": "Form submitted successfully"
+    },
+    "error": {
+      "title": "Error",
+      "description": "Something went wrong"
+    }
+  }
+}

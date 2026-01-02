@@ -1,42 +1,31 @@
 {
-  "urls": {
-    "resume": {
-      "download": "https://static-api-opal.vercel.app/resume/resume.pdf",
-      "view": "https://static-api-opal.vercel.app/resume/resume.pdf"
-    },
-    "social": {
-      "linkedin": "https://linkedin.com/in/kuhandran-samudrapandiyan",
-      "email": "mailto:skuhandran@yahoo.com"
-    }
-  },
   "navigation": {
     "home": "Home",
-    "about": "About",
-    "skills": "Skills",
-    "experience": "Experience",
-    "projects": "Projects",
-    "achievements": "Achievements",
-    "education": "Education",
-    "contact": "Contact"
+    "about": "About Me",
+    "skills": "Core Skills",
+    "experience": "Work Experience",
+    "projects": "Featured Projects",
+    "caseStudies": "Case Studies",
+    "contact": "Get In Touch"
   },
   "hero": {
     "greeting": "Hi, I'm Kuhandran",
-    "badge": "Hi, I'm Kuhandran",
-    "mainHeading": "Technical Leader Driving Digital Transformation",
+    "badge": "Technical Delivery Manager & Full-Stack Engineer",
+    "mainHeading": "I Help Enterprises Deliver Complex Software at Scale",
     "roles": {
       "primary": "Technical Delivery Manager",
       "secondary": "Full-Stack Engineer",
-      "tertiary": "Data Enthusiast"
+      "tertiary": "Enterprise Solutions Architect"
     },
-    "description": "Specialized in enterprise applications, React Native development, and data visualization. Combining 8+ years of technical expertise with strategic business insights to drive operational efficiency and innovation.",
+    "description": "With 8+ years delivering mission-critical software for banking and insurance leaders, I combine technical depth with strategic leadership to drive clarity, velocity, and measurable outcomes. Explore my experience, projects, and how I can support your team.",
     "highlights": {
       "experience": "8+ Years Experience",
       "location": "Based in Malaysia",
       "relocation": "Open to Relocation"
     },
     "cta": {
-      "primary": "View My Work",
-      "secondary": "Let's Connect"
+      "primary": "Explore My Projects",
+      "secondary": "Schedule a Conversation"
     },
     "stats": {
       "experience": {
@@ -62,9 +51,9 @@
     }
   },
   "about": {
-    "subtitle": "Who I Am",
-    "title": "Bridging Technology & Business Strategy",
-    "description": "Technical leader with a passion for building scalable solutions",
+    "subtitle": "About Me",
+    "title": "Technical Leadership Delivering Enterprise Impact",
+    "description": "I partner with organizations to architect and deliver complex software that drives efficiency, reduces costs, and accelerates digital transformation.",
     "image": {
       "src": "/image/profile.png",
       "alt": "Kuhandran SamudraPandiyan"
@@ -104,9 +93,7 @@
     },
     "cta": {
       "resume": "Download Resume",
-      "linkedin": "View LinkedIn",
-      "resumeUrl": "https://static-api-opal.vercel.app/resume/resume.pdf",
-      "linkedinUrl": "https://linkedin.com/in/kuhandran-samudrapandiyan"
+      "linkedin": "View LinkedIn"
     }
   },
   "skills": {
@@ -157,8 +144,8 @@
   },
   "contact": {
     "subtitle": "Get In Touch",
-    "title": "Let's Work Together",
-    "description": "Open to new opportunities and collaborations",
+    "title": "Ready to Discuss Your Project?",
+    "description": "Let's explore how my expertise can support your team's goals and deliver measurable results.",
     "form": {
       "heading": "Send Me a Message",
       "labels": {

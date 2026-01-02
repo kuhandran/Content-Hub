@@ -1,0 +1,448 @@
+{
+  "caseStudies": [
+    {
+      "slug": "fwd-insurance-react-native",
+      "title": "FWD Insurance React Native App",
+      "subtitle": "Enterprise Insurance Platform Transformation",
+      "description": "Enterprise insurance platform with DMS, OWB, and UnderWrite Me modules for streamlined operations and enhanced user experience.",
+      "longDescription": "FWD Insurance required a comprehensive mobile solution to modernize their agent-facing operations. The platform integrates document management, policy operations, and underwriting capabilities into a single unified application.",
+      "image": "https://static-api-opal.vercel.app/api/image/Project1.webp",
+      "client": "FWD Insurance",
+      "clientLogo": "https://static-api-opal.vercel.app/api/image/fwd-logo.png",
+      "location": "Kuala Lumpur, Malaysia",
+      "duration": "12 months",
+      "team": {
+        "size": 8,
+        "roles": ["Full Stack Developer", "Technical Lead", "Frontend Engineer", "Backend Engineer"],
+        "collaborators": ["Product Manager", "UX Designer", "QA Engineer"]
+      },
+      "role": "Full Stack Developer & Technical Lead",
+      "roleDescription": "Led technical architecture, managed development team, conducted code reviews, and ensured delivery of high-quality features",
+      "challenge": "The insurance agents required a unified mobile platform to manage policies, underwriting, and claims. Legacy systems were fragmented, leading to inefficient workflows and reduced agent productivity. The system needed to work in low-connectivity environments common in the field.",
+      "solution": "Developed a cross-platform React Native application with offline-first capabilities, real-time synchronization, and comprehensive DMS (Document Management System) integration. Implemented Redux for state management and TypeScript for type safety. Built intelligent sync logic to handle network failures gracefully.",
+      "solutionDetails": {
+        "architecture": "Microservices with API Gateway pattern for scalability and resilience",
+        "frontend": "React Native with Expo for rapid development and easy distribution",
+        "backend": "Node.js Express server with MongoDB for flexible document storage",
+        "synchronization": "Custom Redux-Saga middleware for offline-first sync mechanism",
+        "security": "OAuth 2.0 integration with Maybank identity provider"
+      },
+      "results": [
+        {
+          "metric": "Efficiency Improvement",
+          "value": "15%",
+          "description": "Agent processing time reduced through streamlined workflows"
+        },
+        {
+          "metric": "Agent Adoption",
+          "value": "98%",
+          "description": "Exceptional user adoption within the insurance agent workforce"
+        },
+        {
+          "metric": "Support Tickets",
+          "value": "-40%",
+          "description": "Significant reduction in support requests due to intuitive design"
+        },
+        {
+          "metric": "Processing Time",
+          "value": "-30%",
+          "description": "Policy and claim processing accelerated significantly"
+        }
+      ],
+      "techStack": [
+        "React Native",
+        "TypeScript",
+        "Redux",
+        "RESTful APIs",
+        "Firebase",
+        "SQLite",
+        "React Query",
+        "Jest",
+        "Detox"
+      ],
+      "keyAchievements": [
+        "Implemented offline-first architecture for seamless operation without internet",
+        "Reduced policy processing time by 30% through automated workflows",
+        "Achieved 98% agent adoption within 3 months of launch",
+        "Reduced support tickets by 40% with intuitive UI design",
+        "Enabled real-time data synchronization across all platforms",
+        "Implemented document scanning and OCR capabilities",
+        "Created comprehensive offline mode with background sync"
+      ],
+      "challenges": [
+        "Managing state synchronization in offline environments",
+        "Handling large file uploads over poor network conditions",
+        "Ensuring data security with offline data storage",
+        "Cross-platform compatibility and performance optimization"
+      ],
+      "lessons": [
+        "Offline-first architecture is crucial for mobile applications in emerging markets",
+        "User testing with real field agents provided invaluable insights",
+        "Proper error handling and user feedback improved adoption significantly",
+        "Incremental rollout strategy reduced adoption friction"
+      ],
+      "relatedProjects": ["banking-api-integration", "maybank-digital-banking"],
+      "liveUrl": "https://www.fwd.com/en/the-fwd-difference/doing-more-with-digital-technology/",
+      "githubUrl": null,
+      "caseStudyUrl": "https://www.fwd.com/",
+      "testimonial": {
+        "quote": "The new platform transformed how our agents work. They're more productive and happier with the tools.",
+        "author": "FWD Insurance Operations Lead",
+        "title": "Director of Agent Operations"
+      },
+      "metrics": {
+        "userSatisfaction": 4.8,
+        "performanceScore": 92,
+        "uptime": "99.9%",
+        "dailyActiveUsers": "5000+"
+      },
+      "timeline": {
+        "discovery": "Month 1-2",
+        "design": "Month 2-3",
+        "development": "Month 4-10",
+        "testing": "Month 9-11",
+        "launch": "Month 12"
+      },
+      "media": {
+        "screenshots": [
+          "https://static-api-opal.vercel.app/api/image/fwd-app-1.png",
+          "https://static-api-opal.vercel.app/api/image/fwd-app-2.png",
+          "https://static-api-opal.vercel.app/api/image/fwd-app-3.png"
+        ],
+        "video": null
+      }
+    },
+    {
+      "slug": "maybank-digital-banking",
+      "title": "Maybank Digital Banking Platform",
+      "subtitle": "Customer-Centric Banking Experience",
+      "description": "Modern single-page application for digital banking services with optimized performance and seamless user experience.",
+      "longDescription": "Maybank's digital banking platform serves millions of customers daily, requiring exceptional performance, reliability, and user experience. The redesign focused on modernizing the codebase while maintaining backward compatibility.",
+      "image": "https://static-api-opal.vercel.app/api/image/Project2.webp",
+      "client": "Maybank Malaysia",
+      "clientLogo": "https://static-api-opal.vercel.app/api/image/maybank-logo.png",
+      "location": "Kuala Lumpur, Malaysia",
+      "duration": "8 months",
+      "team": {
+        "size": 12,
+        "roles": ["Senior React Developer", "Frontend Engineer", "Performance Engineer", "Accessibility Specialist"],
+        "collaborators": ["Backend Team", "DevOps", "Security Team", "UX Team"]
+      },
+      "role": "Senior React Developer",
+      "roleDescription": "Led frontend architecture decisions, mentored junior developers, conducted performance audits, and established coding standards",
+      "challenge": "Existing banking platform suffered from slow load times (4+ seconds), poor mobile responsiveness, and fragmented user experience across devices. Millions of daily users demanded better performance and usability. Legacy code was difficult to maintain and scale.",
+      "solution": "Rebuilt the banking platform using modern React architecture with advanced performance optimization. Implemented lazy loading, code splitting, and service workers. Redesigned UI with mobile-first approach using Tailwind CSS. Established CI/CD pipeline for continuous improvement.",
+      "solutionDetails": {
+        "architecture": "Component-based architecture with custom hooks for state management",
+        "performance": "Webpack code splitting, route-based lazy loading, image optimization",
+        "caching": "Service workers with Cache-First and Network-First strategies",
+        "monitoring": "Real User Monitoring (RUM) and error tracking integration",
+        "testing": "90%+ code coverage with Jest and React Testing Library"
+      },
+      "results": [
+        {
+          "metric": "Load Speed Improvement",
+          "value": "15%",
+          "description": "Initial load time reduced from 4.2s to 3.5s"
+        },
+        {
+          "metric": "Mobile Satisfaction",
+          "value": "+45%",
+          "description": "Mobile user satisfaction scores increased significantly"
+        },
+        {
+          "metric": "Daily Users",
+          "value": "2.5M+",
+          "description": "Successfully handled peak traffic of 2.5 million daily active users"
+        },
+        {
+          "metric": "Performance Score",
+          "value": "95+",
+          "description": "Lighthouse performance score improved from 75 to 95+"
+        }
+      ],
+      "techStack": [
+        "React.js",
+        "Redux Toolkit",
+        "React Hooks",
+        "Axios",
+        "Tailwind CSS",
+        "Service Workers",
+        "Webpack",
+        "Babel",
+        "Jest",
+        "React Testing Library"
+      ],
+      "keyAchievements": [
+        "Reduced initial load time from 4.2s to 3.5s using code splitting and lazy loading",
+        "Improved mobile user satisfaction scores by 45%",
+        "Increased Lighthouse performance score from 75 to 95+",
+        "Handled 2.5M+ daily active users with 99.9% uptime",
+        "Implemented seamless bill payment and fund transfer features",
+        "Achieved 90%+ code coverage through comprehensive testing",
+        "Established performance budgets to maintain standards"
+      ],
+      "challenges": [
+        "Maintaining backward compatibility during migration",
+        "Handling millions of concurrent users during peak hours",
+        "Reducing bundle size while adding new features",
+        "Implementing secure authentication for banking data"
+      ],
+      "lessons": [
+        "Performance monitoring in production is essential for large-scale applications",
+        "Mobile-first approach significantly improves overall UX",
+        "Proper code splitting strategy has massive impact on load times",
+        "Regular performance audits prevent regression"
+      ],
+      "relatedProjects": ["banking-api-integration", "power-bi-analytics"],
+      "liveUrl": "https://www.maybank2u.com.my/",
+      "githubUrl": null,
+      "caseStudyUrl": "https://www.maybank.com/",
+      "testimonial": {
+        "quote": "The new platform has been a game-changer. Our users love the speed and responsiveness.",
+        "author": "Maybank Digital Head",
+        "title": "Director of Digital Banking"
+      },
+      "metrics": {
+        "userSatisfaction": 4.7,
+        "performanceScore": 95,
+        "uptime": "99.95%",
+        "dailyActiveUsers": "2500000"
+      },
+      "timeline": {
+        "analysis": "Month 1",
+        "design": "Month 1-2",
+        "development": "Month 3-7",
+        "testing": "Month 6-8",
+        "deployment": "Month 8"
+      },
+      "media": {
+        "screenshots": [
+          "https://static-api-opal.vercel.app/api/image/maybank-web-1.png",
+          "https://static-api-opal.vercel.app/api/image/maybank-web-2.png"
+        ],
+        "video": null
+      }
+    },
+    {
+      "slug": "banking-api-integration",
+      "title": "Banking API Integration Platform",
+      "subtitle": "Seamless Insurance-Banking Partnership",
+      "description": "RESTful API development for insurance product integration, enabling seamless renewals and purchases through banking partners.",
+      "longDescription": "A critical infrastructure project enabling insurance products to be integrated into multiple banking platforms, creating new revenue streams and improving customer convenience.",
+      "image": "https://static-api-opal.vercel.app/api/image/Project3.webp",
+      "client": "Multiple Banking Partners",
+      "clientLogo": "https://static-api-opal.vercel.app/api/image/banking-api-logo.png",
+      "location": "Kuala Lumpur, Malaysia",
+      "duration": "6 months",
+      "team": {
+        "size": 6,
+        "roles": ["Backend Architect", "API Developer", "DevOps Engineer", "QA Engineer"],
+        "collaborators": ["Security Team", "Database Team", "Banking Partners"]
+      },
+      "role": "Backend Architect & API Developer",
+      "roleDescription": "Designed system architecture, led API development, established security standards, and managed integrations with banking partners",
+      "challenge": "Insurance products needed to be integrated into banking platforms with different technical requirements. Required a scalable, secure, and flexible API gateway to support multiple banking partners with different SLAs and integration timelines.",
+      "solution": "Designed and implemented a microservices-based API layer using Spring Boot. Created standardized REST endpoints for policy renewals, new purchases, claims submission, and customer service integrations. Implemented OAuth 2.0 for security and rate limiting for stability.",
+      "solutionDetails": {
+        "architecture": "Microservices with API Gateway pattern",
+        "framework": "Spring Boot with Spring Cloud",
+        "database": "PostgreSQL with Redis caching",
+        "messaging": "RabbitMQ for asynchronous operations",
+        "security": "OAuth 2.0, TLS 1.2+, API key management"
+      },
+      "results": [
+        {
+          "metric": "API Latency",
+          "value": "<200ms",
+          "description": "Consistent sub-200ms response times under load"
+        },
+        {
+          "metric": "Integration Partners",
+          "value": "5+",
+          "description": "Successfully integrated with major banking partners"
+        },
+        {
+          "metric": "API Uptime",
+          "value": "99.95%",
+          "description": "Enterprise-grade availability and reliability"
+        },
+        {
+          "metric": "Daily Transactions",
+          "value": "100k+",
+          "description": "Processing over 100,000 transactions daily"
+        }
+      ],
+      "techStack": [
+        "Spring Boot",
+        "Java",
+        "RESTful APIs",
+        "Microservices",
+        "PostgreSQL",
+        "Redis",
+        "Docker",
+        "Kubernetes",
+        "OpenAPI/Swagger",
+        "JUnit"
+      ],
+      "keyAchievements": [
+        "Designed microservices architecture supporting 5+ banking partners",
+        "Achieved sub-200ms API response times with optimized database queries",
+        "Implemented comprehensive API documentation with OpenAPI/Swagger",
+        "Processed 100k+ transactions daily with 99.95% uptime",
+        "Secured APIs with OAuth 2.0 and rate limiting",
+        "Enabled partners to integrate insurance products in 48 hours",
+        "Implemented event-driven architecture for real-time notifications"
+      ],
+      "challenges": [
+        "Handling diverse API requirements from different banking partners",
+        "Ensuring data consistency across microservices",
+        "Managing transaction throughput during peak hours",
+        "Maintaining backward compatibility with legacy banking systems"
+      ],
+      "lessons": [
+        "Well-designed API contracts make integration easier for partners",
+        "Comprehensive API documentation accelerates partner onboarding",
+        "Proper monitoring and logging are essential for troubleshooting",
+        "Asynchronous processing improves system resilience"
+      ],
+      "relatedProjects": ["fwd-insurance-react-native", "maybank-digital-banking"],
+      "liveUrl": null,
+      "githubUrl": null,
+      "caseStudyUrl": null,
+      "testimonial": {
+        "quote": "The API integration was seamless. Partners loved the clear documentation and quick integration process.",
+        "author": "Banking Partner Integration Lead",
+        "title": "Technical Lead"
+      },
+      "metrics": {
+        "userSatisfaction": 4.9,
+        "performanceScore": 98,
+        "uptime": "99.95%",
+        "dailyTransactions": "100000"
+      },
+      "timeline": {
+        "design": "Month 1-2",
+        "development": "Month 2-5",
+        "testing": "Month 5-6",
+        "deployment": "Month 6"
+      },
+      "media": {
+        "screenshots": [],
+        "video": null
+      }
+    },
+    {
+      "slug": "power-bi-analytics",
+      "title": "Power BI Analytics Dashboard",
+      "subtitle": "Data-Driven Business Intelligence",
+      "description": "Comprehensive data visualization solution providing actionable business insights and real-time analytics for decision-making.",
+      "longDescription": "Transformed raw data into actionable business intelligence through sophisticated data visualization and analytics, enabling executives to make data-driven decisions faster.",
+      "image": "https://static-api-opal.vercel.app/api/image/Project4.webp",
+      "client": "Enterprise Client",
+      "clientLogo": "https://static-api-opal.vercel.app/api/image/enterprise-logo.png",
+      "location": "Kuala Lumpur, Malaysia",
+      "duration": "4 months",
+      "team": {
+        "size": 4,
+        "roles": ["Data Analytics Developer", "BI Developer", "Data Engineer", "Business Analyst"],
+        "collaborators": ["Data Science Team", "Finance Department", "Executive Team"]
+      },
+      "role": "Data Analytics & BI Developer",
+      "roleDescription": "Designed data models, created interactive dashboards, developed DAX measures, and provided analytics consulting to stakeholders",
+      "challenge": "Stakeholders struggled to extract actionable insights from disparate data sources across multiple systems. Reports were static, delayed, and difficult to customize. Business users lacked self-service analytics capabilities.",
+      "solution": "Created a comprehensive Power BI dashboard ecosystem connecting SQL databases, Excel data, and APIs. Implemented dynamic DAX measures for real-time KPI tracking. Designed interactive visualizations for different user roles with row-level security.",
+      "solutionDetails": {
+        "dataSource": "SQL databases, Excel, REST APIs integrated via Power BI Gateway",
+        "dataModel": "Star schema design for optimal query performance",
+        "dax": "100+ custom measures for complex calculations",
+        "visualization": "12+ interactive dashboards optimized for different roles",
+        "security": "Row-level security (RLS) for sensitive business data"
+      },
+      "results": [
+        {
+          "metric": "Report Generation Time",
+          "value": "-80%",
+          "description": "Reduced from hours to minutes"
+        },
+        {
+          "metric": "Data Freshness",
+          "value": "Real-time",
+          "description": "Real-time data refresh every 15 minutes"
+        },
+        {
+          "metric": "Decision Cycle",
+          "value": "-50%",
+          "description": "Faster business decision-making enabled"
+        },
+        {
+          "metric": "User Adoption",
+          "value": "95%",
+          "description": "Exceptional adoption across organization"
+        }
+      ],
+      "techStack": [
+        "Power BI",
+        "DAX",
+        "SQL Server",
+        "M Language",
+        "Excel",
+        "Power Query",
+        "Power BI Gateway",
+        "Analysis Services"
+      ],
+      "keyAchievements": [
+        "Reduced report generation time from hours to minutes",
+        "Implemented real-time data refresh every 15 minutes",
+        "Created 12+ interactive dashboards for different departments",
+        "Achieved 95% user adoption through intuitive design",
+        "Enabled 50% faster business decision-making",
+        "Implemented row-level security for sensitive data",
+        "Created self-service analytics portal for business users",
+        "Developed 100+ custom DAX measures for complex analytics"
+      ],
+      "challenges": [
+        "Connecting to legacy data sources with poor documentation",
+        "Optimizing query performance with large datasets",
+        "Ensuring data quality and consistency across sources",
+        "Designing dashboards for users with varying technical skills"
+      ],
+      "lessons": [
+        "Good data modeling is crucial for dashboard performance",
+        "Involving end-users in design significantly improves adoption",
+        "Clear naming conventions make DAX measures more maintainable",
+        "Row-level security requires careful planning and testing"
+      ],
+      "relatedProjects": ["maybank-digital-banking", "banking-api-integration"],
+      "liveUrl": null,
+      "githubUrl": null,
+      "caseStudyUrl": null,
+      "testimonial": {
+        "quote": "The dashboards have transformed how we analyze business performance. We can now make decisions in minutes instead of days.",
+        "author": "Enterprise CFO",
+        "title": "Chief Financial Officer"
+      },
+      "metrics": {
+        "userSatisfaction": 4.8,
+        "performanceScore": 96,
+        "uptime": "99.9%",
+        "dailyUsers": "500+"
+      },
+      "timeline": {
+        "requirements": "Week 1-2",
+        "design": "Week 2-3",
+        "development": "Week 3-12",
+        "testing": "Week 11-14",
+        "deployment": "Week 14"
+      },
+      "media": {
+        "screenshots": [
+          "https://static-api-opal.vercel.app/api/image/powerbi-1.png",
+          "https://static-api-opal.vercel.app/api/image/powerbi-2.png",
+          "https://static-api-opal.vercel.app/api/image/powerbi-3.png"
+        ],
+        "video": null
+      }
+    }
+  ]
+}
