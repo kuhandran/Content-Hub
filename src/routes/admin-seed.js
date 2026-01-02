@@ -7,6 +7,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const embeddedManifest = require('../data/embedded-manifest');
 const router = express.Router();
 
 // Add CORS headers for admin routes
@@ -73,103 +74,22 @@ async function kvGet(key) {
 }
 
 /**
- * Generate manifest dynamically
+ * Get manifest - tries filesystem first, falls back to embedded
  */
-function generateManifest() {
-  const manifest = {
-    generated: new Date().toISOString(),
-    files: {
-      config: [],
-      data: [],
-      files: [],
-      collections: []
+function getManifest() {
+  // Try to load from filesystem first (local development)
+  try {
+    const manifestPath = path.join(__dirname, '../../public/manifest.json');
+    if (fs.existsSync(manifestPath)) {
+      return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     }
-  };
-
-  const publicDir = path.join(__dirname, '../../public');
-
-  // Scan config directory
-  const configDir = path.join(publicDir, 'config');
-  if (fs.existsSync(configDir)) {
-    fs.readdirSync(configDir).forEach(file => {
-      if (!file.startsWith('.')) {
-        const filePath = path.join(configDir, file);
-        const stat = fs.statSync(filePath);
-        if (stat.isFile()) {
-          manifest.files.config.push({
-            name: file,
-            path: `/public/config/${file}`,
-            size: stat.size,
-            ext: path.extname(file)
-          });
-        }
-      }
-    });
+  } catch (err) {
+    console.log('[ADMIN-SEED] Could not load manifest from filesystem:', err.message);
   }
-
-  // Scan data directory
-  const dataDir = path.join(publicDir, 'data');
-  if (fs.existsSync(dataDir)) {
-    fs.readdirSync(dataDir).forEach(file => {
-      if (!file.startsWith('.')) {
-        const filePath = path.join(dataDir, file);
-        const stat = fs.statSync(filePath);
-        if (stat.isFile()) {
-          manifest.files.data.push({
-            name: file,
-            path: `/public/data/${file}`,
-            size: stat.size,
-            ext: path.extname(file)
-          });
-        }
-      }
-    });
-  }
-
-  // Scan files directory
-  const filesDir = path.join(publicDir, 'files');
-  if (fs.existsSync(filesDir)) {
-    fs.readdirSync(filesDir).forEach(file => {
-      if (!file.startsWith('.')) {
-        const filePath = path.join(filesDir, file);
-        const stat = fs.statSync(filePath);
-        if (stat.isFile()) {
-          manifest.files.files.push({
-            name: file,
-            path: `/public/files/${file}`,
-            size: stat.size,
-            ext: path.extname(file)
-          });
-        }
-      }
-    });
-  }
-
-  // Scan collections directory recursively
-  const collectionsDir = path.join(publicDir, 'collections');
-  if (fs.existsSync(collectionsDir)) {
-    function scanCollections(dir, prefix = '') {
-      fs.readdirSync(dir).forEach(file => {
-        if (!file.startsWith('.')) {
-          const filePath = path.join(dir, file);
-          const stat = fs.statSync(filePath);
-          if (stat.isFile()) {
-            manifest.files.collections.push({
-              name: file,
-              path: `/public/collections${prefix}/${file}`,
-              size: stat.size,
-              ext: path.extname(file)
-            });
-          } else if (stat.isDirectory()) {
-            scanCollections(filePath, `${prefix}/${file}`);
-          }
-        }
-      });
-    }
-    scanCollections(collectionsDir);
-  }
-
-  return manifest;
+  
+  // Fall back to embedded manifest (Vercel/production)
+  console.log('[ADMIN-SEED] Using embedded manifest');
+  return embeddedManifest;
 }
 
 /**
@@ -179,9 +99,9 @@ router.post('/seed-files', async (req, res) => {
   try {
     console.log('[ADMIN] Starting file seeding process...');
     
-    // Generate manifest dynamically
-    const manifest = generateManifest();
-    console.log('[ADMIN] Generated manifest with', Object.values(manifest.files).flat().length, 'files');
+    // Get manifest (filesystem or embedded)
+    const manifest = getManifest();
+    console.log('[ADMIN] Using manifest with', Object.values(manifest.files).flat().length, 'files');
     
     let seedCount = 0;
     const results = {
