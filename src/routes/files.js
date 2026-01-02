@@ -4,9 +4,6 @@ const path = require('path');
 const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
-// All routes require auth
-router.use(authMiddleware);
-
 const PUBLIC_PATH = path.join(__dirname, '../../public');
 
 function validatePath(filePath) {
@@ -14,6 +11,94 @@ function validatePath(filePath) {
   const allowedPath = path.resolve(PUBLIC_PATH);
   return realPath.startsWith(allowedPath);
 }
+
+// Public listing endpoints (no auth required) - read from filesystem
+router.get('/list-public/config', (req, res) => {
+  try {
+    const configDir = path.join(PUBLIC_PATH, 'config');
+    const items = [];
+
+    if (fs.existsSync(configDir)) {
+      const files = fs.readdirSync(configDir);
+      for (const file of files) {
+        const filePath = path.join(configDir, file);
+        const stat = fs.statSync(filePath);
+        if (!stat.isDirectory()) {
+          items.push({
+            name: file,
+            path: `config/${file}`,
+            type: 'file',
+            size: stat.size,
+            modified: stat.mtime.toISOString(),
+            ext: path.extname(file)
+          });
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      path: 'config',
+      items,
+      count: items.length,
+      message: items.length > 0 ? `Found ${items.length} config files` : 'No config files'
+    });
+  } catch (err) {
+    console.error('[FILES] Error listing config:', err);
+    res.json({
+      success: true,
+      path: 'config',
+      items: [],
+      count: 0,
+      message: 'Directory not found or empty'
+    });
+  }
+});
+
+router.get('/list-public/data', (req, res) => {
+  try {
+    const dataDir = path.join(PUBLIC_PATH, 'data');
+    const items = [];
+
+    if (fs.existsSync(dataDir)) {
+      const files = fs.readdirSync(dataDir);
+      for (const file of files) {
+        const filePath = path.join(dataDir, file);
+        const stat = fs.statSync(filePath);
+        if (!stat.isDirectory()) {
+          items.push({
+            name: file,
+            path: `data/${file}`,
+            type: 'file',
+            size: stat.size,
+            modified: stat.mtime.toISOString(),
+            ext: path.extname(file)
+          });
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      path: 'data',
+      items,
+      count: items.length,
+      message: items.length > 0 ? `Found ${items.length} data files` : 'No data files'
+    });
+  } catch (err) {
+    console.error('[FILES] Error listing data:', err);
+    res.json({
+      success: true,
+      path: 'data',
+      items: [],
+      count: 0,
+      message: 'Directory not found or empty'
+    });
+  }
+});
+
+// All routes below require auth
+router.use(authMiddleware);
 
 // GET /api/files/tree - Get folder structure
 router.get('/tree', (req, res) => {
