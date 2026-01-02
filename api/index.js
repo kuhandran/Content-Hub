@@ -66,6 +66,7 @@ const resumeReadRoutes = require('../src/routes/resume-read');
 const filesStorageReadRoutes = require('../src/routes/files-storage-read');
 const adminRoutes = require('../src/routes/admin');
 const { router: adminSeedRoutes } = require('../src/routes/admin-seed');
+const autoSyncRoutes = require('../src/routes/auto-sync');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -77,6 +78,7 @@ app.use('/api/resume', resumeReadRoutes);  // Read resumes
 app.use('/api/storage-files', filesStorageReadRoutes);  // Read storage files
 app.use('/api/scanner', scannerRoutes);
 app.use('/api/collections', collectionsRoutes);
+app.use('/api/auto-sync', autoSyncRoutes);  // Auto-sync endpoint
 app.use('/api/admin', adminSeedRoutes);  // Seed files endpoint (must be before admin)
 app.use('/api/admin', adminRoutes);
 

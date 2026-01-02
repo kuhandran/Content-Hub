@@ -56,22 +56,48 @@ router.get('/*', async (req, res) => {
       return res.status(400).json({ error: 'File path required' });
     }
 
-    if (!redis) {
-      return res.status(503).json({ error: 'Redis not connected' });
+    // Try Redis first if connected
+    if (redis) {
+      const key = `cms:file:${filePath}`;
+      const content = await redis.get(key);
+
+      if (content) {
+        console.log('[COLLECTIONS] Serving from Redis:', filePath);
+        // Parse JSON if it's a JSON file
+        if (filePath.endsWith('.json')) {
+          try {
+            const jsonContent = JSON.parse(content);
+            return res.json(jsonContent);
+          } catch (parseErr) {
+            console.error('[COLLECTIONS] JSON parse error:', parseErr);
+            return res.status(500).json({ error: 'Invalid JSON' });
+          }
+        }
+
+        // Return raw content for non-JSON files
+        res.type('text/plain');
+        return res.send(content);
+      }
     }
 
-    const key = `cms:file:${filePath}`;
-    const content = await redis.get(key);
-
-    if (!content) {
-      console.warn('[COLLECTIONS] File not found:', filePath);
+    // Fallback to file system if Redis doesn't have the file
+    console.log('[COLLECTIONS] Redis miss, falling back to file system:', filePath);
+    const fs = require('fs');
+    const path = require('path');
+    const fullPath = path.join(__dirname, '../../public/collections', filePath);
+    
+    if (!fs.existsSync(fullPath)) {
+      console.warn('[COLLECTIONS] File not found in Redis or filesystem:', filePath);
       return res.status(404).json({ 
         error: 'File not found',
-        path: filePath
+        path: filePath,
+        source: 'filesystem'
       });
     }
 
-    // Parse JSON if it's a JSON file
+    const content = fs.readFileSync(fullPath, 'utf8');
+    console.log('[COLLECTIONS] Serving from filesystem:', filePath);
+    
     if (filePath.endsWith('.json')) {
       try {
         const jsonContent = JSON.parse(content);
@@ -82,7 +108,6 @@ router.get('/*', async (req, res) => {
       }
     }
 
-    // Return raw content for non-JSON files
     res.type('text/plain');
     res.send(content);
 
