@@ -223,7 +223,7 @@ function getManifest() {
   try {
     const manifestPath = path.join(__dirname, '../../public/manifest.json');
     if (fs.existsSync(manifestPath)) {
-      console.log('[ADMIN-SEED] Using manifest from filesystem');
+      console.log('[ADMIN-SEED] Loading manifest from filesystem:', manifestPath);
       return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     }
   } catch (err) {
@@ -231,7 +231,11 @@ function getManifest() {
   }
   
   // Fall back to embedded manifest (Vercel/production)
-  console.log('[ADMIN-SEED] Using embedded manifest (128 files)');
+  console.log('[ADMIN-SEED] Using embedded manifest constant');
+  if (!EMBEDDED_MANIFEST || !EMBEDDED_MANIFEST.files) {
+    console.error('[ADMIN-SEED] EMBEDDED_MANIFEST is corrupted or missing!');
+    return { generated: new Date().toISOString(), files: { config: [], data: [], files: [], collections: [] } };
+  }
   return EMBEDDED_MANIFEST;
 }
 
@@ -244,7 +248,12 @@ router.post('/seed-files', async (req, res) => {
     
     // Get manifest (filesystem or embedded)
     const manifest = getManifest();
-    console.log('[ADMIN] Using manifest with', Object.values(manifest.files).flat().length, 'files');
+    const totalFiles = Object.values(manifest.files).flat().length;
+    console.log('[ADMIN-SEED] Manifest loaded with', totalFiles, 'files');
+    console.log('[ADMIN-SEED] Config files:', manifest.files.config ? manifest.files.config.length : 0);
+    console.log('[ADMIN-SEED] Data files:', manifest.files.data ? manifest.files.data.length : 0);
+    console.log('[ADMIN-SEED] Files:', manifest.files.files ? manifest.files.files.length : 0);
+    console.log('[ADMIN-SEED] Collections:', manifest.files.collections ? manifest.files.collections.length : 0);
     
     let seedCount = 0;
     const results = {
