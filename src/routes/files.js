@@ -6,6 +6,14 @@ const router = express.Router();
 
 const PUBLIC_PATH = path.join(__dirname, '../../public');
 
+// Load manifest
+let manifest = null;
+try {
+  manifest = JSON.parse(fs.readFileSync(path.join(PUBLIC_PATH, 'manifest.json'), 'utf8'));
+} catch (err) {
+  console.warn('[FILES] Manifest not found, will use filesystem only');
+}
+
 function validatePath(filePath) {
   const realPath = path.resolve(filePath);
   const allowedPath = path.resolve(PUBLIC_PATH);

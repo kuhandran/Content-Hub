@@ -6,6 +6,14 @@ const fs = require('fs');
 const router = express.Router();
 
 let redis = null;
+let manifest = null;
+
+// Load manifest
+try {
+  manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '../../public/manifest.json'), 'utf8'));
+} catch (err) {
+  console.warn('[FILES] Manifest not found, will use filesystem only');
+}
 
 // Initialize Redis connection
 async function initRedis() {
@@ -24,12 +32,13 @@ async function initRedis() {
 
 initRedis();
 
-// Public listing endpoints (no auth required) - read from filesystem as fallback
+// Public listing endpoints (no auth required) - read from filesystem or manifest fallback
 router.get('/list-public/config', async (req, res) => {
   try {
+    let items = [];
+    
+    // Try filesystem first
     const configDir = path.join(__dirname, '../../public/config');
-    const items = [];
-
     if (fs.existsSync(configDir)) {
       const files = fs.readdirSync(configDir);
       for (const file of files) {
@@ -44,6 +53,9 @@ router.get('/list-public/config', async (req, res) => {
           ext: path.extname(file)
         });
       }
+    } else if (manifest?.files?.config) {
+      // Fallback to manifest
+      items = manifest.files.config;
     }
 
     res.json({
@@ -67,9 +79,10 @@ router.get('/list-public/config', async (req, res) => {
 
 router.get('/list-public/data', async (req, res) => {
   try {
+    let items = [];
+    
+    // Try filesystem first
     const dataDir = path.join(__dirname, '../../public/data');
-    const items = [];
-
     if (fs.existsSync(dataDir)) {
       const files = fs.readdirSync(dataDir);
       for (const file of files) {
@@ -84,6 +97,9 @@ router.get('/list-public/data', async (req, res) => {
           ext: path.extname(file)
         });
       }
+    } else if (manifest?.files?.data) {
+      // Fallback to manifest
+      items = manifest.files.data;
     }
 
     res.json({
@@ -107,9 +123,10 @@ router.get('/list-public/data', async (req, res) => {
 
 router.get('/list-public/files', async (req, res) => {
   try {
+    let items = [];
+    
+    // Try filesystem first
     const filesDir = path.join(__dirname, '../../public/files');
-    const items = [];
-
     if (fs.existsSync(filesDir)) {
       const files = fs.readdirSync(filesDir);
       for (const file of files) {
@@ -126,6 +143,9 @@ router.get('/list-public/files', async (req, res) => {
           });
         }
       }
+    } else if (manifest?.files?.files) {
+      // Fallback to manifest
+      items = manifest.files.files;
     }
 
     res.json({
@@ -144,6 +164,15 @@ router.get('/list-public/files', async (req, res) => {
       count: 0,
       message: 'Directory not found or empty'
     });
+  }
+});
+
+// Public manifest endpoint (no auth required)
+router.get('/manifest', (req, res) => {
+  if (manifest) {
+    res.json(manifest);
+  } else {
+    res.status(404).json({ error: 'Manifest not found' });
   }
 });
 

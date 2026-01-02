@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "build": "echo 'No build needed'",
+    "build": "node scripts/generate-manifest.js",
     "prod": "NODE_ENV=production node src/server.js",
     "prod-secure": "NODE_ENV=production node --max-old-space-size=512 src/server.js",
     "docker:build": "docker build -t portfolio-cms:latest .",
