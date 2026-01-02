@@ -255,9 +255,26 @@ function getManifest() {
     console.error('[ADMIN-SEED] 🔍 fs.existsSync result:', fs.existsSync(manifestPath));
     
     if (fs.existsSync(manifestPath)) {
+      console.error('[ADMIN-SEED] 📖 Reading file from:', manifestPath);
       const fileContent = fs.readFileSync(manifestPath, 'utf8');
+      console.error('[ADMIN-SEED] 📖 File content length:', fileContent.length);
+      console.error('[ADMIN-SEED] 📖 First 100 chars:', fileContent.substring(0, 100));
+      
       const manifestData = JSON.parse(fileContent);
-      const fileCount = Object.values(manifestData.files || {}).flat().length;
+      console.error('[ADMIN-SEED] 📖 Parsed JSON successfully');
+      console.error('[ADMIN-SEED] 📖 manifestData type:', typeof manifestData);
+      console.error('[ADMIN-SEED] 📖 manifestData.files type:', typeof manifestData.files);
+      console.error('[ADMIN-SEED] 📖 manifestData.files keys:', Object.keys(manifestData.files || {}));
+      
+      const filesByCategory = manifestData.files || {};
+      console.error('[ADMIN-SEED] 📖 Files by category:', {
+        config: (filesByCategory.config || []).length,
+        data: (filesByCategory.data || []).length,
+        files: (filesByCategory.files || []).length,
+        collections: (filesByCategory.collections || []).length
+      });
+      
+      const fileCount = Object.values(filesByCategory).flat().length;
       console.error('[ADMIN-SEED] ✅ Loaded manifest from filesystem with', fileCount, 'files');
       return manifestData;
     } else {
@@ -265,6 +282,7 @@ function getManifest() {
     }
   } catch (err) {
     console.error('[ADMIN-SEED] ❌ Could not load manifest from filesystem:', err.message);
+    console.error('[ADMIN-SEED] ❌ Error stack:', err.stack);
   }
   
   // Fall back to embedded manifest (Vercel/production)
