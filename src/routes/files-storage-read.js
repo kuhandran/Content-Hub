@@ -40,28 +40,32 @@ async function ensureFileSeededed(filePath) {
   try {
     console.error('[FILES-STORAGE] 🔄 Attempting to seed file:', filePath);
     
-    // Try to read from embedded static files first
-    let embeddedFiles = {};
-    try {
-      embeddedFiles = require('../data/embedded-static-files');
-    } catch (err) {
-      console.error('[FILES-STORAGE] Could not load embedded files:', err.message);
-    }
-    
     const fileName = path.basename(filePath);
     let content = null;
     let source = 'unknown';
     
+    // Try to read from embedded static files first
+    let embeddedFiles = {};
+    try {
+      embeddedFiles = require('../data/embedded-static-files');
+      console.error('[FILES-STORAGE] 📦 Embedded files loaded:', Object.keys(embeddedFiles).length, 'files');
+    } catch (err) {
+      console.error('[FILES-STORAGE] ⚠️  Could not load embedded files module:', err.message);
+    }
+    
     // Try embedded files
-    if (embeddedFiles[fileName]) {
+    if (embeddedFiles && embeddedFiles[fileName]) {
       content = embeddedFiles[fileName];
       source = 'embedded';
       console.error('[FILES-STORAGE] ✅ Got from embedded files:', fileName);
+    } else {
+      console.error('[FILES-STORAGE] 🔍 File not in embedded module:', fileName, '| Available:', Object.keys(embeddedFiles).slice(0, 5));
     }
     
     // Try filesystem as fallback
     if (!content) {
       const diskPath = path.join(__dirname, '../../public/files', fileName);
+      console.error('[FILES-STORAGE] 🔍 Checking filesystem:', diskPath);
       if (fs.existsSync(diskPath)) {
         try {
           content = fs.readFileSync(diskPath, 'utf8');
@@ -70,6 +74,42 @@ async function ensureFileSeededed(filePath) {
         } catch (err) {
           console.error('[FILES-STORAGE] Error reading file:', err.message);
         }
+      } else {
+        console.error('[FILES-STORAGE] 📂 File does not exist on filesystem:', diskPath);
+      }
+    }
+    
+    // Provide fallback content for critical files if nothing else works
+    if (!content) {
+      console.error('[FILES-STORAGE] 📋 Checking fallback data for:', fileName);
+      const fallbackData = {
+        'manifest.json': JSON.stringify({
+          name: "Kuhandran's Portfolio",
+          short_name: "Portfolio",
+          start_url: "/",
+          display: "standalone",
+          background_color: "#ffffff",
+          theme_color: "#007bff",
+          icons: [
+            {
+              src: "/image/apple-touch-icon.svg",
+              sizes: "192x192",
+              type: "image/svg+xml"
+            }
+          ]
+        }, null, 2),
+        'logo.svg': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#007bff"/></svg>',
+        'browserconfig.xml': '<?xml version="1.0" encoding="utf-8"?><browserconfig></browserconfig>',
+        'robots.txt': 'User-agent: *\nAllow: /\nSitemap: /sitemap.xml',
+        'sitemap.xml': '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>'
+      };
+      
+      if (fallbackData[fileName]) {
+        content = fallbackData[fileName];
+        source = 'fallback-embedded';
+        console.error('[FILES-STORAGE] ✅ Using fallback data for:', fileName);
+      } else {
+        console.error('[FILES-STORAGE] ❌ No fallback data for:', fileName);
       }
     }
     
@@ -85,9 +125,12 @@ async function ensureFileSeededed(filePath) {
         // Even if seeding fails, we can still use the content
         return content;
       }
+    } else if (content) {
+      console.error('[FILES-STORAGE] ⚠️  Got content but Redis not available, returning unsaved:', fileName);
+      return content;
     }
     
-    return content;
+    return null;
   } catch (err) {
     console.error('[FILES-STORAGE] Error ensuring file seeded:', err.message);
     return null;

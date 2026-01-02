@@ -22,17 +22,19 @@ try {
         if (stat.isFile()) {
           const content = fs.readFileSync(filePath, 'utf8');
           EMBEDDED_FILES[file] = content;
-          console.log('[EMBEDDED-FILES] Loaded', file);
+          console.error('[EMBEDDED-FILES] Loaded', file);
         }
       } catch (err) {
         console.error('[EMBEDDED-FILES] Failed to load', file, ':', err.message);
       }
     }
+  } else {
+    console.error('[EMBEDDED-FILES] Files directory not found:', filesDir);
   }
 } catch (err) {
-  console.warn('[EMBEDDED-FILES] Could not load files from filesystem:', err.message);
+  console.error('[EMBEDDED-FILES] Could not load files from filesystem:', err.message);
 }
 
-console.log('[EMBEDDED-FILES] Loaded', Object.keys(EMBEDDED_FILES).length, 'files');
+console.error('[EMBEDDED-FILES] Initialization complete -', Object.keys(EMBEDDED_FILES).length, 'files loaded');
 
 module.exports = EMBEDDED_FILES;
