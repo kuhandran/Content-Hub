@@ -14,12 +14,19 @@ let redis = null;
 async function initRedis() {
   try {
     const redisUrl = process.env.REDIS_URL;
-    if (!redisUrl) return false;
+    if (!redisUrl) {
+      console.log('[FILES-STORAGE] No REDIS_URL environment variable');
+      return false;
+    }
     redis = createClient({ url: redisUrl });
+    redis.on('error', (err) => {
+      console.error('[FILES-STORAGE] Redis connection error:', err.message);
+    });
     await redis.connect();
+    console.log('[FILES-STORAGE] ✅ Redis connected successfully');
     return true;
   } catch (err) {
-    console.error('[FILES] Redis init failed:', err.message);
+    console.error('[FILES-STORAGE] ❌ Redis init failed:', err.message);
     return false;
   }
 }
@@ -29,6 +36,8 @@ initRedis();
 router.get('/*', async (req, res) => {
   try {
     const filePath = req.params[0];
+    console.error('[FILES-STORAGE] 🚀 Request for file:', filePath);
+    
     if (!filePath) {
       return res.status(400).json({ error: 'Invalid request' });
     }
@@ -40,32 +49,49 @@ router.get('/*', async (req, res) => {
     if (redis) {
       try {
         const key = `cms:files:${filePath}`;
+        console.error('[FILES-STORAGE] 🔍 Checking Redis for key:', key);
         content = await redis.get(key);
-        if (content) source = 'redis';
+        if (content) {
+          source = 'redis';
+          console.error('[FILES-STORAGE] ✅ Found in Redis');
+        } else {
+          console.error('[FILES-STORAGE] ⚠️  Not found in Redis');
+        }
       } catch (err) {
-        console.error('[FILES] Redis read error:', err.message);
+        console.error('[FILES-STORAGE] ❌ Redis read error:', err.message);
       }
+    } else {
+      console.error('[FILES-STORAGE] ⚠️  Redis not available');
     }
 
     // Try filesystem if not in Redis
     if (!content) {
       const diskPath = path.join(__dirname, '../../public/files', filePath);
+      console.error('[FILES-STORAGE] 🔍 Checking filesystem at:', diskPath);
       
       // Security check - ensure path is within public/files
       const realPath = path.resolve(diskPath);
       const basePath = path.resolve(path.join(__dirname, '../../public/files'));
+      console.error('[FILES-STORAGE] 🔍 Resolved path:', realPath);
+      console.error('[FILES-STORAGE] 🔍 Base path:', basePath);
+      console.error('[FILES-STORAGE] 🔍 Path starts with base:', realPath.startsWith(basePath));
+      console.error('[FILES-STORAGE] 🔍 File exists:', fs.existsSync(realPath));
       
       if (realPath.startsWith(basePath) && fs.existsSync(realPath)) {
         try {
           content = fs.readFileSync(realPath, 'utf8');
           source = 'filesystem';
+          console.error('[FILES-STORAGE] ✅ Found in filesystem, size:', content.length);
         } catch (err) {
-          console.error('[FILES] Filesystem read error:', err.message);
+          console.error('[FILES-STORAGE] ❌ Filesystem read error:', err.message);
         }
+      } else {
+        console.error('[FILES-STORAGE] ❌ Path security check failed or file not found');
       }
     }
 
     if (!content) {
+      console.error('[FILES-STORAGE] ❌ File not found from any source');
       return res.status(404).json({ error: 'File not found', path: filePath, source });
     }
 
@@ -96,16 +122,20 @@ router.get('/*', async (req, res) => {
       // For JSON, decode and parse
       if (ext === 'json') {
         const decodedStr = buffer.toString('utf8');
+        console.error('[FILES-STORAGE] ✅ Serving JSON from Redis');
         return res.json(JSON.parse(decodedStr));
       }
       
+      console.error('[FILES-STORAGE] ✅ Serving from Redis');
       return res.type(contentType).send(buffer);
     } else {
       // Serve directly from filesystem
       if (ext === 'json') {
+        console.error('[FILES-STORAGE] ✅ Serving JSON from filesystem');
         return res.json(JSON.parse(content));
       }
       
+      console.error('[FILES-STORAGE] ✅ Serving from filesystem');
       return res.type(contentType).send(content);
     }
   } catch (error) {
