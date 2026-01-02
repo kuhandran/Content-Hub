@@ -1,92 +1,92 @@
 {
   "errors": {
     "common": {
-      "unknownError": "An unexpected error occurred. Please try again.",
-      "tryAgain": "Please try again later.",
-      "contactDirectly": "Please contact me directly."
+      "unknownError": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+      "tryAgain": "يرجى المحاولة مرة أخرى لاحقاً.",
+      "contactDirectly": "يرجى الاتصال بي مباشرة."
     },
     "network": {
-      "connectionError": "Connection error. Please check your internet connection.",
-      "timeout": "Request timeout. Please try again.",
-      "notFound": "Resource not found.",
-      "httpError": "HTTP error occurred"
+      "connectionError": "خطأ في الاتصال. يرجى التحقق من اتصالك بالإنترنت.",
+      "timeout": "انتهت مهلة الطلب. يرجى المحاولة مرة أخرى.",
+      "notFound": "المورد غير موجود.",
+      "httpError": "حدث خطأ HTTP"
     },
     "validation": {
-      "required": "This field is required",
-      "invalidFormat": "Invalid format",
-      "invalidEmail": "Invalid email format",
-      "tooShort": "Input is too short",
-      "tooLong": "Input is too long"
+      "required": "هذا الحقل مطلوب",
+      "invalidFormat": "تنسيق غير صالح",
+      "invalidEmail": "تنسيق البريد الإلكتروني غير صالح",
+      "tooShort": "الإدخال قصير جداً",
+      "tooLong": "الإدخال طويل جداً"
     },
     "file": {
-      "invalidType": "Invalid file type. Only PDF and DOCX files are allowed.",
-      "invalidSize": "File size exceeds maximum limit (5MB)",
-      "uploadFailed": "Failed to upload file",
-      "noFile": "No file selected"
+      "invalidType": "نوع الملف غير صالح. يُسمح فقط بملفات PDF و DOCX.",
+      "invalidSize": "حجم الملف يتجاوز الحد الأقصى (5 ميجابايت)",
+      "uploadFailed": "فشل تحميل الملف",
+      "noFile": "لم يتم تحديد أي ملف"
     },
     "contact": {
       "validation": {
-        "missingFields": "All fields are required",
-        "invalidEmail": "Invalid email format"
+        "missingFields": "جميع الحقول مطلوبة",
+        "invalidEmail": "تنسيق البريد الإلكتروني غير صالح"
       },
       "file": {
-        "invalidType": "Only PDF and DOCX files are allowed",
-        "invalidSize": "File size must be less than 5MB"
+        "invalidType": "يُسمح فقط بملفات PDF و DOCX",
+        "invalidSize": "يجب أن يكون حجم الملف أقل من 5 ميجابايت"
       },
       "submission": {
-        "failed": "Failed to send message",
-        "failedWithDetails": "Failed to send message. Please try again later or contact me directly.",
-        "success": "Your message has been sent successfully! I will respond within 24-48 hours."
+        "failed": "فشل إرسال الرسالة",
+        "failedWithDetails": "فشل إرسال الرسالة. يرجى المحاولة مرة أخرى لاحقاً أو الاتصال بي مباشرة.",
+        "success": "تم إرسال رسالتك بنجاح! سأرد خلال 24-48 ساعة."
       }
     },
     "data": {
-      "loadingFailed": "Failed to load data from server",
-      "contentLabels": "Failed to load content labels",
-      "defaultLabels": "Failed to load default labels",
-      "achievements": "Error fetching achievements data",
-      "education": "Error fetching education data",
-      "experience": "Error fetching experience data",
-      "projects": "Error fetching projects data",
-      "skills": "Error fetching skills data",
-      "pageLayout": "Error fetching page layout",
-      "apiConfig": "Error fetching API config",
-      "httpError": "HTTP error occurred"
+      "loadingFailed": "فشل تحميل البيانات من الخادم",
+      "contentLabels": "فشل تحميل تسميات المحتوى",
+      "defaultLabels": "فشل تحميل التسميات الافتراضية",
+      "achievements": "خطأ في جلب بيانات الإنجازات",
+      "education": "خطأ في جلب بيانات التعليم",
+      "experience": "خطأ في جلب بيانات الخبرة",
+      "projects": "خطأ في جلب بيانات المشاريع",
+      "skills": "خطأ في جلب بيانات المهارات",
+      "pageLayout": "خطأ في جلب تخطيط الصفحة",
+      "apiConfig": "خطأ في جلب تكوين API",
+      "httpError": "حدث خطأ HTTP"
     },
     "chatbot": {
-      "connectionError": "Unable to connect to chatbot service. Please try again later.",
-      "otpError": "Failed to send OTP. Please try again.",
-      "otpError2": "Failed to verify OTP. Please check and try again.",
-      "otpFailed": "OTP verification failed. Please request a new OTP.",
-      "sendError": "Failed to send message. Please try again."
+      "connectionError": "غير قادر على الاتصال بخدمة الدردشة. يرجى المحاولة مرة أخرى لاحقاً.",
+      "otpError": "فشل إرسال رمز التحقق. يرجى المحاولة مرة أخرى.",
+      "otpError2": "فشل التحقق من رمز التحقق. يرجى التحقق والمحاولة مرة أخرى.",
+      "otpFailed": "فشل التحقق من رمز التحقق. يرجى طلب رمز جديد.",
+      "sendError": "فشل إرسال الرسالة. يرجى المحاولة مرة أخرى."
     }
   },
   "warnings": {
-    "fallbackUsed": "Using fallback data - CDN content may be unavailable",
-    "defaultLabels": "Failed to load default labels from file, using empty object",
-    "projectsData": "Failed to fetch projects data from CDN, using default data",
-    "skillsData": "Failed to fetch skills data from CDN, using default data",
-    "experienceData": "Failed to fetch experience data from CDN, using default data",
-    "educationData": "Failed to fetch education data from CDN, using default data",
-    "sectionNotFound": "Section type not found in section registry",
-    "componentNotFound": "Component type not found in component map"
+    "fallbackUsed": "استخدام البيانات الاحتياطية - قد يكون محتوى CDN غير متاح",
+    "defaultLabels": "فشل تحميل التسميات الافتراضية من الملف، استخدام كائن فارغ",
+    "projectsData": "فشل جلب بيانات المشاريع من CDN، استخدام البيانات الافتراضية",
+    "skillsData": "فشل جلب بيانات المهارات من CDN، استخدام البيانات الافتراضية",
+    "experienceData": "فشل جلب بيانات الخبرة من CDN، استخدام البيانات الافتراضية",
+    "educationData": "فشل جلب بيانات التعليم من CDN، استخدام البيانات الافتراضية",
+    "sectionNotFound": "نوع القسم غير موجود في سجل الأقسام",
+    "componentNotFound": "نوع المكون غير موجود في خريطة المكونات"
   },
   "info": {
-    "processing": "Processing your request...",
-    "loading": "Loading data...",
-    "submitting": "Submitting form...",
-    "sending": "Sending email...",
-    "verifying": "Verifying information..."
+    "processing": "جاري معالجة طلبك...",
+    "loading": "جاري تحميل البيانات...",
+    "submitting": "جاري إرسال النموذج...",
+    "sending": "جاري إرسال البريد الإلكتروني...",
+    "verifying": "جاري التحقق من المعلومات..."
   },
   "messages": {
     "success": {
-      "contactForm": "Your message has been sent successfully! I will respond within 24-48 hours.",
-      "fileUploaded": "File uploaded successfully",
-      "dataLoaded": "Data loaded successfully",
-      "formSubmitted": "Form submitted successfully"
+      "contactForm": "تم إرسال رسالتك بنجاح! سأرد خلال 24-48 ساعة.",
+      "fileUploaded": "تم تحميل الملف بنجاح",
+      "dataLoaded": "تم تحميل البيانات بنجاح",
+      "formSubmitted": "تم إرسال النموذج بنجاح"
     },
     "error": {
-      "title": "Error",
-      "description": "Something went wrong"
+      "title": "خطأ",
+      "description": "حدث خطأ ما"
     }
   }
 }

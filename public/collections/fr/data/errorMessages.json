@@ -1,92 +1,92 @@
 {
   "errors": {
     "common": {
-      "unknownError": "An unexpected error occurred. Please try again.",
-      "tryAgain": "Please try again later.",
-      "contactDirectly": "Please contact me directly."
+      "unknownError": "Une erreur inattendue s'est produite. Veuillez réessayer.",
+      "tryAgain": "Veuillez réessayer plus tard.",
+      "contactDirectly": "Veuillez me contacter directement."
     },
     "network": {
-      "connectionError": "Connection error. Please check your internet connection.",
-      "timeout": "Request timeout. Please try again.",
-      "notFound": "Resource not found.",
-      "httpError": "HTTP error occurred"
+      "connectionError": "Erreur de connexion. Veuillez vérifier votre connexion Internet.",
+      "timeout": "Délai d'attente dépassé. Veuillez réessayer.",
+      "notFound": "Ressource non trouvée.",
+      "httpError": "Erreur HTTP survenue"
     },
     "validation": {
-      "required": "This field is required",
-      "invalidFormat": "Invalid format",
-      "invalidEmail": "Invalid email format",
-      "tooShort": "Input is too short",
-      "tooLong": "Input is too long"
+      "required": "Ce champ est obligatoire",
+      "invalidFormat": "Format invalide",
+      "invalidEmail": "Format d'e-mail invalide",
+      "tooShort": "La saisie est trop courte",
+      "tooLong": "La saisie est trop longue"
     },
     "file": {
-      "invalidType": "Invalid file type. Only PDF and DOCX files are allowed.",
-      "invalidSize": "File size exceeds maximum limit (5MB)",
-      "uploadFailed": "Failed to upload file",
-      "noFile": "No file selected"
+      "invalidType": "Type de fichier invalide. Seuls les fichiers PDF et DOCX sont autorisés.",
+      "invalidSize": "La taille du fichier dépasse la limite maximale (5 Mo)",
+      "uploadFailed": "Échec du téléchargement du fichier",
+      "noFile": "Aucun fichier sélectionné"
     },
     "contact": {
       "validation": {
-        "missingFields": "All fields are required",
-        "invalidEmail": "Invalid email format"
+        "missingFields": "Tous les champs sont obligatoires",
+        "invalidEmail": "Format d'e-mail invalide"
       },
       "file": {
-        "invalidType": "Only PDF and DOCX files are allowed",
-        "invalidSize": "File size must be less than 5MB"
+        "invalidType": "Seuls les fichiers PDF et DOCX sont autorisés",
+        "invalidSize": "La taille du fichier doit être inférieure à 5 Mo"
       },
       "submission": {
-        "failed": "Failed to send message",
-        "failedWithDetails": "Failed to send message. Please try again later or contact me directly.",
-        "success": "Your message has been sent successfully! I will respond within 24-48 hours."
+        "failed": "Échec de l'envoi du message",
+        "failedWithDetails": "Échec de l'envoi du message. Veuillez réessayer plus tard ou me contacter directement.",
+        "success": "Votre message a été envoyé avec succès ! Je répondrai dans les 24 à 48 heures."
       }
     },
     "data": {
-      "loadingFailed": "Failed to load data from server",
-      "contentLabels": "Failed to load content labels",
-      "defaultLabels": "Failed to load default labels",
-      "achievements": "Error fetching achievements data",
-      "education": "Error fetching education data",
-      "experience": "Error fetching experience data",
-      "projects": "Error fetching projects data",
-      "skills": "Error fetching skills data",
-      "pageLayout": "Error fetching page layout",
-      "apiConfig": "Error fetching API config",
-      "httpError": "HTTP error occurred"
+      "loadingFailed": "Échec du chargement des données du serveur",
+      "contentLabels": "Échec du chargement des étiquettes de contenu",
+      "defaultLabels": "Échec du chargement des étiquettes par défaut",
+      "achievements": "Erreur lors de la récupération des données de réalisations",
+      "education": "Erreur lors de la récupération des données d'éducation",
+      "experience": "Erreur lors de la récupération des données d'expérience",
+      "projects": "Erreur lors de la récupération des données de projets",
+      "skills": "Erreur lors de la récupération des données de compétences",
+      "pageLayout": "Erreur lors de la récupération de la mise en page",
+      "apiConfig": "Erreur lors de la récupération de la configuration API",
+      "httpError": "Erreur HTTP survenue"
     },
     "chatbot": {
-      "connectionError": "Unable to connect to chatbot service. Please try again later.",
-      "otpError": "Failed to send OTP. Please try again.",
-      "otpError2": "Failed to verify OTP. Please check and try again.",
-      "otpFailed": "OTP verification failed. Please request a new OTP.",
-      "sendError": "Failed to send message. Please try again."
+      "connectionError": "Impossible de se connecter au service de chatbot. Veuillez réessayer plus tard.",
+      "otpError": "Échec de l'envoi du code OTP. Veuillez réessayer.",
+      "otpError2": "Échec de la vérification du code OTP. Veuillez vérifier et réessayer.",
+      "otpFailed": "Échec de la vérification du code OTP. Veuillez demander un nouveau code OTP.",
+      "sendError": "Échec de l'envoi du message. Veuillez réessayer."
     }
   },
   "warnings": {
-    "fallbackUsed": "Using fallback data - CDN content may be unavailable",
-    "defaultLabels": "Failed to load default labels from file, using empty object",
-    "projectsData": "Failed to fetch projects data from CDN, using default data",
-    "skillsData": "Failed to fetch skills data from CDN, using default data",
-    "experienceData": "Failed to fetch experience data from CDN, using default data",
-    "educationData": "Failed to fetch education data from CDN, using default data",
-    "sectionNotFound": "Section type not found in section registry",
-    "componentNotFound": "Component type not found in component map"
+    "fallbackUsed": "Utilisation des données de secours - le contenu du CDN peut être indisponible",
+    "defaultLabels": "Échec du chargement des étiquettes par défaut du fichier, utilisation d'un objet vide",
+    "projectsData": "Échec de la récupération des données de projets depuis le CDN, utilisation des données par défaut",
+    "skillsData": "Échec de la récupération des données de compétences depuis le CDN, utilisation des données par défaut",
+    "experienceData": "Échec de la récupération des données d'expérience depuis le CDN, utilisation des données par défaut",
+    "educationData": "Échec de la récupération des données d'éducation depuis le CDN, utilisation des données par défaut",
+    "sectionNotFound": "Type de section introuvable dans le registre des sections",
+    "componentNotFound": "Type de composant introuvable dans la carte des composants"
   },
   "info": {
-    "processing": "Processing your request...",
-    "loading": "Loading data...",
-    "submitting": "Submitting form...",
-    "sending": "Sending email...",
-    "verifying": "Verifying information..."
+    "processing": "Traitement de votre demande...",
+    "loading": "Chargement des données...",
+    "submitting": "Soumission du formulaire...",
+    "sending": "Envoi de l'e-mail...",
+    "verifying": "Vérification des informations..."
   },
   "messages": {
     "success": {
-      "contactForm": "Your message has been sent successfully! I will respond within 24-48 hours.",
-      "fileUploaded": "File uploaded successfully",
-      "dataLoaded": "Data loaded successfully",
-      "formSubmitted": "Form submitted successfully"
+      "contactForm": "Votre message a été envoyé avec succès ! Je répondrai dans les 24 à 48 heures.",
+      "fileUploaded": "Fichier téléchargé avec succès",
+      "dataLoaded": "Données chargées avec succès",
+      "formSubmitted": "Formulaire soumis avec succès"
     },
     "error": {
-      "title": "Error",
-      "description": "Something went wrong"
+      "title": "Erreur",
+      "description": "Quelque chose s'est mal passé"
     }
   }
 }

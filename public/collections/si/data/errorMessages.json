@@ -1,92 +1,92 @@
 {
   "errors": {
     "common": {
-      "unknownError": "An unexpected error occurred. Please try again.",
-      "tryAgain": "Please try again later.",
-      "contactDirectly": "Please contact me directly."
+      "unknownError": "අනපේක්ෂිත දෝෂයක් සිදු විය. කරුණාකර නැවත උත්සාහ කරන්න.",
+      "tryAgain": "කරුණාකර පසුව නැවත උත්සාහ කරන්න.",
+      "contactDirectly": "කරුණාකර සෘජුවම මා සම්බන්ධ කර ගන්න."
     },
     "network": {
-      "connectionError": "Connection error. Please check your internet connection.",
-      "timeout": "Request timeout. Please try again.",
-      "notFound": "Resource not found.",
-      "httpError": "HTTP error occurred"
+      "connectionError": "සම්බන්ධතා දෝෂයක්. කරුණාකර ඔබගේ අන්තර්ජාල සම්බන්ධතාව පරීක්ෂා කරන්න.",
+      "timeout": "ඉල්ලීම් කාලය ඉකුත් විය. කරුණාකර නැවත උත්සාහ කරන්න.",
+      "notFound": "සම්පත හමු නොවීය.",
+      "httpError": "HTTP දෝෂයක් සිදු විය"
     },
     "validation": {
-      "required": "This field is required",
-      "invalidFormat": "Invalid format",
-      "invalidEmail": "Invalid email format",
-      "tooShort": "Input is too short",
-      "tooLong": "Input is too long"
+      "required": "මෙම ක්ෂේත්‍රය අවශ්‍ය වේ",
+      "invalidFormat": "වලංගු නොවන ආකෘතිය",
+      "invalidEmail": "වලංගු නොවන විද්‍යුත් තැපැල් ආකෘතිය",
+      "tooShort": "ආදානය ඉතා කෙටිය",
+      "tooLong": "ආදානය ඉතා දිගයි"
     },
     "file": {
-      "invalidType": "Invalid file type. Only PDF and DOCX files are allowed.",
-      "invalidSize": "File size exceeds maximum limit (5MB)",
-      "uploadFailed": "Failed to upload file",
-      "noFile": "No file selected"
+      "invalidType": "වලංගු නොවන ගොනු වර්ගයකි. PDF සහ DOCX ගොනු පමණක් අවසර ඇත.",
+      "invalidSize": "ගොනු ප්‍රමාණය උපරිම සීමාව (5MB) ඉක්මවයි",
+      "uploadFailed": "ගොනුව උඩුගත කිරීම අසාර්ථක විය",
+      "noFile": "ගොනුවක් තෝරා නොමැත"
     },
     "contact": {
       "validation": {
-        "missingFields": "All fields are required",
-        "invalidEmail": "Invalid email format"
+        "missingFields": "සියලුම ක්ෂේත්‍ර අවශ්‍ය වේ",
+        "invalidEmail": "වලංගු නොවන විද්‍යුත් තැපැල් ආකෘතිය"
       },
       "file": {
-        "invalidType": "Only PDF and DOCX files are allowed",
-        "invalidSize": "File size must be less than 5MB"
+        "invalidType": "PDF සහ DOCX ගොනු පමණක් අවසර ඇත",
+        "invalidSize": "ගොනු ප්‍රමාණය 5MB ට අඩු විය යුතුය"
       },
       "submission": {
-        "failed": "Failed to send message",
-        "failedWithDetails": "Failed to send message. Please try again later or contact me directly.",
-        "success": "Your message has been sent successfully! I will respond within 24-48 hours."
+        "failed": "පණිවිඩය යැවීම අසාර්ථක විය",
+        "failedWithDetails": "පණිවිඩය යැවීම අසාර්ථක විය. කරුණාකර පසුව නැවත උත්සාහ කරන්න හෝ සෘජුවම මා සම්බන්ධ කර ගන්න.",
+        "success": "ඔබගේ පණිවිඩය සාර්ථකව යවන ලදී! මම පැය 24-48 ඇතුළත ප්‍රතිචාර දක්වමි."
       }
     },
     "data": {
-      "loadingFailed": "Failed to load data from server",
-      "contentLabels": "Failed to load content labels",
-      "defaultLabels": "Failed to load default labels",
-      "achievements": "Error fetching achievements data",
-      "education": "Error fetching education data",
-      "experience": "Error fetching experience data",
-      "projects": "Error fetching projects data",
-      "skills": "Error fetching skills data",
-      "pageLayout": "Error fetching page layout",
-      "apiConfig": "Error fetching API config",
-      "httpError": "HTTP error occurred"
+      "loadingFailed": "සේවාදායකයෙන් දත්ත පූරණය කිරීම අසාර්ථක විය",
+      "contentLabels": "අන්තර්ගත ලේබල පූරණය කිරීම අසාර්ථක විය",
+      "defaultLabels": "පෙරනිමි ලේබල පූරණය කිරීම අසාර්ථක විය",
+      "achievements": "ජයග්‍රහණ දත්ත ලබා ගැනීමේ දෝෂයකි",
+      "education": "අධ්‍යාපන දත්ත ලබා ගැනීමේ දෝෂයකි",
+      "experience": "අත්දැකීම් දත්ත ලබා ගැනීමේ දෝෂයකි",
+      "projects": "ව්‍යාපෘති දත්ත ලබා ගැනීමේ දෝෂයකි",
+      "skills": "කුසලතා දත්ත ලබා ගැනීමේ දෝෂයකි",
+      "pageLayout": "පිටු පිරිසැලසුම ලබා ගැනීමේ දෝෂයකි",
+      "apiConfig": "API වින්‍යාසය ලබා ගැනීමේ දෝෂයකි",
+      "httpError": "HTTP දෝෂයක් සිදු විය"
     },
     "chatbot": {
-      "connectionError": "Unable to connect to chatbot service. Please try again later.",
-      "otpError": "Failed to send OTP. Please try again.",
-      "otpError2": "Failed to verify OTP. Please check and try again.",
-      "otpFailed": "OTP verification failed. Please request a new OTP.",
-      "sendError": "Failed to send message. Please try again."
+      "connectionError": "චැට්බොට් සේවාවට සම්බන්ධ විය නොහැක. කරුණාකර පසුව නැවත උත්සාහ කරන්න.",
+      "otpError": "OTP යැවීම අසාර්ථක විය. කරුණාකර නැවත උත්සාහ කරන්න.",
+      "otpError2": "OTP සත්‍යාපනය කිරීම අසාර්ථක විය. කරුණාකර පරීක්ෂා කර නැවත උත්සාහ කරන්න.",
+      "otpFailed": "OTP සත්‍යාපනය අසාර්ථක විය. කරුණාකර නව OTP එකක් ඉල්ලන්න.",
+      "sendError": "පණිවිඩය යැවීම අසාර්ථක විය. කරුණාකර නැවත උත්සාහ කරන්න."
     }
   },
   "warnings": {
-    "fallbackUsed": "Using fallback data - CDN content may be unavailable",
-    "defaultLabels": "Failed to load default labels from file, using empty object",
-    "projectsData": "Failed to fetch projects data from CDN, using default data",
-    "skillsData": "Failed to fetch skills data from CDN, using default data",
-    "experienceData": "Failed to fetch experience data from CDN, using default data",
-    "educationData": "Failed to fetch education data from CDN, using default data",
-    "sectionNotFound": "Section type not found in section registry",
-    "componentNotFound": "Component type not found in component map"
+    "fallbackUsed": "ආපසු හැරවීමේ දත්ත භාවිතා කරයි - CDN අන්තර්ගතය නොලබා ගත හැකිය",
+    "defaultLabels": "ගොනුවෙන් පෙරනිමි ලේබල පූරණය කිරීම අසාර්ථක විය, හිස් වස්තුවක් භාවිතා කරයි",
+    "projectsData": "CDN වෙතින් ව්‍යාපෘති දත්ත ලබා ගැනීම අසාර්ථක විය, පෙරනිමි දත්ත භාවිතා කරයි",
+    "skillsData": "CDN වෙතින් කුසලතා දත්ත ලබා ගැනීම අසාර්ථක විය, පෙරනිමි දත්ත භාවිතා කරයි",
+    "experienceData": "CDN වෙතින් අත්දැකීම් දත්ත ලබා ගැනීම අසාර්ථක විය, පෙරනිමි දත්ත භාවිතා කරයි",
+    "educationData": "CDN වෙතින් අධ්‍යාපන දත්ත ලබා ගැනීම අසාර්ථක විය, පෙරනිමි දත්ත භාවිතා කරයි",
+    "sectionNotFound": "අංශ ලේඛනයේ අංශ වර්ගය හමු නොවීය",
+    "componentNotFound": "සංරචක සිතියමේ සංරචක වර්ගය හමු නොවීය"
   },
   "info": {
-    "processing": "Processing your request...",
-    "loading": "Loading data...",
-    "submitting": "Submitting form...",
-    "sending": "Sending email...",
-    "verifying": "Verifying information..."
+    "processing": "ඔබගේ ඉල්ලීම සකසමින්...",
+    "loading": "දත්ත පූරණය කරමින්...",
+    "submitting": "පෝරමය ඉදිරිපත් කරමින්...",
+    "sending": "විද්‍යුත් තැපැල යවමින්...",
+    "verifying": "තොරතුරු සත්‍යාපනය කරමින්..."
   },
   "messages": {
     "success": {
-      "contactForm": "Your message has been sent successfully! I will respond within 24-48 hours.",
-      "fileUploaded": "File uploaded successfully",
-      "dataLoaded": "Data loaded successfully",
-      "formSubmitted": "Form submitted successfully"
+      "contactForm": "ඔබගේ පණිවිඩය සාර්ථකව යවන ලදී! මම පැය 24-48 ඇතුළත ප්‍රතිචාර දක්වමි.",
+      "fileUploaded": "ගොනුව සාර්ථකව උඩුගත කරන ලදී",
+      "dataLoaded": "දත්ත සාර්ථකව පූරණය කරන ලදී",
+      "formSubmitted": "පෝරමය සාර්ථකව ඉදිරිපත් කරන ලදී"
     },
     "error": {
-      "title": "Error",
-      "description": "Something went wrong"
+      "title": "දෝෂය",
+      "description": "යමක් වැරදී ඇත"
     }
   }
 }

@@ -1,92 +1,92 @@
 {
   "errors": {
     "common": {
-      "unknownError": "An unexpected error occurred. Please try again.",
-      "tryAgain": "Please try again later.",
-      "contactDirectly": "Please contact me directly."
+      "unknownError": "Ocurrió un error inesperado. Por favor, inténtelo de nuevo.",
+      "tryAgain": "Por favor, inténtelo de nuevo más tarde.",
+      "contactDirectly": "Por favor, contácteme directamente."
     },
     "network": {
-      "connectionError": "Connection error. Please check your internet connection.",
-      "timeout": "Request timeout. Please try again.",
-      "notFound": "Resource not found.",
-      "httpError": "HTTP error occurred"
+      "connectionError": "Error de conexión. Por favor, verifique su conexión a Internet.",
+      "timeout": "Tiempo de espera agotado. Por favor, inténtelo de nuevo.",
+      "notFound": "Recurso no encontrado.",
+      "httpError": "Ocurrió un error HTTP"
     },
     "validation": {
-      "required": "This field is required",
-      "invalidFormat": "Invalid format",
-      "invalidEmail": "Invalid email format",
-      "tooShort": "Input is too short",
-      "tooLong": "Input is too long"
+      "required": "Este campo es obligatorio",
+      "invalidFormat": "Formato no válido",
+      "invalidEmail": "Formato de correo electrónico no válido",
+      "tooShort": "La entrada es demasiado corta",
+      "tooLong": "La entrada es demasiado larga"
     },
     "file": {
-      "invalidType": "Invalid file type. Only PDF and DOCX files are allowed.",
-      "invalidSize": "File size exceeds maximum limit (5MB)",
-      "uploadFailed": "Failed to upload file",
-      "noFile": "No file selected"
+      "invalidType": "Tipo de archivo no válido. Solo se permiten archivos PDF y DOCX.",
+      "invalidSize": "El tamaño del archivo excede el límite máximo (5MB)",
+      "uploadFailed": "Error al cargar el archivo",
+      "noFile": "No se seleccionó ningún archivo"
     },
     "contact": {
       "validation": {
-        "missingFields": "All fields are required",
-        "invalidEmail": "Invalid email format"
+        "missingFields": "Todos los campos son obligatorios",
+        "invalidEmail": "Formato de correo electrónico no válido"
       },
       "file": {
-        "invalidType": "Only PDF and DOCX files are allowed",
-        "invalidSize": "File size must be less than 5MB"
+        "invalidType": "Solo se permiten archivos PDF y DOCX",
+        "invalidSize": "El tamaño del archivo debe ser menor a 5MB"
       },
       "submission": {
-        "failed": "Failed to send message",
-        "failedWithDetails": "Failed to send message. Please try again later or contact me directly.",
-        "success": "Your message has been sent successfully! I will respond within 24-48 hours."
+        "failed": "Error al enviar el mensaje",
+        "failedWithDetails": "Error al enviar el mensaje. Por favor, inténtelo de nuevo más tarde o contácteme directamente.",
+        "success": "¡Su mensaje ha sido enviado exitosamente! Responderé dentro de 24-48 horas."
       }
     },
     "data": {
-      "loadingFailed": "Failed to load data from server",
-      "contentLabels": "Failed to load content labels",
-      "defaultLabels": "Failed to load default labels",
-      "achievements": "Error fetching achievements data",
-      "education": "Error fetching education data",
-      "experience": "Error fetching experience data",
-      "projects": "Error fetching projects data",
-      "skills": "Error fetching skills data",
-      "pageLayout": "Error fetching page layout",
-      "apiConfig": "Error fetching API config",
-      "httpError": "HTTP error occurred"
+      "loadingFailed": "Error al cargar datos del servidor",
+      "contentLabels": "Error al cargar etiquetas de contenido",
+      "defaultLabels": "Error al cargar etiquetas predeterminadas",
+      "achievements": "Error al obtener datos de logros",
+      "education": "Error al obtener datos de educación",
+      "experience": "Error al obtener datos de experiencia",
+      "projects": "Error al obtener datos de proyectos",
+      "skills": "Error al obtener datos de habilidades",
+      "pageLayout": "Error al obtener diseño de página",
+      "apiConfig": "Error al obtener configuración de API",
+      "httpError": "Ocurrió un error HTTP"
     },
     "chatbot": {
-      "connectionError": "Unable to connect to chatbot service. Please try again later.",
-      "otpError": "Failed to send OTP. Please try again.",
-      "otpError2": "Failed to verify OTP. Please check and try again.",
-      "otpFailed": "OTP verification failed. Please request a new OTP.",
-      "sendError": "Failed to send message. Please try again."
+      "connectionError": "No se puede conectar al servicio de chatbot. Por favor, inténtelo de nuevo más tarde.",
+      "otpError": "Error al enviar OTP. Por favor, inténtelo de nuevo.",
+      "otpError2": "Error al verificar OTP. Por favor, verifique e inténtelo de nuevo.",
+      "otpFailed": "Verificación de OTP fallida. Por favor, solicite un nuevo OTP.",
+      "sendError": "Error al enviar el mensaje. Por favor, inténtelo de nuevo."
     }
   },
   "warnings": {
-    "fallbackUsed": "Using fallback data - CDN content may be unavailable",
-    "defaultLabels": "Failed to load default labels from file, using empty object",
-    "projectsData": "Failed to fetch projects data from CDN, using default data",
-    "skillsData": "Failed to fetch skills data from CDN, using default data",
-    "experienceData": "Failed to fetch experience data from CDN, using default data",
-    "educationData": "Failed to fetch education data from CDN, using default data",
-    "sectionNotFound": "Section type not found in section registry",
-    "componentNotFound": "Component type not found in component map"
+    "fallbackUsed": "Usando datos de respaldo - el contenido CDN puede no estar disponible",
+    "defaultLabels": "Error al cargar etiquetas predeterminadas del archivo, usando objeto vacío",
+    "projectsData": "Error al obtener datos de proyectos de CDN, usando datos predeterminados",
+    "skillsData": "Error al obtener datos de habilidades de CDN, usando datos predeterminados",
+    "experienceData": "Error al obtener datos de experiencia de CDN, usando datos predeterminados",
+    "educationData": "Error al obtener datos de educación de CDN, usando datos predeterminados",
+    "sectionNotFound": "Tipo de sección no encontrado en el registro de secciones",
+    "componentNotFound": "Tipo de componente no encontrado en el mapa de componentes"
   },
   "info": {
-    "processing": "Processing your request...",
-    "loading": "Loading data...",
-    "submitting": "Submitting form...",
-    "sending": "Sending email...",
-    "verifying": "Verifying information..."
+    "processing": "Procesando su solicitud...",
+    "loading": "Cargando datos...",
+    "submitting": "Enviando formulario...",
+    "sending": "Enviando correo electrónico...",
+    "verifying": "Verificando información..."
   },
   "messages": {
     "success": {
-      "contactForm": "Your message has been sent successfully! I will respond within 24-48 hours.",
-      "fileUploaded": "File uploaded successfully",
-      "dataLoaded": "Data loaded successfully",
-      "formSubmitted": "Form submitted successfully"
+      "contactForm": "¡Su mensaje ha sido enviado exitosamente! Responderé dentro de 24-48 horas.",
+      "fileUploaded": "Archivo cargado exitosamente",
+      "dataLoaded": "Datos cargados exitosamente",
+      "formSubmitted": "Formulario enviado exitosamente"
     },
     "error": {
       "title": "Error",
-      "description": "Something went wrong"
+      "description": "Algo salió mal"
     }
   }
 }

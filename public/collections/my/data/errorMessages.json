@@ -1,92 +1,92 @@
 {
   "errors": {
     "common": {
-      "unknownError": "An unexpected error occurred. Please try again.",
-      "tryAgain": "Please try again later.",
-      "contactDirectly": "Please contact me directly."
+      "unknownError": "Ralat yang tidak dijangka berlaku. Sila cuba lagi.",
+      "tryAgain": "Sila cuba lagi kemudian.",
+      "contactDirectly": "Sila hubungi saya secara langsung."
     },
     "network": {
-      "connectionError": "Connection error. Please check your internet connection.",
-      "timeout": "Request timeout. Please try again.",
-      "notFound": "Resource not found.",
-      "httpError": "HTTP error occurred"
+      "connectionError": "Ralat sambungan. Sila semak sambungan internet anda.",
+      "timeout": "Masa tamat permintaan. Sila cuba lagi.",
+      "notFound": "Sumber tidak dijumpai.",
+      "httpError": "Ralat HTTP berlaku"
     },
     "validation": {
-      "required": "This field is required",
-      "invalidFormat": "Invalid format",
-      "invalidEmail": "Invalid email format",
-      "tooShort": "Input is too short",
-      "tooLong": "Input is too long"
+      "required": "Medan ini diperlukan",
+      "invalidFormat": "Format tidak sah",
+      "invalidEmail": "Format e-mel tidak sah",
+      "tooShort": "Input terlalu pendek",
+      "tooLong": "Input terlalu panjang"
     },
     "file": {
-      "invalidType": "Invalid file type. Only PDF and DOCX files are allowed.",
-      "invalidSize": "File size exceeds maximum limit (5MB)",
-      "uploadFailed": "Failed to upload file",
-      "noFile": "No file selected"
+      "invalidType": "Jenis fail tidak sah. Hanya fail PDF dan DOCX dibenarkan.",
+      "invalidSize": "Saiz fail melebihi had maksimum (5MB)",
+      "uploadFailed": "Gagal memuat naik fail",
+      "noFile": "Tiada fail dipilih"
     },
     "contact": {
       "validation": {
-        "missingFields": "All fields are required",
-        "invalidEmail": "Invalid email format"
+        "missingFields": "Semua medan diperlukan",
+        "invalidEmail": "Format e-mel tidak sah"
       },
       "file": {
-        "invalidType": "Only PDF and DOCX files are allowed",
-        "invalidSize": "File size must be less than 5MB"
+        "invalidType": "Hanya fail PDF dan DOCX dibenarkan",
+        "invalidSize": "Saiz fail mestilah kurang daripada 5MB"
       },
       "submission": {
-        "failed": "Failed to send message",
-        "failedWithDetails": "Failed to send message. Please try again later or contact me directly.",
-        "success": "Your message has been sent successfully! I will respond within 24-48 hours."
+        "failed": "Gagal menghantar mesej",
+        "failedWithDetails": "Gagal menghantar mesej. Sila cuba lagi kemudian atau hubungi saya secara langsung.",
+        "success": "Mesej anda telah berjaya dihantar! Saya akan membalas dalam masa 24-48 jam."
       }
     },
     "data": {
-      "loadingFailed": "Failed to load data from server",
-      "contentLabels": "Failed to load content labels",
-      "defaultLabels": "Failed to load default labels",
-      "achievements": "Error fetching achievements data",
-      "education": "Error fetching education data",
-      "experience": "Error fetching experience data",
-      "projects": "Error fetching projects data",
-      "skills": "Error fetching skills data",
-      "pageLayout": "Error fetching page layout",
-      "apiConfig": "Error fetching API config",
-      "httpError": "HTTP error occurred"
+      "loadingFailed": "Gagal memuatkan data dari pelayan",
+      "contentLabels": "Gagal memuatkan label kandungan",
+      "defaultLabels": "Gagal memuatkan label lalai",
+      "achievements": "Ralat mendapatkan data pencapaian",
+      "education": "Ralat mendapatkan data pendidikan",
+      "experience": "Ralat mendapatkan data pengalaman",
+      "projects": "Ralat mendapatkan data projek",
+      "skills": "Ralat mendapatkan data kemahiran",
+      "pageLayout": "Ralat mendapatkan susun atur halaman",
+      "apiConfig": "Ralat mendapatkan konfigurasi API",
+      "httpError": "Ralat HTTP berlaku"
     },
     "chatbot": {
-      "connectionError": "Unable to connect to chatbot service. Please try again later.",
-      "otpError": "Failed to send OTP. Please try again.",
-      "otpError2": "Failed to verify OTP. Please check and try again.",
-      "otpFailed": "OTP verification failed. Please request a new OTP.",
-      "sendError": "Failed to send message. Please try again."
+      "connectionError": "Tidak dapat menyambung ke perkhidmatan chatbot. Sila cuba lagi kemudian.",
+      "otpError": "Gagal menghantar OTP. Sila cuba lagi.",
+      "otpError2": "Gagal mengesahkan OTP. Sila semak dan cuba lagi.",
+      "otpFailed": "Pengesahan OTP gagal. Sila minta OTP baharu.",
+      "sendError": "Gagal menghantar mesej. Sila cuba lagi."
     }
   },
   "warnings": {
-    "fallbackUsed": "Using fallback data - CDN content may be unavailable",
-    "defaultLabels": "Failed to load default labels from file, using empty object",
-    "projectsData": "Failed to fetch projects data from CDN, using default data",
-    "skillsData": "Failed to fetch skills data from CDN, using default data",
-    "experienceData": "Failed to fetch experience data from CDN, using default data",
-    "educationData": "Failed to fetch education data from CDN, using default data",
-    "sectionNotFound": "Section type not found in section registry",
-    "componentNotFound": "Component type not found in component map"
+    "fallbackUsed": "Menggunakan data sandaran - kandungan CDN mungkin tidak tersedia",
+    "defaultLabels": "Gagal memuatkan label lalai dari fail, menggunakan objek kosong",
+    "projectsData": "Gagal mendapatkan data projek dari CDN, menggunakan data lalai",
+    "skillsData": "Gagal mendapatkan data kemahiran dari CDN, menggunakan data lalai",
+    "experienceData": "Gagal mendapatkan data pengalaman dari CDN, menggunakan data lalai",
+    "educationData": "Gagal mendapatkan data pendidikan dari CDN, menggunakan data lalai",
+    "sectionNotFound": "Jenis bahagian tidak dijumpai dalam daftar bahagian",
+    "componentNotFound": "Jenis komponen tidak dijumpai dalam peta komponen"
   },
   "info": {
-    "processing": "Processing your request...",
-    "loading": "Loading data...",
-    "submitting": "Submitting form...",
-    "sending": "Sending email...",
-    "verifying": "Verifying information..."
+    "processing": "Memproses permintaan anda...",
+    "loading": "Memuatkan data...",
+    "submitting": "Menghantar borang...",
+    "sending": "Menghantar e-mel...",
+    "verifying": "Mengesahkan maklumat..."
   },
   "messages": {
     "success": {
-      "contactForm": "Your message has been sent successfully! I will respond within 24-48 hours.",
-      "fileUploaded": "File uploaded successfully",
-      "dataLoaded": "Data loaded successfully",
-      "formSubmitted": "Form submitted successfully"
+      "contactForm": "Mesej anda telah berjaya dihantar! Saya akan membalas dalam masa 24-48 jam.",
+      "fileUploaded": "Fail berjaya dimuat naik",
+      "dataLoaded": "Data berjaya dimuatkan",
+      "formSubmitted": "Borang berjaya dihantar"
     },
     "error": {
-      "title": "Error",
-      "description": "Something went wrong"
+      "title": "Ralat",
+      "description": "Sesuatu tidak kena"
     }
   }
 }

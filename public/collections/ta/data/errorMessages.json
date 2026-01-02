@@ -1,92 +1,92 @@
 {
   "errors": {
     "common": {
-      "unknownError": "An unexpected error occurred. Please try again.",
-      "tryAgain": "Please try again later.",
-      "contactDirectly": "Please contact me directly."
+      "unknownError": "எதிர்பாராத பிழை ஏற்பட்டது. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.",
+      "tryAgain": "தயவுசெய்து பின்னர் மீண்டும் முயற்சிக்கவும்.",
+      "contactDirectly": "தயவுசெய்து நேரடியாக என்னைத் தொடர்பு கொள்ளுங்கள்."
     },
     "network": {
-      "connectionError": "Connection error. Please check your internet connection.",
-      "timeout": "Request timeout. Please try again.",
-      "notFound": "Resource not found.",
-      "httpError": "HTTP error occurred"
+      "connectionError": "இணைப்புப் பிழை. தயவுசெய்து உங்கள் இணைய இணைப்பைச் சரிபார்க்கவும்.",
+      "timeout": "கோரிக்கை நேரம் முடிந்தது. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.",
+      "notFound": "வளம் கிடைக்கவில்லை.",
+      "httpError": "HTTP பிழை ஏற்பட்டது"
     },
     "validation": {
-      "required": "This field is required",
-      "invalidFormat": "Invalid format",
-      "invalidEmail": "Invalid email format",
-      "tooShort": "Input is too short",
-      "tooLong": "Input is too long"
+      "required": "இந்தப் புலம் தேவை",
+      "invalidFormat": "தவறான வடிவமைப்பு",
+      "invalidEmail": "தவறான மின்னஞ்சல் வடிவமைப்பு",
+      "tooShort": "உள்ளீடு மிகக் குறுகியது",
+      "tooLong": "உள்ளீடு மிக நீளமானது"
     },
     "file": {
-      "invalidType": "Invalid file type. Only PDF and DOCX files are allowed.",
-      "invalidSize": "File size exceeds maximum limit (5MB)",
-      "uploadFailed": "Failed to upload file",
-      "noFile": "No file selected"
+      "invalidType": "தவறான கோப்பு வகை. PDF மற்றும் DOCX கோப்புகள் மட்டுமே அனுமதிக்கப்படுகின்றன.",
+      "invalidSize": "கோப்பு அளவு அதிகபட்ச வரம்பை (5MB) மீறுகிறது",
+      "uploadFailed": "கோப்பைப் பதிவேற்ற முடியவில்லை",
+      "noFile": "எந்த கோப்பும் தேர்ந்தெடுக்கப்படவில்லை"
     },
     "contact": {
       "validation": {
-        "missingFields": "All fields are required",
-        "invalidEmail": "Invalid email format"
+        "missingFields": "அனைத்துப் புலங்களும் தேவை",
+        "invalidEmail": "தவறான மின்னஞ்சல் வடிவமைப்பு"
       },
       "file": {
-        "invalidType": "Only PDF and DOCX files are allowed",
-        "invalidSize": "File size must be less than 5MB"
+        "invalidType": "PDF மற்றும் DOCX கோப்புகள் மட்டுமே அனுமதிக்கப்படுகின்றன",
+        "invalidSize": "கோப்பு அளவு 5MB க்கும் குறைவாக இருக்க வேண்டும்"
       },
       "submission": {
-        "failed": "Failed to send message",
-        "failedWithDetails": "Failed to send message. Please try again later or contact me directly.",
-        "success": "Your message has been sent successfully! I will respond within 24-48 hours."
+        "failed": "செய்தியை அனுப்ப முடியவில்லை",
+        "failedWithDetails": "செய்தியை அனுப்ப முடியவில்லை. தயவுசெய்து பின்னர் மீண்டும் முயற்சிக்கவும் அல்லது நேரடியாக என்னைத் தொடர்பு கொள்ளுங்கள்.",
+        "success": "உங்கள் செய்தி வெற்றிகரமாக அனுப்பப்பட்டது! நான் 24-48 மணி நேரத்திற்குள் பதிலளிப்பேன்."
       }
     },
     "data": {
-      "loadingFailed": "Failed to load data from server",
-      "contentLabels": "Failed to load content labels",
-      "defaultLabels": "Failed to load default labels",
-      "achievements": "Error fetching achievements data",
-      "education": "Error fetching education data",
-      "experience": "Error fetching experience data",
-      "projects": "Error fetching projects data",
-      "skills": "Error fetching skills data",
-      "pageLayout": "Error fetching page layout",
-      "apiConfig": "Error fetching API config",
-      "httpError": "HTTP error occurred"
+      "loadingFailed": "சேவையகத்திலிருந்து தரவை ஏற்ற முடியவில்லை",
+      "contentLabels": "உள்ளடக்க லேபிள்களை ஏற்ற முடியவில்லை",
+      "defaultLabels": "இயல்புநிலை லேபிள்களை ஏற்ற முடியவில்லை",
+      "achievements": "சாதனை தரவைப் பெறுவதில் பிழை",
+      "education": "கல்வி தரவைப் பெறுவதில் பிழை",
+      "experience": "அனுபவ தரவைப் பெறுவதில் பிழை",
+      "projects": "திட்ட தரவைப் பெறுவதில் பிழை",
+      "skills": "திறன் தரவைப் பெறுவதில் பிழை",
+      "pageLayout": "பக்க அமைப்பைப் பெறுவதில் பிழை",
+      "apiConfig": "API உள்ளமைவைப் பெறுவதில் பிழை",
+      "httpError": "HTTP பிழை ஏற்பட்டது"
     },
     "chatbot": {
-      "connectionError": "Unable to connect to chatbot service. Please try again later.",
-      "otpError": "Failed to send OTP. Please try again.",
-      "otpError2": "Failed to verify OTP. Please check and try again.",
-      "otpFailed": "OTP verification failed. Please request a new OTP.",
-      "sendError": "Failed to send message. Please try again."
+      "connectionError": "சாட்பாட் சேவையுடன் இணைக்க முடியவில்லை. தயவுசெய்து பின்னர் மீண்டும் முயற்சிக்கவும்.",
+      "otpError": "OTP அனுப்ப முடியவில்லை. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.",
+      "otpError2": "OTP சரிபார்க்க முடியவில்லை. தயவுசெய்து சரிபார்த்து மீண்டும் முயற்சிக்கவும்.",
+      "otpFailed": "OTP சரிபார்ப்பு தோல்வியடைந்தது. தயவுசெய்து புதிய OTP ஐ கோருங்கள்.",
+      "sendError": "செய்தியை அனுப்ப முடியவில்லை. தயவுசெய்து மீண்டும் முயற்சிக்கவும்."
     }
   },
   "warnings": {
-    "fallbackUsed": "Using fallback data - CDN content may be unavailable",
-    "defaultLabels": "Failed to load default labels from file, using empty object",
-    "projectsData": "Failed to fetch projects data from CDN, using default data",
-    "skillsData": "Failed to fetch skills data from CDN, using default data",
-    "experienceData": "Failed to fetch experience data from CDN, using default data",
-    "educationData": "Failed to fetch education data from CDN, using default data",
-    "sectionNotFound": "Section type not found in section registry",
-    "componentNotFound": "Component type not found in component map"
+    "fallbackUsed": "மீள் தரவைப் பயன்படுத்துகிறது - CDN உள்ளடக்கம் கிடைக்காமல் இருக்கலாம்",
+    "defaultLabels": "கோப்பிலிருந்து இயல்புநிலை லேபிள்களை ஏற்ற முடியவில்லை, வெற்று பொருளைப் பயன்படுத்துகிறது",
+    "projectsData": "CDN இலிருந்து திட்ட தரவைப் பெற முடியவில்லை, இயல்புநிலை தரவைப் பயன்படுத்துகிறது",
+    "skillsData": "CDN இலிருந்து திறன் தரவைப் பெற முடியவில்லை, இயல்புநிலை தரவைப் பயன்படுத்துகிறது",
+    "experienceData": "CDN இலிருந்து அனுபவ தரவைப் பெற முடியவில்லை, இயல்புநிலை தரவைப் பயன்படுத்துகிறது",
+    "educationData": "CDN இலிருந்து கல்வி தரவைப் பெற முடியவில்லை, இயல்புநிலை தரவைப் பயன்படுத்துகிறது",
+    "sectionNotFound": "பிரிவு பதிவேட்டில் பிரிவு வகை கிடைக்கவில்லை",
+    "componentNotFound": "கூறு வரைபடத்தில் கூறு வகை கிடைக்கவில்லை"
   },
   "info": {
-    "processing": "Processing your request...",
-    "loading": "Loading data...",
-    "submitting": "Submitting form...",
-    "sending": "Sending email...",
-    "verifying": "Verifying information..."
+    "processing": "உங்கள் கோரிக்கையைச் செயலாக்குகிறது...",
+    "loading": "தரவை ஏற்றுகிறது...",
+    "submitting": "படிவத்தைச் சமர்ப்பிக்கிறது...",
+    "sending": "மின்னஞ்சலை அனுப்புகிறது...",
+    "verifying": "தகவலைச் சரிபார்க்கிறது..."
   },
   "messages": {
     "success": {
-      "contactForm": "Your message has been sent successfully! I will respond within 24-48 hours.",
-      "fileUploaded": "File uploaded successfully",
-      "dataLoaded": "Data loaded successfully",
-      "formSubmitted": "Form submitted successfully"
+      "contactForm": "உங்கள் செய்தி வெற்றிகரமாக அனுப்பப்பட்டது! நான் 24-48 மணி நேரத்திற்குள் பதிலளிப்பேன்.",
+      "fileUploaded": "கோப்பு வெற்றிகரமாகப் பதிவேற்றப்பட்டது",
+      "dataLoaded": "தரவு வெற்றிகரமாக ஏற்றப்பட்டது",
+      "formSubmitted": "படிவம் வெற்றிகரமாகச் சமர்ப்பிக்கப்பட்டது"
     },
     "error": {
-      "title": "Error",
-      "description": "Something went wrong"
+      "title": "பிழை",
+      "description": "ஏதோ தவறு நடந்தது"
     }
   }
 }
