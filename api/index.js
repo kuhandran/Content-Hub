@@ -79,8 +79,8 @@ app.use('/api/resume', resumeReadRoutes);  // Read resumes
 app.use('/api/storage-files', filesStorageReadRoutes);  // Read storage files
 app.use('/api/scanner', scannerRoutes);
 app.use('/api/collections', collectionsRoutes);
+app.use('/api/admin', adminSeedRoutes);  // Seed files endpoint (must be before admin)
 app.use('/api/admin', adminRoutes);
-app.use('/api/admin', adminSeedRoutes);  // Seed files endpoint
 
 // Import middleware
 const authMiddleware = require('../src/middleware/authMiddleware');
