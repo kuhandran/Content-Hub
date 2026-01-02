@@ -171,7 +171,9 @@ let memoryStore = {};
 
 // Try to load Vercel KV
 try {
-  kv = require('@vercel/kv');
+  const kvModule = require('@vercel/kv');
+  // @vercel/kv exports methods directly or as { kv } named export
+  kv = kvModule.kv || kvModule;
   console.log('[ADMIN-SEED] Using Vercel KV storage');
 } catch (err) {
   console.log('[ADMIN-SEED] Vercel KV not available, using in-memory fallback');
@@ -183,7 +185,7 @@ try {
 async function kvSet(key, value) {
   const data = typeof value === 'string' ? value : JSON.stringify(value);
   
-  if (kv) {
+  if (kv && typeof kv.set === 'function') {
     try {
       await kv.set(key, data);
       return true;
@@ -203,7 +205,7 @@ async function kvSet(key, value) {
  * Read from KV or memory
  */
 async function kvGet(key) {
-  if (kv) {
+  if (kv && typeof kv.get === 'function') {
     try {
       return await kv.get(key);
     } catch (err) {
