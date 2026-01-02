@@ -2,12 +2,6 @@
   "version": 2,
   "installCommand": "npm install",
   "buildCommand": "npm install && node scripts/generate-manifest.js",
-  "outputDirectory": ".",
-  "includeFiles": [
-    "public/**",
-    "views/**",
-    "src/**"
-  ],
   "functions": {
     "api/**/*.js": {
       "memory": 1024,
