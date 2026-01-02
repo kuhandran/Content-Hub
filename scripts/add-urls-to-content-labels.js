@@ -9,8 +9,8 @@ const path = require('path');
 const urlsSection = {
   "urls": {
     "resume": {
-      "download": "https://static-api-opal.vercel.app/api/resume/resume.pdf",
-      "view": "https://static-api-opal.vercel.app/api/resume/resume.pdf"
+      "download": "https://static-api-opal.vercel.app/resume/resume.pdf",
+      "view": "https://static-api-opal.vercel.app/resume/resume.pdf"
     },
     "social": {
       "linkedin": "https://linkedin.com/in/kuhandran-samudrapandiyan",
