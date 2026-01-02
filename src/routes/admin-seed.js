@@ -243,53 +243,55 @@ async function kvGet(key) {
 }
 
 /**
- * Get manifest - tries filesystem first, falls back to embedded
+ * Get manifest - uses embedded constant for production, filesystem for local dev
  */
 function getManifest() {
   console.error('[ADMIN-SEED] 🔍 STARTING getManifest() function');
   
-  // Try to load from filesystem first (local development)
+  // Check if we're in production (Vercel) - use embedded manifest as primary
+  const isProduction = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
+  
+  if (isProduction) {
+    console.error('[ADMIN-SEED] 🌐 Production environment detected, using embedded manifest');
+    if (!EMBEDDED_MANIFEST || !EMBEDDED_MANIFEST.files) {
+      console.error('[ADMIN-SEED] ❌ EMBEDDED_MANIFEST is corrupted or missing!');
+      return { generated: new Date().toISOString(), files: { config: [], data: [], files: [], collections: [] } };
+    }
+    const embeddedCount = Object.values(EMBEDDED_MANIFEST.files).flat().length;
+    console.error('[ADMIN-SEED] ✅ Using embedded manifest with', embeddedCount, 'files');
+    return EMBEDDED_MANIFEST;
+  }
+  
+  // For local development, try filesystem first
+  console.error('[ADMIN-SEED] 💻 Local environment, checking filesystem first');
   try {
     const manifestPath = path.join(__dirname, '../../public/manifest.json');
     console.error('[ADMIN-SEED] 🔍 Checking filesystem manifest at:', manifestPath);
-    console.error('[ADMIN-SEED] 🔍 fs.existsSync result:', fs.existsSync(manifestPath));
     
     if (fs.existsSync(manifestPath)) {
-      console.error('[ADMIN-SEED] 📖 Reading file from:', manifestPath);
       const fileContent = fs.readFileSync(manifestPath, 'utf8');
       console.error('[ADMIN-SEED] 📖 File content length:', fileContent.length);
-      console.error('[ADMIN-SEED] 📖 First 100 chars:', fileContent.substring(0, 100));
       
       const manifestData = JSON.parse(fileContent);
-      console.error('[ADMIN-SEED] 📖 Parsed JSON successfully');
-      console.error('[ADMIN-SEED] 📖 manifestData type:', typeof manifestData);
-      console.error('[ADMIN-SEED] 📖 manifestData.files type:', typeof manifestData.files);
-      console.error('[ADMIN-SEED] 📖 manifestData.files keys:', Object.keys(manifestData.files || {}));
-      
       const filesByCategory = manifestData.files || {};
-      console.error('[ADMIN-SEED] 📖 Files by category:', {
-        config: (filesByCategory.config || []).length,
-        data: (filesByCategory.data || []).length,
-        files: (filesByCategory.files || []).length,
-        collections: (filesByCategory.collections || []).length
-      });
-      
       const fileCount = Object.values(filesByCategory).flat().length;
-      console.error('[ADMIN-SEED] ✅ Loaded manifest from filesystem with', fileCount, 'files');
-      return manifestData;
+      
+      // Only use filesystem version if it has actual data
+      if (fileCount > 0) {
+        console.error('[ADMIN-SEED] ✅ Loaded manifest from filesystem with', fileCount, 'files');
+        return manifestData;
+      } else {
+        console.error('[ADMIN-SEED] ⚠️  Filesystem manifest is empty, falling back to embedded');
+      }
     } else {
       console.error('[ADMIN-SEED] 📂 Manifest file does not exist at:', manifestPath);
     }
   } catch (err) {
     console.error('[ADMIN-SEED] ❌ Could not load manifest from filesystem:', err.message);
-    console.error('[ADMIN-SEED] ❌ Error stack:', err.stack);
   }
   
-  // Fall back to embedded manifest (Vercel/production)
-  console.error('[ADMIN-SEED] 🔄 Falling back to embedded manifest constant');
-  console.error('[ADMIN-SEED] 🔍 EMBEDDED_MANIFEST exists:', !!EMBEDDED_MANIFEST);
-  console.error('[ADMIN-SEED] 🔍 EMBEDDED_MANIFEST.files exists:', !!EMBEDDED_MANIFEST?.files);
-  
+  // Fallback to embedded manifest
+  console.error('[ADMIN-SEED] 🔄 Using embedded manifest as fallback');
   if (!EMBEDDED_MANIFEST || !EMBEDDED_MANIFEST.files) {
     console.error('[ADMIN-SEED] ❌ EMBEDDED_MANIFEST is corrupted or missing!');
     return { generated: new Date().toISOString(), files: { config: [], data: [], files: [], collections: [] } };
