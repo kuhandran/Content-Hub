@@ -61,7 +61,7 @@
       "destination": "/public/files/:path*"
     },
     {
-      "source": "/:path((?!api).*\\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|json|xml|txt|pdf)$)",
+      "source": "/:path((?!api).*\\.(js|css|html|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|json|xml|txt|pdf)$)",
       "destination": "/:path*"
     },
     {
