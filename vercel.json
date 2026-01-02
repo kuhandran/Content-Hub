@@ -33,6 +33,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/files/list-public/:path*",
+      "destination": "/api/index.js"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/index.js"
     },

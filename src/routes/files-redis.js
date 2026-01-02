@@ -1,6 +1,8 @@
 const express = require('express');
 const { createClient } = require('redis');
 const authMiddleware = require('../middleware/authMiddleware');
+const path = require('path');
+const fs = require('fs');
 const router = express.Router();
 
 let redis = null;
@@ -22,7 +24,88 @@ async function initRedis() {
 
 initRedis();
 
-// All routes require auth
+// Public listing endpoints (no auth required) - read from filesystem as fallback
+router.get('/list-public/config', async (req, res) => {
+  try {
+    const configDir = path.join(__dirname, '../../public/config');
+    const items = [];
+
+    if (fs.existsSync(configDir)) {
+      const files = fs.readdirSync(configDir);
+      for (const file of files) {
+        const filePath = path.join(configDir, file);
+        const stat = fs.statSync(filePath);
+        items.push({
+          name: file,
+          path: `config/${file}`,
+          type: 'file',
+          size: stat.size,
+          modified: stat.mtime.toISOString(),
+          ext: path.extname(file)
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      path: 'config',
+      items,
+      count: items.length,
+      message: items.length > 0 ? `Found ${items.length} config files` : 'No config files'
+    });
+  } catch (err) {
+    console.error('[FILES] Error listing config:', err);
+    res.json({
+      success: true,
+      path: 'config',
+      items: [],
+      count: 0,
+      message: 'Directory not found or empty'
+    });
+  }
+});
+
+router.get('/list-public/data', async (req, res) => {
+  try {
+    const dataDir = path.join(__dirname, '../../public/data');
+    const items = [];
+
+    if (fs.existsSync(dataDir)) {
+      const files = fs.readdirSync(dataDir);
+      for (const file of files) {
+        const filePath = path.join(dataDir, file);
+        const stat = fs.statSync(filePath);
+        items.push({
+          name: file,
+          path: `data/${file}`,
+          type: 'file',
+          size: stat.size,
+          modified: stat.mtime.toISOString(),
+          ext: path.extname(file)
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      path: 'data',
+      items,
+      count: items.length,
+      message: items.length > 0 ? `Found ${items.length} data files` : 'No data files'
+    });
+  } catch (err) {
+    console.error('[FILES] Error listing data:', err);
+    res.json({
+      success: true,
+      path: 'data',
+      items: [],
+      count: 0,
+      message: 'Directory not found or empty'
+    });
+  }
+});
+
+// Protected routes require auth
 router.use(authMiddleware);
 
 // GET /api/files/list/config - List config files from Redis
