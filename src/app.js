@@ -60,8 +60,8 @@ app.use('/api/config', configRoutes);
 app.use('/api/collections', collectionsRoutes);
 app.use('/api/backup', backupRoutes);
 app.use('/api/scanner', scannerRoutes);
-app.use('/api/admin', adminRoutes);
 app.use('/api/admin', adminSeedRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Login page (without auth, but redirect if already authenticated)
 app.get('/login', (req, res) => {

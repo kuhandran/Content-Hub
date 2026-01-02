@@ -8,6 +8,19 @@ const fs = require('fs');
 const path = require('path');
 const router = express.Router();
 
+// Add CORS headers for admin routes
+router.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
+
 // Check for Vercel KV
 let kv = null;
 try {

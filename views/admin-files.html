@@ -373,8 +373,7 @@
                 const response = await fetch(`${API_BASE}/admin/seed-files`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getCookie('token') || ''}`
+                        'Content-Type': 'application/json'
                     }
                 });
                 
@@ -415,7 +414,17 @@
         async function checkStatus() {
             try {
                 const response = await fetch(`${API_BASE}/admin/seed-status`);
+                if (!response.ok) {
+                    console.error('Status check failed:', response.status);
+                    return;
+                }
+                
                 const data = await response.json();
+                
+                if (!data || !data.seeded) {
+                    console.error('Invalid response data:', data);
+                    return;
+                }
                 
                 // Update storage badge
                 const badge = document.getElementById('storageType');
@@ -424,11 +433,11 @@
                 badge.textContent = data.storage;
                 
                 // Update counts
-                document.getElementById('configCount').textContent = data.seeded.config;
-                document.getElementById('dataCount').textContent = data.seeded.data;
-                document.getElementById('filesCount').textContent = data.seeded.files;
-                document.getElementById('collectionsCount').textContent = data.seeded.collections;
-                document.getElementById('totalCount').textContent = data.totalFiles;
+                document.getElementById('configCount').textContent = data.seeded.config || 0;
+                document.getElementById('dataCount').textContent = data.seeded.data || 0;
+                document.getElementById('filesCount').textContent = data.seeded.files || 0;
+                document.getElementById('collectionsCount').textContent = data.seeded.collections || 0;
+                document.getElementById('totalCount').textContent = data.totalFiles || 0;
                 
             } catch (error) {
                 console.error('Status check error:', error);
