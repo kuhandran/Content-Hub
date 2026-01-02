@@ -304,6 +304,30 @@ function getManifest() {
 }
 
 /**
+ * Seed actual file contents to Redis
+ */
+async function seedFileContents(files, directory) {
+  let seedCount = 0;
+  for (const file of files) {
+    try {
+      const filePath = path.join(__dirname, `../../public/${directory}`, file.path.split('/').pop());
+      if (fs.existsSync(filePath)) {
+        const content = fs.readFileSync(filePath, 'utf8');
+        const key = `cms:files:${file.path.split('/').pop()}`;
+        await kvSet(key, content);
+        console.error('[ADMIN-SEED] 📦 Seeded file content:', file.name);
+        seedCount++;
+      } else {
+        console.error('[ADMIN-SEED] ⚠️  File not found on disk:', file.name, 'at', filePath);
+      }
+    } catch (err) {
+      console.error('[ADMIN-SEED] ❌ Error seeding file', file.name, ':', err.message);
+    }
+  }
+  return seedCount;
+}
+
+/**
  * POST /api/admin/seed-files - Seed file listings into KV
  */
 router.post('/seed-files', async (req, res) => {
@@ -378,7 +402,7 @@ router.post('/seed-files', async (req, res) => {
 
     // Seed static files
     if (manifest.files.files && manifest.files.files.length > 0) {
-      console.log('[ADMIN-SEED] Seeding', manifest.files.files.length, 'static files');
+      console.error('[ADMIN-SEED] 📝 Seeding', manifest.files.files.length, 'static files');
       const filesData = {
         path: 'files',
         count: manifest.files.files.length,
@@ -388,8 +412,13 @@ router.post('/seed-files', async (req, res) => {
       await kvSet('cms:list:files', filesData);
       results.files = manifest.files.files.length;
       seedCount += manifest.files.files.length;
+      
+      // Also seed actual file contents
+      console.error('[ADMIN-SEED] 📦 Seeding static file contents to Redis');
+      const filesContentCount = await seedFileContents(manifest.files.files, 'files');
+      console.error('[ADMIN-SEED] ✅ Seeded', filesContentCount, 'file contents');
     } else {
-      console.log('[ADMIN-SEED] ⚠️  No static files to seed');
+      console.error('[ADMIN-SEED] ⚠️  No static files to seed');
     }
 
     // Seed collections
