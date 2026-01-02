@@ -42,6 +42,7 @@
     "redis": "^5.10.0"
   },
   "devDependencies": {
+    "nodemon": "^3.1.11",
     "vercel": "^33.2.0"
   },
   "engines": {

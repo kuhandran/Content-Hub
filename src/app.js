@@ -3,21 +3,13 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
 const jwt = require('jsonwebtoken');
+const allowedOrigins = require('./config/allowedOrigins');
 
 const app = express();
 
 // CORS middleware - Allow requests from localhost and production
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:8080',
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'https://static-api-opal.vercel.app',
-    'https://opal-tau.vercel.app',
-    'https://opal.vercel.app'
-  ];
   
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
