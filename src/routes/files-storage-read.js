@@ -1,9 +1,11 @@
 /**
- * Files/Storage API - Read from Redis
+ * Files/Storage API - Read from Redis or Filesystem
  * GET /api/storage-files/*
  */
 
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const { createClient } = require('redis');
 const router = express.Router();
 
@@ -27,22 +29,49 @@ initRedis();
 router.get('/*', async (req, res) => {
   try {
     const filePath = req.params[0];
-    if (!filePath || !redis) {
+    if (!filePath) {
       return res.status(400).json({ error: 'Invalid request' });
     }
 
-    const key = `cms:files:${filePath}`;
-    const content = await redis.get(key);
+    let content = null;
+    let source = 'unknown';
 
-    if (!content) {
-      return res.status(404).json({ error: 'File not found', path: filePath });
+    // Try Redis first
+    if (redis) {
+      try {
+        const key = `cms:files:${filePath}`;
+        content = await redis.get(key);
+        if (content) source = 'redis';
+      } catch (err) {
+        console.error('[FILES] Redis read error:', err.message);
+      }
     }
 
-    // Decode from base64 (files stored as base64 in Redis)
-    const buffer = Buffer.from(content, 'base64');
+    // Try filesystem if not in Redis
+    if (!content) {
+      const diskPath = path.join(__dirname, '../../public/files', filePath);
+      
+      // Security check - ensure path is within public/files
+      const realPath = path.resolve(diskPath);
+      const basePath = path.resolve(path.join(__dirname, '../../public/files'));
+      
+      if (realPath.startsWith(basePath) && fs.existsSync(realPath)) {
+        try {
+          content = fs.readFileSync(realPath, 'utf8');
+          source = 'filesystem';
+        } catch (err) {
+          console.error('[FILES] Filesystem read error:', err.message);
+        }
+      }
+    }
+
+    if (!content) {
+      return res.status(404).json({ error: 'File not found', path: filePath, source });
+    }
+
+    // Determine MIME type based on extension
     const ext = filePath.toLowerCase().split('.').pop();
     
-    // Determine MIME type based on extension
     const mimeTypes = {
       'pdf': 'application/pdf',
       'doc': 'application/msword',
@@ -51,18 +80,34 @@ router.get('/*', async (req, res) => {
       'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'txt': 'text/plain',
       'zip': 'application/zip',
-      'json': 'application/json'
+      'json': 'application/json',
+      'svg': 'image/svg+xml',
+      'xml': 'application/xml',
+      'html': 'text/html'
     };
     
     const contentType = mimeTypes[ext] || 'application/octet-stream';
     
-    // For JSON, decode and parse
-    if (ext === 'json') {
-      const decodedStr = buffer.toString('utf8');
-      return res.json(JSON.parse(decodedStr));
+    // Handle response based on source
+    if (source === 'redis') {
+      // Decode from base64 (files stored as base64 in Redis)
+      const buffer = Buffer.from(content, 'base64');
+      
+      // For JSON, decode and parse
+      if (ext === 'json') {
+        const decodedStr = buffer.toString('utf8');
+        return res.json(JSON.parse(decodedStr));
+      }
+      
+      return res.type(contentType).send(buffer);
+    } else {
+      // Serve directly from filesystem
+      if (ext === 'json') {
+        return res.json(JSON.parse(content));
+      }
+      
+      return res.type(contentType).send(content);
     }
-    
-    return res.type(contentType).send(buffer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

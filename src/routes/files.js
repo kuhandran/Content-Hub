@@ -147,6 +147,35 @@ router.get('/list-public/files', (req, res) => {
   }
 });
 
+// Public file serve endpoint (no auth required)
+router.get('/public/:category/:filename', (req, res) => {
+  try {
+    const { category, filename } = req.params;
+    
+    // Validate category
+    if (!['config', 'data', 'files'].includes(category)) {
+      return res.status(400).json({ error: 'Invalid category' });
+    }
+    
+    const filePath = path.join(PUBLIC_PATH, category, filename);
+    
+    // Security check - ensure path is within public directory
+    if (!validatePath(filePath)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    
+    // Serve the file
+    res.sendFile(filePath);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // All routes below require auth
 router.use(authMiddleware);
 
