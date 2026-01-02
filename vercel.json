@@ -1,22 +1,25 @@
 {
   "version": 2,
-  "buildCommand": "npm install && echo 'Build complete'",
   "installCommand": "npm install",
+  "buildCommand": "npm install",
   "functions": {
     "api/**/*.js": {
       "memory": 1024,
-      "maxDuration": 30,
-      "includeFiles": "public/**"
+      "maxDuration": 30
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index.js"
+      "src": "^/api/(.*)",
+      "dest": "/api/index.js"
     },
     {
-      "source": "/(.*)",
-      "destination": "/api/index.js"
+      "src": "^/(.*\\.(js|css|html|json|xml|txt|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|pdf))$",
+      "dest": "/public/$1"
+    },
+    {
+      "src": "^/(.*)$",
+      "dest": "/api/index.js"
     }
   ]
 }
