@@ -19,18 +19,25 @@ app.use(loggingMiddleware);
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   
+  // Always set CORS headers if origin is in allowed list
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (origin) {
+    // If origin exists but not in allowed list, still set it for the production domain
+    // This handles cases where Vercel headers might not apply
+    res.setHeader('Access-Control-Allow-Origin', 'https://www.kuhandranchatbot.info');
   }
   
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Max-Age', '3600');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  res.setHeader('Vary', 'Origin');
   
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
+    res.setHeader('Content-Length', '0');
+    return res.status(204).send();
   }
   
   next();
