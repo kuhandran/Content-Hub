@@ -45,19 +45,19 @@ try {
  * Get file listing from KV store (production)
  */
 async function getFromKV(key) {
-  console.error('[FILES] 🔍 getFromKV called for key:', key);
-  console.error('[FILES] 🔍 redis available:', !!redis, 'kv available:', !!kv);
+  console.info('[FILES] 🔍 getFromKV called for key:', key);
+  console.info('[FILES] 🔍 redis available:', !!redis, 'kv available:', !!kv);
   
   try {
     // Try Redis first if available
     if (redis && typeof redis.get === 'function') {
-      console.error('[FILES] 📖 Attempting to get from Redis');
+      console.info('[FILES] 📖 Attempting to get from Redis');
       try {
         const data = await redis.get(key);
-        console.error('[FILES] 📖 Redis get result:', data ? `${Buffer.byteLength(JSON.stringify(data))} bytes` : 'null');
+        console.info('[FILES] 📖 Redis get result:', data ? `${Buffer.byteLength(JSON.stringify(data))} bytes` : 'null');
         if (data) {
           const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-          console.error('[FILES] ✅ Got data from Redis, items count:', parsed?.items?.length || 0);
+          console.warn('[FILES] ✅ Got data from Redis, items count:', parsed?.items?.length || 0);
           return parsed;
         }
       } catch (err) {
@@ -67,13 +67,13 @@ async function getFromKV(key) {
     
     // Try Vercel KV as fallback
     if (kv && typeof kv.get === 'function') {
-      console.error('[FILES] 📖 Attempting to get from Vercel KV');
+      console.info('[FILES] 📖 Attempting to get from Vercel KV');
       try {
         const data = await kv.get(key);
-        console.error('[FILES] 📖 Vercel KV get result:', data ? 'found' : 'null');
+        console.info('[FILES] 📖 Vercel KV get result:', data ? 'found' : 'null');
         if (data) {
           const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-          console.error('[FILES] ✅ Got data from Vercel KV, items count:', parsed?.items?.length || 0);
+          console.warn('[FILES] ✅ Got data from Vercel KV, items count:', parsed?.items?.length || 0);
           return parsed;
         }
       } catch (err) {
@@ -81,7 +81,7 @@ async function getFromKV(key) {
       }
     }
     
-    console.error('[FILES] ⚠️  No data found from Redis or KV');
+    console.warn('[FILES] ⚠️  No data found from Redis or KV');
   } catch (err) {
     console.error('[FILES] ❌ Unexpected error in getFromKV:', err.message);
   }
@@ -415,25 +415,25 @@ router.get('/list/resume', async (req, res) => {
 // GET /api/files/list/files - List files from Redis
 router.get('/list/files', async (req, res) => {
   try {
-    console.error('[FILES] 🚀 /list/files endpoint called');
+    console.warn('[FILES] 🚀 /list/files endpoint called');
     let items = [];
     let source = 'unknown';
 
     // Try KV (production serverless) - prioritize this
-    console.error('[FILES] 🔍 Trying to get from KV/Redis');
+    console.info('[FILES] 🔍 Trying to get from KV/Redis');
     const kvData = await getFromKV('cms:list:files');
     if (kvData?.items) {
       items = kvData.items;
       source = 'vercel-kv';
-      console.error('[FILES] ✅ Got items from KV:', items.length);
+      console.warn('[FILES] ✅ Got items from KV:', items.length);
     }
 
     // Fallback to Redis individual files if no manifest
     if (items.length === 0 && redis) {
-      console.error('[FILES] 🔍 Trying individual redis files');
+      console.info('[FILES] 🔍 Trying individual redis files');
       try {
         const keys = await redis.keys('cms:files:*');
-        console.error('[FILES] 🔍 Found redis keys:', keys.length);
+        console.info('[FILES] 🔍 Found redis keys:', keys.length);
         for (const key of keys) {
           const filename = key.replace('cms:files:', '');
           const content = await redis.get(key);
@@ -482,10 +482,10 @@ router.get('/list/files', async (req, res) => {
     if (items.length === 0 && manifest?.files?.files) {
       items = manifest.files.files;
       source = 'manifest';
-      console.error('[FILES] ✅ Got items from manifest:', items.length);
+      console.warn('[FILES] ✅ Got items from manifest:', items.length);
     }
 
-    console.error('[FILES] 📊 Final result - items:', items.length, 'source:', source);
+    console.warn('[FILES] 📊 Final result - items:', items.length, 'source:', source);
     res.json({
       success: true,
       path: 'files',

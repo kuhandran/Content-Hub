@@ -38,7 +38,7 @@ initRedis();
  */
 async function ensureFileSeededed(filePath) {
   try {
-    console.error('[FILES-STORAGE] 🔄 Attempting to seed file:', filePath);
+    console.info('[FILES-STORAGE] 🔄 Attempting to seed file:', filePath);
     
     const fileName = path.basename(filePath);
     let content = null;
@@ -48,40 +48,40 @@ async function ensureFileSeededed(filePath) {
     let embeddedFiles = {};
     try {
       embeddedFiles = require('../data/embedded-static-files');
-      console.error('[FILES-STORAGE] 📦 Embedded files loaded:', Object.keys(embeddedFiles).length, 'files');
+      console.info('[FILES-STORAGE] 📦 Embedded files loaded:', Object.keys(embeddedFiles).length, 'files');
     } catch (err) {
-      console.error('[FILES-STORAGE] ⚠️  Could not load embedded files module:', err.message);
+      console.warn('[FILES-STORAGE] ⚠️  Could not load embedded files module:', err.message);
     }
     
     // Try embedded files
     if (embeddedFiles && embeddedFiles[fileName]) {
       content = embeddedFiles[fileName];
       source = 'embedded';
-      console.error('[FILES-STORAGE] ✅ Got from embedded files:', fileName);
+      console.warn('[FILES-STORAGE] ✅ Got from embedded files:', fileName);
     } else {
-      console.error('[FILES-STORAGE] 🔍 File not in embedded module:', fileName, '| Available:', Object.keys(embeddedFiles).slice(0, 5));
+      console.info('[FILES-STORAGE] 🔍 File not in embedded module:', fileName, '| Available:', Object.keys(embeddedFiles).slice(0, 5));
     }
     
     // Try filesystem as fallback
     if (!content) {
       const diskPath = path.join(__dirname, '../../public/files', fileName);
-      console.error('[FILES-STORAGE] 🔍 Checking filesystem:', diskPath);
+      console.info('[FILES-STORAGE] 🔍 Checking filesystem:', diskPath);
       if (fs.existsSync(diskPath)) {
         try {
           content = fs.readFileSync(diskPath, 'utf8');
           source = 'filesystem';
-          console.error('[FILES-STORAGE] ✅ Got from filesystem:', fileName);
+          console.warn('[FILES-STORAGE] ✅ Got from filesystem:', fileName);
         } catch (err) {
-          console.error('[FILES-STORAGE] Error reading file:', err.message);
+          console.error('[FILES-STORAGE] ❌ Error reading file:', err.message);
         }
       } else {
-        console.error('[FILES-STORAGE] 📂 File does not exist on filesystem:', diskPath);
+        console.info('[FILES-STORAGE] 📂 File does not exist on filesystem:', diskPath);
       }
     }
     
     // Provide fallback content for critical files if nothing else works
     if (!content) {
-      console.error('[FILES-STORAGE] 📋 Checking fallback data for:', fileName);
+      console.info('[FILES-STORAGE] 📋 Checking fallback data for:', fileName);
       const fallbackData = {
         'manifest.json': JSON.stringify({
           name: "Kuhandran's Portfolio",
@@ -107,9 +107,9 @@ async function ensureFileSeededed(filePath) {
       if (fallbackData[fileName]) {
         content = fallbackData[fileName];
         source = 'fallback-embedded';
-        console.error('[FILES-STORAGE] ✅ Using fallback data for:', fileName);
+        console.warn('[FILES-STORAGE] ✅ Using fallback data for:', fileName);
       } else {
-        console.error('[FILES-STORAGE] ❌ No fallback data for:', fileName);
+        console.info('[FILES-STORAGE] ❌ No fallback data for:', fileName);
       }
     }
     
@@ -118,21 +118,21 @@ async function ensureFileSeededed(filePath) {
       try {
         const key = `cms:files:${fileName}`;
         await redis.set(key, content);
-        console.error('[FILES-STORAGE] ✅ Seeded to Redis:', fileName, `(${source})`);
+        console.warn('[FILES-STORAGE] ✅ Seeded to Redis:', fileName, `(${source})`);
         return content;
       } catch (err) {
-        console.error('[FILES-STORAGE] Error seeding to Redis:', err.message);
+        console.error('[FILES-STORAGE] ❌ Error seeding to Redis:', err.message);
         // Even if seeding fails, we can still use the content
         return content;
       }
     } else if (content) {
-      console.error('[FILES-STORAGE] ⚠️  Got content but Redis not available, returning unsaved:', fileName);
+      console.warn('[FILES-STORAGE] ⚠️  Got content but Redis not available, returning unsaved:', fileName);
       return content;
     }
     
     return null;
   } catch (err) {
-    console.error('[FILES-STORAGE] Error ensuring file seeded:', err.message);
+    console.error('[FILES-STORAGE] ❌ Error ensuring file seeded:', err.message);
     return null;
   }
 }
@@ -153,25 +153,25 @@ router.get('/*', async (req, res) => {
     if (redis) {
       try {
         const key = `cms:files:${filePath}`;
-        console.error('[FILES-STORAGE] 🔍 Checking Redis for key:', key);
+        console.info('[FILES-STORAGE] 🔍 Checking Redis for key:', key);
         content = await redis.get(key);
         if (content) {
           source = 'redis';
-          console.error('[FILES-STORAGE] ✅ Found in Redis');
+          console.warn('[FILES-STORAGE] ✅ Found in Redis');
         } else {
-          console.error('[FILES-STORAGE] ⚠️  Not found in Redis, attempting to seed...');
+          console.warn('[FILES-STORAGE] ⚠️  Not found in Redis, attempting to seed...');
           // Try to seed from embedded/filesystem
           content = await ensureFileSeededed(filePath);
           if (content) {
             source = 'seeded-cache';
-            console.error('[FILES-STORAGE] ✅ File seeded successfully');
+            console.warn('[FILES-STORAGE] ✅ File seeded successfully');
           }
         }
       } catch (err) {
         console.error('[FILES-STORAGE] ❌ Redis read error:', err.message);
       }
     } else {
-      console.error('[FILES-STORAGE] ⚠️  Redis not available, attempting to seed...');
+      console.warn('[FILES-STORAGE] ⚠️  Redis not available, attempting to seed...');
       // Try to seed even without Redis
       content = await ensureFileSeededed(filePath);
       if (content) {
@@ -210,7 +210,7 @@ router.get('/*', async (req, res) => {
       
       // Instead of redirect (which can loop), return 404 with instructions
       // In production, Vercel will serve the file from static hosting
-      console.error('[FILES-STORAGE] 💡 File should be available at /files/' + filePath + ' via Vercel static hosting');
+      console.warn('[FILES-STORAGE] 💡 File should be available at /files/' + filePath + ' via Vercel static hosting');
       return res.status(404).json({ 
         error: 'File not found in cache, check if available via static hosting',
         path: filePath, 
@@ -242,20 +242,20 @@ router.get('/*', async (req, res) => {
     if (source === 'redis' || source === 'seeded-cache') {
       // Redis content is served as-is
       if (ext === 'json') {
-        console.error('[FILES-STORAGE] ✅ Serving JSON from Redis cache');
+        console.warn('[FILES-STORAGE] ✅ Serving JSON from Redis cache');
         return res.json(JSON.parse(content));
       }
       
-      console.error('[FILES-STORAGE] ✅ Serving from Redis cache');
+      console.warn('[FILES-STORAGE] ✅ Serving from Redis cache');
       return res.type(contentType).send(content);
     } else {
       // Serve directly from filesystem
       if (ext === 'json') {
-        console.error('[FILES-STORAGE] ✅ Serving JSON from filesystem');
+        console.warn('[FILES-STORAGE] ✅ Serving JSON from filesystem');
         return res.json(JSON.parse(content));
       }
       
-      console.error('[FILES-STORAGE] ✅ Serving from filesystem');
+      console.warn('[FILES-STORAGE] ✅ Serving from filesystem');
       return res.type(contentType).send(content);
     }
   } catch (error) {
