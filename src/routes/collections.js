@@ -5,6 +5,7 @@
 
 const express = require('express');
 const { createClient } = require('redis');
+const allowedOrigins = require('../config/allowedOrigins');
 const router = express.Router();
 
 let redis = null;
@@ -25,6 +26,26 @@ async function initRedis() {
 }
 
 initRedis();
+
+// Add CORS headers to all responses
+router.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '3600');
+  
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
 
 // GET /api/collections/* - Read any collection file
 router.get('/*', async (req, res) => {

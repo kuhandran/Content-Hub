@@ -1,6 +1,7 @@
 const express = require('express');
 const { createClient } = require('redis');
 const authMiddleware = require('../middleware/authMiddleware');
+const allowedOrigins = require('../config/allowedOrigins');
 const path = require('path');
 const fs = require('fs');
 const router = express.Router();
@@ -40,6 +41,26 @@ try {
 }
 
 // Legacy function removed - Redis is now initialized above
+
+// Add CORS headers to all responses
+router.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '3600');
+  
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
 
 /**
  * Get file listing from KV store (production)

@@ -8,8 +8,29 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
+const allowedOrigins = require('../config/allowedOrigins');
 
 module.exports = (cache) => {
+  // Add CORS headers to all responses
+  router.use((req, res, next) => {
+    const origin = req.headers.origin;
+    
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '3600');
+    
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    
+    next();
+  });
+
   function readFile(filePath) {
     try {
       const fullPath = path.join(__dirname, '../../public', filePath);

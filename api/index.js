@@ -8,6 +8,7 @@ const fileUpload = require('express-fileupload');
 const jwt = require('jsonwebtoken');
 const logger = require('../src/utils/logger');
 const loggingMiddleware = require('../src/middleware/loggingMiddleware');
+const allowedOrigins = require('../src/config/allowedOrigins');
 
 const app = express();
 
@@ -17,16 +18,6 @@ app.use(loggingMiddleware);
 // CORS middleware - Allow requests from localhost and production
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:8080',
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'https://static-api-opal.vercel.app',
-    'https://opal-tau.vercel.app',
-    'https://opal.vercel.app',
-    'https://www.kuhandranchatbot.info'
-  ];
   
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
