@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "npm install",
-  "buildCommand": "npm install",
+  "buildCommand": "npm install && node scripts/generate-manifest.js",
   "functions": {
     "api/**/*.js": {
       "memory": 1024,
