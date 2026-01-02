@@ -16,12 +16,21 @@ try {
   console.warn('[FILES] Manifest not found, will use filesystem only');
 }
 
-// Initialize Vercel KV (for production)
+// Initialize Vercel KV and Redis
 try {
-  kv = require('@vercel/kv');
-  console.log('[FILES] Vercel KV available for production use');
+  // Check for Redis URL first (new format)
+  if (process.env.REDIS_URL) {
+    console.log('[FILES] Redis URL detected, initializing redis client');
+    redis = createClient({ url: process.env.REDIS_URL });
+    // Connection will be established asynchronously
+  } else if (process.env.KV_REST_API_URL) {
+    // Fallback to Vercel KV with REST API
+    const kvModule = require('@vercel/kv');
+    kv = kvModule.kv || kvModule;
+    console.log('[FILES] Vercel KV available for production use');
+  }
 } catch (err) {
-  console.log('[FILES] Vercel KV not available (expected in local environment)');
+  console.log('[FILES] KV/Redis initialization note:', err.message);
 }
 
 // Initialize Redis connection (for local development)
@@ -46,11 +55,21 @@ initRedis();
  * Get file listing from KV store (production)
  */
 async function getFromKV(key) {
-  if (!kv) return null;
   try {
-    const data = await kv.get(key);
-    if (data) {
-      return typeof data === 'string' ? JSON.parse(data) : data;
+    // Try Redis first if available
+    if (redis && typeof redis.get === 'function') {
+      const data = await redis.get(key);
+      if (data) {
+        return typeof data === 'string' ? JSON.parse(data) : data;
+      }
+    }
+    
+    // Try Vercel KV as fallback
+    if (kv && typeof kv.get === 'function') {
+      const data = await kv.get(key);
+      if (data) {
+        return typeof data === 'string' ? JSON.parse(data) : data;
+      }
     }
   } catch (err) {
     console.error('[FILES] KV get error:', err.message);
