@@ -317,28 +317,33 @@ function getManifest() {
  */
 async function seedFileContents(files, directory) {
   let seedCount = 0;
+  const seedLog = [];
+  
   for (const file of files) {
     try {
       // Try to read from filesystem first
       let content = null;
       let source = 'unknown';
+      let logEntry = null;
       
       const fileName = file.path.split('/').pop();
       
       // Attempt 1: Direct filesystem path
       const filePath = path.join(__dirname, `../../public/${directory}`, fileName);
-      console.error('[ADMIN-SEED] 🔍 Attempting to read file from:', filePath);
+      console.info('[ADMIN-SEED] 🔍 Attempting to read file from:', filePath);
       
       if (fs.existsSync(filePath)) {
         try {
           content = fs.readFileSync(filePath, 'utf8');
           source = 'filesystem';
-          console.error('[ADMIN-SEED] ✅ Read from filesystem:', file.name);
+          logEntry = `✅ ${file.path} → cms:files:${fileName} (filesystem)`;
+          console.warn('[ADMIN-SEED] ✅ Read from filesystem:', file.name);
         } catch (readErr) {
+          logEntry = `❌ ${file.path} → Error reading: ${readErr.message}`;
           console.error('[ADMIN-SEED] ❌ Error reading file:', readErr.message);
         }
       } else {
-        console.error('[ADMIN-SEED] ⚠️  File not found at:', filePath);
+        console.info('[ADMIN-SEED] ⚠️  File not found at:', filePath);
         
         // Try alternative path for production
         const altPath = path.join(__dirname, `../../../public/${directory}`, fileName);
@@ -346,10 +351,14 @@ async function seedFileContents(files, directory) {
           try {
             content = fs.readFileSync(altPath, 'utf8');
             source = 'filesystem-alt';
-            console.error('[ADMIN-SEED] ✅ Read from alternative path:', file.name);
+            logEntry = `✅ ${file.path} → cms:files:${fileName} (filesystem-alt)`;
+            console.warn('[ADMIN-SEED] ✅ Read from alternative path:', file.name);
           } catch (readErr) {
+            logEntry = `❌ ${file.path} → Error reading from alt: ${readErr.message}`;
             console.error('[ADMIN-SEED] ⚠️  Error reading from alt path:', readErr.message);
           }
+        } else {
+          logEntry = `⚠️ ${file.path} → Not found in filesystem`;
         }
       }
       
@@ -357,24 +366,30 @@ async function seedFileContents(files, directory) {
       if (!content && embeddedStaticFiles[fileName]) {
         content = embeddedStaticFiles[fileName];
         source = 'embedded';
-        console.error('[ADMIN-SEED] ✅ Got from embedded static files:', file.name);
+        logEntry = `✅ ${file.path} → cms:files:${fileName} (embedded)`;
+        console.warn('[ADMIN-SEED] ✅ Got from embedded static files:', file.name);
       }
       
       // If we got content, seed it to Redis
       if (content) {
         const key = `cms:files:${fileName}`;
         await kvSet(key, content);
-        console.error('[ADMIN-SEED] 📦 Seeded file content to Redis:', file.name, `(${source})`);
+        console.warn('[ADMIN-SEED] 📦 Seeded to Redis: ${file.path} → ${key} (${source})');
+        seedLog.push(logEntry);
         seedCount++;
       } else {
-        console.error('[ADMIN-SEED] ⚠️  Skipping file - no content available:', file.name);
+        console.warn('[ADMIN-SEED] ⚠️  Skipping file - no content available:', file.name);
+        seedLog.push(`⚠️ ${file.path} → No content available`);
       }
     } catch (err) {
       console.error('[ADMIN-SEED] ❌ Error processing file', file.name, ':', err.message);
+      seedLog.push(`❌ ${file.path} → Error: ${err.message}`);
     }
   }
-  console.error('[ADMIN-SEED] 📊 File content seeding complete: seeded', seedCount, 'files');
-  return seedCount;
+  
+  console.warn('[ADMIN-SEED] 📊 File content seeding complete: seeded', seedCount, 'of', files.length, 'files');
+  console.warn('[ADMIN-SEED] 📋 Seeding log:', seedLog.join(' | '));
+  return { count: seedCount, total: files.length, log: seedLog };
 }
 
 /**
@@ -464,16 +479,16 @@ router.post('/seed-files', async (req, res) => {
       seedCount += manifest.files.files.length;
       
       // Also seed actual file contents
-      console.error('[ADMIN-SEED] 📦 Seeding static file contents to Redis');
-      const filesContentCount = await seedFileContents(manifest.files.files, 'files');
-      console.error('[ADMIN-SEED] ✅ Seeded', filesContentCount, 'file contents');
+      console.warn('[ADMIN-SEED] 📦 Seeding static file contents to Redis');
+      const filesContentResult = await seedFileContents(manifest.files.files, 'files');
+      console.warn('[ADMIN-SEED] ✅ Seeded', filesContentResult.count, 'of', filesContentResult.total, 'file contents');
     } else {
-      console.error('[ADMIN-SEED] ⚠️  No static files to seed');
+      console.warn('[ADMIN-SEED] ⚠️  No static files to seed');
     }
 
     // Seed collections
     if (manifest.files.collections && manifest.files.collections.length > 0) {
-      console.log('[ADMIN-SEED] Seeding', manifest.files.collections.length, 'collection files');
+      console.warn('[ADMIN-SEED] Seeding', manifest.files.collections.length, 'collection files');
       const collectionsData = {
         path: 'collections',
         count: manifest.files.collections.length,
@@ -484,14 +499,14 @@ router.post('/seed-files', async (req, res) => {
       results.collections = manifest.files.collections.length;
       seedCount += manifest.files.collections.length;
     } else {
-      console.log('[ADMIN-SEED] ⚠️  No collection files to seed');
+      console.warn('[ADMIN-SEED] ⚠️  No collection files to seed');
     }
 
     // Seed full manifest
-    console.log('[ADMIN-SEED] Seeding manifest...');
+    console.warn('[ADMIN-SEED] Seeding manifest...');
     await kvSet('cms:manifest', manifest);
 
-    console.log('[ADMIN] ✅ Seeding complete:', results, 'Total:', seedCount);
+    console.warn('[ADMIN] ✅ Seeding complete:', results, 'Total:', seedCount);
     
     let storageName = 'In-Memory';
     if (kv) {
@@ -563,7 +578,7 @@ router.get('/seed-status', async (req, res) => {
  * Auto-seeding on startup (for Vercel cold starts)
  */
 async function autoSeed() {
-  console.error('[ADMIN-SEED] 🚀 Auto-seeding on startup...');
+  console.warn('[ADMIN-SEED] 🚀 Auto-seeding on startup...');
   try {
     const manifest = getManifest();
     
@@ -576,15 +591,15 @@ async function autoSeed() {
         const fileName = firstFile.path.split('/').pop();
         const fileContent = await kvGet(`cms:files:${fileName}`);
         if (fileContent) {
-          console.error('[ADMIN-SEED] ✅ Data and file contents already seeded, skipping');
+          console.warn('[ADMIN-SEED] ✅ Data and file contents already seeded, skipping');
           return;
         } else {
-          console.error('[ADMIN-SEED] ⚠️  Metadata exists but file contents missing, re-seeding...');
+          console.warn('[ADMIN-SEED] ⚠️  Metadata exists but file contents missing, re-seeding...');
         }
       }
     }
     
-    console.error('[ADMIN-SEED] 📝 Seeding file metadata...');
+    console.warn('[ADMIN-SEED] 📝 Seeding file metadata...');
     
     // Seed files metadata
     if (manifest.files.files && manifest.files.files.length > 0) {
@@ -595,37 +610,37 @@ async function autoSeed() {
         timestamp: new Date().toISOString()
       };
       await kvSet('cms:list:files', filesData);
-      console.error('[ADMIN-SEED] ✅ Seeded files metadata:', manifest.files.files.length);
+      console.warn('[ADMIN-SEED] ✅ Seeded files metadata:', manifest.files.files.length);
       
       // Seed file contents - try multiple paths
-      console.error('[ADMIN-SEED] 📦 Seeding file contents from disk...');
-      let contentCount = await seedFileContents(manifest.files.files, 'files');
+      console.warn('[ADMIN-SEED] 📦 Seeding file contents from disk...');
+      let contentResult = await seedFileContents(manifest.files.files, 'files');
       
-      if (contentCount === 0) {
-        console.error('[ADMIN-SEED] ⚠️  Could not seed any files from filesystem, files may not be deployed');
-        console.error('[ADMIN-SEED] 💡 Ensure public/files/* are included in Vercel deployment');
+      if (contentResult.count === 0) {
+        console.warn('[ADMIN-SEED] ⚠️  Could not seed any files from filesystem, files may not be deployed');
+        console.warn('[ADMIN-SEED] 💡 Ensure public/files/* are included in Vercel deployment');
       } else {
-        console.error('[ADMIN-SEED] ✅ Seeded', contentCount, 'file contents');
+        console.warn('[ADMIN-SEED] ✅ Seeded', contentResult.count, 'of', contentResult.total, 'file contents');
       }
     }
     
     // Seed other metadata
     if (manifest.files.config && manifest.files.config.length > 0) {
       await kvSet('cms:list:config', { items: manifest.files.config });
-      console.error('[ADMIN-SEED] ✅ Seeded config metadata');
+      console.warn('[ADMIN-SEED] ✅ Seeded config metadata');
     }
     if (manifest.files.data && manifest.files.data.length > 0) {
       await kvSet('cms:list:data', { items: manifest.files.data });
-      console.error('[ADMIN-SEED] ✅ Seeded data metadata');
+      console.warn('[ADMIN-SEED] ✅ Seeded data metadata');
     }
     if (manifest.files.collections && manifest.files.collections.length > 0) {
       await kvSet('cms:list:collections', { items: manifest.files.collections });
-      console.error('[ADMIN-SEED] ✅ Seeded collections metadata');
+      console.warn('[ADMIN-SEED] ✅ Seeded collections metadata');
     }
     
     // Seed full manifest
     await kvSet('cms:manifest', manifest);
-    console.error('[ADMIN-SEED] ✅ Auto-seeding complete!');
+    console.warn('[ADMIN-SEED] ✅ Auto-seeding complete!');
   } catch (err) {
     console.error('[ADMIN-SEED] ❌ Auto-seeding failed:', err.message);
   }
