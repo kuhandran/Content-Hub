@@ -310,20 +310,40 @@ async function seedFileContents(files, directory) {
   let seedCount = 0;
   for (const file of files) {
     try {
+      // Try to read from filesystem first
+      let content = null;
+      let source = 'unknown';
+      
+      // Attempt 1: Direct filesystem path
       const filePath = path.join(__dirname, `../../public/${directory}`, file.path.split('/').pop());
+      console.error('[ADMIN-SEED] 🔍 Attempting to read file from:', filePath);
+      
       if (fs.existsSync(filePath)) {
-        const content = fs.readFileSync(filePath, 'utf8');
+        try {
+          content = fs.readFileSync(filePath, 'utf8');
+          source = 'filesystem';
+          console.error('[ADMIN-SEED] ✅ Read from filesystem:', file.name);
+        } catch (readErr) {
+          console.error('[ADMIN-SEED] ❌ Error reading file:', readErr.message);
+        }
+      } else {
+        console.error('[ADMIN-SEED] ⚠️  File not found at:', filePath);
+      }
+      
+      // If we got content, seed it to Redis
+      if (content) {
         const key = `cms:files:${file.path.split('/').pop()}`;
         await kvSet(key, content);
-        console.error('[ADMIN-SEED] 📦 Seeded file content:', file.name);
+        console.error('[ADMIN-SEED] 📦 Seeded file content to Redis:', file.name, `(${source})`);
         seedCount++;
       } else {
-        console.error('[ADMIN-SEED] ⚠️  File not found on disk:', file.name, 'at', filePath);
+        console.error('[ADMIN-SEED] ⚠️  Skipping file - no content available:', file.name);
       }
     } catch (err) {
-      console.error('[ADMIN-SEED] ❌ Error seeding file', file.name, ':', err.message);
+      console.error('[ADMIN-SEED] ❌ Error processing file', file.name, ':', err.message);
     }
   }
+  console.error('[ADMIN-SEED] 📊 File content seeding complete: seeded', seedCount, 'files');
   return seedCount;
 }
 

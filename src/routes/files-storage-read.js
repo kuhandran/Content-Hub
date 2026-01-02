@@ -92,7 +92,11 @@ router.get('/*', async (req, res) => {
 
     if (!content) {
       console.error('[FILES-STORAGE] ❌ File not found from any source');
-      return res.status(404).json({ error: 'File not found', path: filePath, source });
+      
+      // As a last resort, redirect to the public URL
+      const publicUrl = `/files/${filePath}`;
+      console.error('[FILES-STORAGE] 🔄 Redirecting to public URL:', publicUrl);
+      return res.redirect(302, publicUrl);
     }
 
     // Determine MIME type based on extension
