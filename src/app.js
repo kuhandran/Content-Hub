@@ -50,6 +50,8 @@ const configRoutes = require('./routes/config');
 const collectionsRoutes = require('./routes/collections');
 const backupRoutes = require('./routes/backup');
 const scannerRoutes = require('./routes/scanner');
+const adminRoutes = require('./routes/admin');
+const { router: adminSeedRoutes } = require('./routes/admin-seed');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -58,6 +60,8 @@ app.use('/api/config', configRoutes);
 app.use('/api/collections', collectionsRoutes);
 app.use('/api/backup', backupRoutes);
 app.use('/api/scanner', scannerRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminSeedRoutes);
 
 // Login page (without auth, but redirect if already authenticated)
 app.get('/login', (req, res) => {

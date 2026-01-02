@@ -67,6 +67,7 @@ const imageReadRoutes = require('../src/routes/image-read');
 const resumeReadRoutes = require('../src/routes/resume-read');
 const filesStorageReadRoutes = require('../src/routes/files-storage-read');
 const adminRoutes = require('../src/routes/admin');
+const { router: adminSeedRoutes } = require('../src/routes/admin-seed');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -79,6 +80,7 @@ app.use('/api/storage-files', filesStorageReadRoutes);  // Read storage files
 app.use('/api/scanner', scannerRoutes);
 app.use('/api/collections', collectionsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminSeedRoutes);  // Seed files endpoint
 
 // Import middleware
 const authMiddleware = require('../src/middleware/authMiddleware');

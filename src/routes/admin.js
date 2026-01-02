@@ -98,4 +98,9 @@ router.get('/seed-status', adminAuth, async (req, res) => {
   });
 });
 
+// Admin file management page
+router.get('/files', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../views/admin-files.html'));
+});
+
 module.exports = router;

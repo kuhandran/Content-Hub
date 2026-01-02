@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Management - Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .status-box {
+            background: #f0f2f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-label {
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .status-value {
+            background: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 14px;
+        }
+        
+        .storage-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .storage-badge.kv {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .storage-badge.memory {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .action-section {
+            margin-bottom: 30px;
+        }
+        
+        .action-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .btn-secondary {
+            background: #f0f2f5;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        
+        .btn-secondary:hover:not(:disabled) {
+            background: #e4e6eb;
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .message.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+            display: block;
+        }
+        
+        .message.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+            display: block;
+        }
+        
+        .message.info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #2196f3;
+            display: block;
+        }
+        
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .results {
+            background: #f0f2f5;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .result-count {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .info-section {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .info-section strong {
+            color: #333;
+        }
+        
+        .last-refresh {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f2f5;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📁 File Management</h1>
+            <p>Manage file listings for your CMS</p>
+        </div>
+        
+        <div class="content">
+            <!-- Status Section -->
+            <div class="status-box">
+                <div class="status-item">
+                    <span class="status-label">Storage Type</span>
+                    <span class="storage-badge" id="storageType">Loading...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Config Files</span>
+                    <span class="status-value" id="configCount">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Data Files</span>
+                    <span class="status-value" id="dataCount">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Static Files</span>
+                    <span class="status-value" id="filesCount">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Collections</span>
+                    <span class="status-value" id="collectionsCount">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Total Files</span>
+                    <span class="status-value" id="totalCount">-</span>
+                </div>
+            </div>
+            
+            <!-- Refresh Section -->
+            <div class="action-section">
+                <div class="action-title">🔄 Refresh Files</div>
+                <div class="button-group">
+                    <button class="btn-primary" id="refreshBtn" onclick="refreshFiles()">
+                        <span class="loader" id="loader"></span>
+                        Refresh File Listings
+                    </button>
+                    <button class="btn-secondary" onclick="checkStatus()">Check Status</button>
+                </div>
+                <div id="message" class="message"></div>
+                <div id="results" class="results">
+                    <div class="result-item">
+                        <span class="result-label">Config:</span>
+                        <span class="result-count" id="resultConfig">0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Data:</span>
+                        <span class="result-count" id="resultData">0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Files:</span>
+                        <span class="result-count" id="resultFiles">0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Collections:</span>
+                        <span class="result-count" id="resultCollections">0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total Seeded:</span>
+                        <span class="result-count" id="resultTotal">0</span>
+                    </div>
+                </div>
+                <div id="lastRefresh" class="last-refresh"></div>
+            </div>
+            
+            <!-- Info Section -->
+            <div class="info-section">
+                <strong>ℹ️ How it works:</strong><br>
+                <strong>1. Refresh:</strong> Reads the manifest.json file and populates Vercel KV storage<br>
+                <strong>2. Check Status:</strong> Shows current file count in the storage<br>
+                <strong>3. Storage:</strong> Uses Vercel KV in production, in-memory in development<br>
+                <strong>4. Fallback:</strong> If storage is empty, requests will use manifest.json
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        const STORAGE_KEY = 'cms:list:';
+        
+        // Load status on page load
+        document.addEventListener('DOMContentLoaded', checkStatus);
+        
+        async function refreshFiles() {
+            const btn = document.getElementById('refreshBtn');
+            const loader = document.getElementById('loader');
+            const msg = document.getElementById('message');
+            const results = document.getElementById('results');
+            
+            btn.disabled = true;
+            loader.style.display = 'inline-block';
+            msg.className = 'message info';
+            msg.textContent = 'Refreshing file listings...';
+            results.classList.remove('show');
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/seed-files`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getCookie('token') || ''}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    msg.className = 'message success';
+                    msg.textContent = `✅ ${data.message}`;
+                    
+                    // Show results
+                    document.getElementById('resultConfig').textContent = data.results.config;
+                    document.getElementById('resultData').textContent = data.results.data;
+                    document.getElementById('resultFiles').textContent = data.results.files;
+                    document.getElementById('resultCollections').textContent = data.results.collections;
+                    document.getElementById('resultTotal').textContent = data.total;
+                    results.classList.add('show');
+                    
+                    // Update last refresh
+                    document.getElementById('lastRefresh').textContent = 
+                        `Last refreshed: ${new Date(data.timestamp).toLocaleString()}`;
+                    
+                    // Update status after successful refresh
+                    setTimeout(checkStatus, 1000);
+                } else {
+                    msg.className = 'message error';
+                    msg.textContent = `❌ ${data.error || 'Failed to refresh files'}`;
+                }
+            } catch (error) {
+                msg.className = 'message error';
+                msg.textContent = `❌ Error: ${error.message}`;
+                console.error('Refresh error:', error);
+            } finally {
+                btn.disabled = false;
+                loader.style.display = 'none';
+            }
+        }
+        
+        async function checkStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/seed-status`);
+                const data = await response.json();
+                
+                // Update storage badge
+                const badge = document.getElementById('storageType');
+                const className = data.storage === 'Vercel KV' ? 'kv' : 'memory';
+                badge.className = `storage-badge ${className}`;
+                badge.textContent = data.storage;
+                
+                // Update counts
+                document.getElementById('configCount').textContent = data.seeded.config;
+                document.getElementById('dataCount').textContent = data.seeded.data;
+                document.getElementById('filesCount').textContent = data.seeded.files;
+                document.getElementById('collectionsCount').textContent = data.seeded.collections;
+                document.getElementById('totalCount').textContent = data.totalFiles;
+                
+            } catch (error) {
+                console.error('Status check error:', error);
+            }
+        }
+        
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return '';
+        }
+    </script>
+</body>
+</html>

@@ -7,6 +7,7 @@ const router = express.Router();
 
 let redis = null;
 let manifest = null;
+let kv = null;
 
 // Load manifest
 try {
@@ -15,7 +16,15 @@ try {
   console.warn('[FILES] Manifest not found, will use filesystem only');
 }
 
-// Initialize Redis connection
+// Initialize Vercel KV (for production)
+try {
+  kv = require('@vercel/kv');
+  console.log('[FILES] Vercel KV available for production use');
+} catch (err) {
+  console.log('[FILES] Vercel KV not available (expected in local environment)');
+}
+
+// Initialize Redis connection (for local development)
 async function initRedis() {
   try {
     const redisUrl = process.env.REDIS_URL;
@@ -23,6 +32,7 @@ async function initRedis() {
 
     redis = createClient({ url: redisUrl });
     await redis.connect();
+    console.log('[FILES] Redis connected');
     return true;
   } catch (err) {
     console.error('[FILES] Redis init failed:', err.message);
@@ -32,12 +42,29 @@ async function initRedis() {
 
 initRedis();
 
-// Public listing endpoints (no auth required) - read from filesystem or manifest fallback
+/**
+ * Get file listing from KV store (production)
+ */
+async function getFromKV(key) {
+  if (!kv) return null;
+  try {
+    const data = await kv.get(key);
+    if (data) {
+      return typeof data === 'string' ? JSON.parse(data) : data;
+    }
+  } catch (err) {
+    console.error('[FILES] KV get error:', err.message);
+  }
+  return null;
+}
+
+// Public listing endpoints (no auth required) - read from filesystem, KV, or manifest fallback
 router.get('/list-public/config', async (req, res) => {
   try {
     let items = [];
+    let source = 'unknown';
     
-    // Try filesystem first
+    // Try filesystem first (local development)
     const configDir = path.join(__dirname, '../../public/config');
     if (fs.existsSync(configDir)) {
       const files = fs.readdirSync(configDir);
@@ -53,9 +80,22 @@ router.get('/list-public/config', async (req, res) => {
           ext: path.extname(file)
         });
       }
-    } else if (manifest?.files?.config) {
-      // Fallback to manifest
+      source = 'filesystem';
+    }
+    
+    // Try KV (production serverless)
+    if (items.length === 0) {
+      const kvData = await getFromKV('cms:list:config');
+      if (kvData?.items) {
+        items = kvData.items;
+        source = 'vercel-kv';
+      }
+    }
+    
+    // Fallback to manifest
+    if (items.length === 0 && manifest?.files?.config) {
       items = manifest.files.config;
+      source = 'manifest';
     }
 
     res.json({
@@ -63,7 +103,8 @@ router.get('/list-public/config', async (req, res) => {
       path: 'config',
       items,
       count: items.length,
-      message: items.length > 0 ? `Found ${items.length} config files` : 'No config files'
+      source,
+      message: items.length > 0 ? `Found ${items.length} config files (${source})` : 'No config files'
     });
   } catch (err) {
     console.error('[FILES] Error listing config:', err);
@@ -80,8 +121,9 @@ router.get('/list-public/config', async (req, res) => {
 router.get('/list-public/data', async (req, res) => {
   try {
     let items = [];
+    let source = 'unknown';
     
-    // Try filesystem first
+    // Try filesystem first (local development)
     const dataDir = path.join(__dirname, '../../public/data');
     if (fs.existsSync(dataDir)) {
       const files = fs.readdirSync(dataDir);
@@ -97,9 +139,22 @@ router.get('/list-public/data', async (req, res) => {
           ext: path.extname(file)
         });
       }
-    } else if (manifest?.files?.data) {
-      // Fallback to manifest
+      source = 'filesystem';
+    }
+    
+    // Try KV (production serverless)
+    if (items.length === 0) {
+      const kvData = await getFromKV('cms:list:data');
+      if (kvData?.items) {
+        items = kvData.items;
+        source = 'vercel-kv';
+      }
+    }
+    
+    // Fallback to manifest
+    if (items.length === 0 && manifest?.files?.data) {
       items = manifest.files.data;
+      source = 'manifest';
     }
 
     res.json({
@@ -107,7 +162,8 @@ router.get('/list-public/data', async (req, res) => {
       path: 'data',
       items,
       count: items.length,
-      message: items.length > 0 ? `Found ${items.length} data files` : 'No data files'
+      source,
+      message: items.length > 0 ? `Found ${items.length} data files (${source})` : 'No data files'
     });
   } catch (err) {
     console.error('[FILES] Error listing data:', err);
@@ -124,8 +180,9 @@ router.get('/list-public/data', async (req, res) => {
 router.get('/list-public/files', async (req, res) => {
   try {
     let items = [];
+    let source = 'unknown';
     
-    // Try filesystem first
+    // Try filesystem first (local development)
     const filesDir = path.join(__dirname, '../../public/files');
     if (fs.existsSync(filesDir)) {
       const files = fs.readdirSync(filesDir);
@@ -143,9 +200,22 @@ router.get('/list-public/files', async (req, res) => {
           });
         }
       }
-    } else if (manifest?.files?.files) {
-      // Fallback to manifest
+      source = 'filesystem';
+    }
+    
+    // Try KV (production serverless)
+    if (items.length === 0) {
+      const kvData = await getFromKV('cms:list:files');
+      if (kvData?.items) {
+        items = kvData.items;
+        source = 'vercel-kv';
+      }
+    }
+    
+    // Fallback to manifest
+    if (items.length === 0 && manifest?.files?.files) {
       items = manifest.files.files;
+      source = 'manifest';
     }
 
     res.json({
@@ -153,7 +223,8 @@ router.get('/list-public/files', async (req, res) => {
       path: 'files',
       items,
       count: items.length,
-      message: items.length > 0 ? `Found ${items.length} files` : 'No files'
+      source,
+      message: items.length > 0 ? `Found ${items.length} files (${source})` : 'No files'
     });
   } catch (err) {
     console.error('[FILES] Error listing files:', err);
