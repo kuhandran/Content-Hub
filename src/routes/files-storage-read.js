@@ -93,10 +93,15 @@ router.get('/*', async (req, res) => {
     if (!content) {
       console.error('[FILES-STORAGE] ❌ File not found from any source');
       
-      // As a last resort, redirect to the public URL
-      const publicUrl = `/files/${filePath}`;
-      console.error('[FILES-STORAGE] 🔄 Redirecting to public URL:', publicUrl);
-      return res.redirect(302, publicUrl);
+      // Instead of redirect (which can loop), return 404 with instructions
+      // In production, Vercel will serve the file from static hosting
+      console.error('[FILES-STORAGE] 💡 File should be available at /files/' + filePath + ' via Vercel static hosting');
+      return res.status(404).json({ 
+        error: 'File not found in cache, check if available via static hosting',
+        path: filePath, 
+        source,
+        staticUrl: `/files/${filePath}`
+      });
     }
 
     // Determine MIME type based on extension

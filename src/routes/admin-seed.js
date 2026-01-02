@@ -529,4 +529,64 @@ router.get('/seed-status', async (req, res) => {
   }
 });
 
+/**
+ * Auto-seeding on startup (for Vercel cold starts)
+ */
+async function autoSeed() {
+  console.error('[ADMIN-SEED] 🚀 Auto-seeding on startup...');
+  try {
+    const manifest = getManifest();
+    
+    // Check if data is already seeded
+    const existingData = await kvGet('cms:list:files');
+    if (existingData?.items?.length > 0) {
+      console.error('[ADMIN-SEED] ✅ Data already seeded, skipping');
+      return;
+    }
+    
+    console.error('[ADMIN-SEED] 📝 Seeding file metadata...');
+    
+    // Seed files metadata
+    if (manifest.files.files && manifest.files.files.length > 0) {
+      const filesData = {
+        path: 'files',
+        count: manifest.files.files.length,
+        items: manifest.files.files,
+        timestamp: new Date().toISOString()
+      };
+      await kvSet('cms:list:files', filesData);
+      console.error('[ADMIN-SEED] ✅ Seeded files metadata:', manifest.files.files.length);
+      
+      // Seed file contents
+      console.error('[ADMIN-SEED] 📦 Seeding file contents...');
+      await seedFileContents(manifest.files.files, 'files');
+    }
+    
+    // Seed other metadata
+    if (manifest.files.config && manifest.files.config.length > 0) {
+      await kvSet('cms:list:config', { items: manifest.files.config });
+      console.error('[ADMIN-SEED] ✅ Seeded config metadata');
+    }
+    if (manifest.files.data && manifest.files.data.length > 0) {
+      await kvSet('cms:list:data', { items: manifest.files.data });
+      console.error('[ADMIN-SEED] ✅ Seeded data metadata');
+    }
+    if (manifest.files.collections && manifest.files.collections.length > 0) {
+      await kvSet('cms:list:collections', { items: manifest.files.collections });
+      console.error('[ADMIN-SEED] ✅ Seeded collections metadata');
+    }
+    
+    // Seed full manifest
+    await kvSet('cms:manifest', manifest);
+    console.error('[ADMIN-SEED] ✅ Auto-seeding complete!');
+  } catch (err) {
+    console.error('[ADMIN-SEED] ❌ Auto-seeding failed:', err.message);
+  }
+}
+
+// Trigger auto-seeding after a short delay (allows Redis to connect first)
+setTimeout(() => {
+  autoSeed().catch(err => console.error('[ADMIN-SEED] Uncaught auto-seed error:', err));
+}, 2000);
+
 module.exports = { router, kvGet, kvSet };
