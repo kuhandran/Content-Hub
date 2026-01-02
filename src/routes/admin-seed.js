@@ -319,6 +319,33 @@ async function seedFileContents(files, directory) {
   let seedCount = 0;
   const seedLog = [];
   
+  // Hardcoded fallback data for critical static files
+  const fallbackData = {
+    'manifest.json': JSON.stringify({
+      name: "Kuhandran's Portfolio",
+      short_name: "Portfolio",
+      start_url: "/",
+      display: "standalone",
+      background_color: "#ffffff",
+      theme_color: "#007bff",
+      icons: [
+        {
+          src: "/image/apple-touch-icon.svg",
+          sizes: "192x192",
+          type: "image/svg+xml"
+        }
+      ]
+    }, null, 2),
+    'logo.svg': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#007bff"/><text x="50" y="55" text-anchor="middle" fill="white" font-size="60" font-weight="bold">K</text></svg>',
+    'apple-touch-icon.svg': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><circle cx="90" cy="90" r="85" fill="#007bff"/></svg>',
+    'browserconfig.xml': '<?xml version="1.0" encoding="utf-8"?><browserconfig><msapplication><tile><square150x150logo src="/image/mstile-150x150.png"/><TileColor>#007bff</TileColor></tile></msapplication></browserconfig>',
+    'robots.txt': 'User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n\nUser-agent: ChatGPT-User\nDisallow: /\n\nUser-agent: CCBot\nDisallow: /\n\nUser-agent: GPTBot\nDisallow: /',
+    'sitemap.xml': '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://kuhandran.com/</loc><lastmod>2026-01-02</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url></urlset>',
+    'offline.html': '<!DOCTYPE html><html><head><title>Offline</title><style>body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f5f5f5}<h1>Offline</h1><p>You are currently offline. Please check your connection.</p></style></head><body></body></html>',
+    'privacy-policy.html': '<!DOCTYPE html><html><head><title>Privacy Policy</title></head><body><h1>Privacy Policy</h1><p>This is the privacy policy page.</p></body></html>',
+    'terms-of-service.html': '<!DOCTYPE html><html><head><title>Terms of Service</title></head><body><h1>Terms of Service</h1><p>This is the terms of service page.</p></body></html>'
+  };
+  
   for (const file of files) {
     try {
       // Try to read from filesystem first
@@ -357,8 +384,6 @@ async function seedFileContents(files, directory) {
             logEntry = `❌ ${file.path} → Error reading from alt: ${readErr.message}`;
             console.error('[ADMIN-SEED] ⚠️  Error reading from alt path:', readErr.message);
           }
-        } else {
-          logEntry = `⚠️ ${file.path} → Not found in filesystem`;
         }
       }
       
@@ -370,11 +395,19 @@ async function seedFileContents(files, directory) {
         console.warn('[ADMIN-SEED] ✅ Got from embedded static files:', file.name);
       }
       
+      // If still no content, try hardcoded fallback data
+      if (!content && fallbackData[fileName]) {
+        content = fallbackData[fileName];
+        source = 'fallback-data';
+        logEntry = `✅ ${file.path} → cms:files:${fileName} (fallback-data)`;
+        console.warn('[ADMIN-SEED] ✅ Using hardcoded fallback data for:', file.name);
+      }
+      
       // If we got content, seed it to Redis
       if (content) {
         const key = `cms:files:${fileName}`;
         await kvSet(key, content);
-        console.warn('[ADMIN-SEED] 📦 Seeded to Redis: ${file.path} → ${key} (${source})');
+        console.warn(`[ADMIN-SEED] 📦 Seeded to Redis: ${file.path} → ${key} (${source})`);
         seedLog.push(logEntry);
         seedCount++;
       } else {
