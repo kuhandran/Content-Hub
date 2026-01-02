@@ -169,14 +169,36 @@ router.use((req, res, next) => {
 let kv = null;
 let memoryStore = {};
 
-// Try to load Vercel KV
+// Try to load Vercel KV or Redis from environment
 try {
-  const kvModule = require('@vercel/kv');
-  // @vercel/kv exports methods directly or as { kv } named export
-  kv = kvModule.kv || kvModule;
-  console.log('[ADMIN-SEED] Using Vercel KV storage');
+  // Check for Redis URL first (new format)
+  if (process.env.REDIS_URL || process.env.KV_REST_API_URL) {
+    const redisUrl = process.env.REDIS_URL || process.env.KV_REST_API_URL;
+    const { createClient } = require('redis');
+    
+    kv = createClient({ url: redisUrl });
+    
+    // Handle connection
+    kv.on('error', (err) => {
+      console.error('[ADMIN-SEED] Redis connection error:', err.message);
+      kv = null; // Fallback to memory on error
+    });
+    
+    kv.connect().catch((err) => {
+      console.error('[ADMIN-SEED] Failed to connect to Redis:', err.message);
+      kv = null; // Fallback to memory on error
+    });
+    
+    console.log('[ADMIN-SEED] Using Redis/KV storage via URL');
+  } else {
+    // Try @vercel/kv as fallback
+    const kvModule = require('@vercel/kv');
+    kv = kvModule.kv || kvModule;
+    console.log('[ADMIN-SEED] Using Vercel KV storage');
+  }
 } catch (err) {
-  console.log('[ADMIN-SEED] Vercel KV not available, using in-memory fallback');
+  console.log('[ADMIN-SEED] KV/Redis not available, using in-memory fallback:', err.message);
+  kv = null;
 }
 
 /**
@@ -187,6 +209,7 @@ async function kvSet(key, value) {
   
   if (kv && typeof kv.set === 'function') {
     try {
+      // Handle both Redis client and Vercel KV
       await kv.set(key, data);
       return true;
     } catch (err) {
@@ -207,7 +230,9 @@ async function kvSet(key, value) {
 async function kvGet(key) {
   if (kv && typeof kv.get === 'function') {
     try {
-      return await kv.get(key);
+      // Handle both Redis client and Vercel KV
+      const result = await kv.get(key);
+      return result;
     } catch (err) {
       console.error('[ADMIN-SEED] KV get error:', err.message);
       return memoryStore[key] || null;
@@ -322,7 +347,10 @@ router.post('/seed-files', async (req, res) => {
 
     console.log('[ADMIN] Seeding complete:', results);
     
-    const storageName = kv ? 'Vercel KV' : 'In-Memory';
+    let storageName = 'In-Memory';
+    if (kv) {
+      storageName = process.env.REDIS_URL ? 'Redis (URL)' : 'Vercel KV';
+    }
     
     res.json({
       success: true,
@@ -353,7 +381,10 @@ router.get('/seed-status', async (req, res) => {
     const collectionsData = await kvGet('cms:list:collections');
     const manifestData = await kvGet('cms:manifest');
 
-    const storageName = kv ? 'Vercel KV' : 'In-Memory';
+    let storageName = 'In-Memory';
+    if (kv) {
+      storageName = process.env.REDIS_URL ? 'Redis (URL)' : 'Vercel KV';
+    }
     
     const status = {
       storage: storageName,
