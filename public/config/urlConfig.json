@@ -87,6 +87,8 @@
     "projects": "https://static-api-opal.vercel.app/data/projects.json",
     "skills": "https://static-api-opal.vercel.app/data/skills.json",
     "profileImage": "https://static-api-opal.vercel.app/images/profile.png",
+    "resumePdf": "https://static-api-opal.vercel.app/api/resume/resume.pdf",
+    "resumeDownload": "https://static-api-opal.vercel.app/api/resume/resume.pdf",
     "siteUrl": "https://www.kuhandranchatbot.info",
     "siteCanonical": "https://www.kuhandranchatbot.info",
     "contact": "https://resume-chatbot-services-v2-0.onrender.com/api/contact",

@@ -1,1 +1,311 @@
-{"navigation":{"home":"Beranda","about":"Perihal","skills":"Kemahiran","experience":"Pengalaman","projects":"Projek","achievements":"Pencapaian","education":"Pendidikan","contact":"Hubungi"},"hero":{"greeting":"Hai, saya Kuhandran","badge":"Hai, saya Kuhandran","mainHeading":"Pemimpin Teknikal Mendorong Transformasi Digital","roles":{"primary":"Pengurus Penghantaran Teknikal","secondary":"Jurutera Full-Stack","tertiary":"Penggemar Data"},"description":"Pakar dalam aplikasi perusahaan, pembangunan React Native, dan visualisasi data. Menggabungkan keahlian teknikal 8+ tahun dengan pandangan perniagaan strategis untuk mendorong kecekapan operasi dan inovasi.","highlights":{"experience":"Pengalaman 8+ Tahun","location":"Berbasis di Malaysia","relocation":"Terbuka untuk Pemindahan"},"cta":{"primary":"Lihat Pekerjaan Saya","secondary":"Mari Terhubung"},"stats":{"experience":{"value":"8+","label":"Tahun Pengalaman"},"efficiency":{"value":"15%","label":"Keuntungan Kecekapan"},"countries":{"value":"2","label":"Negara"},"education":{"value":"MBA","label":"Analitik Perniagaan"}},"scroll":{"text":"Tatal ke Bawah","ariaLabel":"Tatal ke bahagian perihal"}},"about":{"subtitle":"Siapa Saya","title":"Menjembatani Teknologi & Strategi Perniagaan","description":"Pemimpin teknikal dengan semangat untuk membina penyelesaian yang boleh diskalakan","image":{"src":"/image/profile.png","alt":"Kuhandran SamudraPandiyan"},"stats":[{"icon":"Users","value":"8+","label":"Tahun Pengalaman"},{"icon":"Briefcase","value":"2","label":"Negara"},{"icon":"TrendingUp","value":"15%","label":"Keuntungan Kecekapan"}],"paragraphs":{"current_role":"Kini berkhidmat sebagai Pengurus Projek Teknikal di FWD Insurance, saya memimpin pasukan penghantaran merentas sempadan dan mendorong inisiatif penambahbaikan berterusan yang telah mengurangkan tiket insiden yang sudah lama sebanyak 15%. Peranan saya menggabungkan seni bina teknikal, analisis sistem, dan pengurusan projek strategis.","previous_experience":"Dengan pengalaman lebih 6 tahun di Maybank, saya berkembang dari Pembangun Junior menjadi Jurutera Perisian Kanan, membina aplikasi React.js, melaksanakan API RESTful, dan mengoptimalkan pengalaman pengguna yang meningkatkan kecepatan pemuatan sebanyak 15%.","education":"Saya memiliki MBA dalam Analitik Perniagaan dari Cardiff Metropolitan University, yang membenarkan saya menjembatani keahlian teknikal dengan pandangan perniagaan strategis—gabungan unik yang mendorong inovasi dalam persekitaran perusahaan."},"highlights":{"heading":"Sorotan Utama","items":["Pengurusan pasukan merentas sempadan & metodologi Agile","Pembangunan full-stack: React, React Native, Spring Boot","Visualisasi data & analitik dengan Power BI","Pembangun bersertifikat AWS dengan keahlian cloud","Pengalaman domain: Sektor Perbankan & Insurans","Sri Lanka dengan EP di Malaysia - Terbuka untuk pemindahan"]},"cta":{"resume":"Muat turun Resume","linkedin":"Lihat LinkedIn"}},"skills":{"subtitle":"Kemahiran & Keahlian","title":"Kemahiran Teknikal","description":"Kebolehan full-stack dengan keahlian di seluruh teknologi moden","tabs":{"frontend":"Pembangunan Frontend","backend":"Backend & API","data":"Data & Analitik","cloud":"Cloud & DevOps"}},"projects":{"subtitle":"Portfolio","title":"Projek Pilihan","description":"Mempamerkan penyelesaian berdampak di seluruh aplikasi perusahaan","empty":"Tiada projek ditemui"},"experience":{"subtitle":"Perjalanan Kerjaya","title":"Pengalaman Profesional","description":"Rekod jejak mendorong inovasi dan memberikan hasil","empty":"Tiada entri pengalaman ditemui"},"achievements":{"subtitle":"Pengiktirafan","title":"Anugerah & Pencapaian","description":"Pencapaian dan pengiktirafan sepanjang karir saya","empty":"Tiada pencapaian ditemui","sections":{"awards":"Anugerah & Kehormatan","certifications":"Pensijilan Profesional"}},"education":{"subtitle":"Latar Belakang Akademik","title":"Pendidikan","description":"Pendidikan formal dan perjalanan pembelajaran berterusan","labels":{"degree":"Ijazah","field":"Bidang Pengajian","graduated":"Lulus","cgpa":"CGPA","activities":"Aktiviti"},"empty":"Tiada entri pendidikan ditemui"},"contact":{"subtitle":"Hubungi Kami","title":"Mari Bekerja Bersama","description":"Terbuka kepada peluang dan kerjasama baru","form":{"heading":"Hantar Pesanan kepada Saya","labels":{"name":"Nama Anda","email":"Alamat E-mel","subject":"Subjek","message":"Pesanan","file":"Lampirkan Fail (Pilihan)"},"placeholders":{"name":"John Doe","email":"john@example.com","subject":"Pertanyaan Projek","message":"Beritahu saya tentang projek anda..."},"fileUpload":{"text":"Klik untuk memuat naik PDF atau DOCX (Maks 5MB)","invalidType":"Hanya fail PDF dan DOCX yang dibenarkan","invalidSize":"Saiz fail mesti kurang daripada 5MB","removeButton":"Buang fail"},"buttons":{"submit":"Hantar Pesanan","submitting":"Menghantar..."},"messages":{"successTitle":"Pesanan berjaya dihantar!","successDescription":"Terima kasih telah menghubungi. Saya akan balas anda tidak lama lagi.","errorTitle":"Gagal menghantar pesanan","errorDescription":"Sila cuba semula kemudian atau hubungi saya terus melalui e-mel."}},"contactInfo":{"heading":"Maklumat Hubungan","description":"Jangan ragu untuk menghubungi saya melalui mana-mana saluran ini. Saya sentiasa terbuka untuk membincangkan projek baru, peluang, atau kerjasama.","email":{"label":"E-mel","value":"skuhandran@yahoo.com"},"phone":{"label":"Telefon","value":"+60 14 933 7280"},"location":{"label":"Lokasi","value":"Kuala Lumpur, Malaysia"},"linkedin":{"label":"LinkedIn","value":"Hubungkan dengan saya"}},"availability":{"title":"Tersedia untuk Peluang","description":"Terbuka untuk jawatan sepenuh masa, perundingan, dan peluang pemindahan global."}},"chatbot":{"subtitle":"Pembantu AI","title":"Berbual dengan Saya","description":"Tanya apa saja tentang pengalaman, kemahiran, atau projek saya","placeholder":"Taip pesanan anda...","sessionExpiry":"Sesi akan tamat dalam","sendButton":"Hantar pesanan","ariaLabel":"Hantar pesanan","toggleChat":"Beralih perbincangan","closeChat":"Tutup perbincangan","initialMessage":"Hai! Saya adalah pembantu AI Kuhandran. Tanya apa saja tentang pengalaman, kemahiran, atau proyeknya!","quickActions":["Ceritakan tentang projek anda","Apakah kemahiran anda?","Pengalaman profesional","Bagaimana cara menghubungi anda?"],"header":{"title":"Pembantu AI","subtitle":"Tanya apa saja tentang Kuhandran"},"messages":{"sessionExpired":"Sesi tamat atau tidak disahkan. Sila segarkan dan sahkan e-mel anda lagi.","sessionExpiredOtp":"Sesi anda telah tamat. Sila masukkan semula OTP yang dihantar ke e-mel anda.","noResponse":"Maaf, saya tidak memahami respons.","connectionError":"Maaf, saya mengalami masalah sambungan. Sila cuba lagi kemudian.","captchaRequired":"Sila lengkapkan captcha.","otpSent":"OTP dihantar ke e-mel anda. Sila periksa peti masuk anda.","otpFailed":"Gagal menghantar OTP. Cuba lagi.","otpError":"Ralat menghantar OTP. Cuba lagi.","verifySuccess":"E-mel disahkan! Anda kini boleh berbual.","otpError2":"Ralat mengesahkan OTP. Cuba lagi."},"otp":{"label":"Masukkan OTP yang dihantar ke e-mel anda","placeholder":"OTP 6 digit","verifyButton":"Sahkan OTP","verifying":"Mengesahkan...","changeEmail":"Tukar e-mel"}},"buttons":{"viewMore":"Lihat Selengkapnya","learnMore":"Ketahui Selengkapnya","viewProject":"Lihat Projek","visitWebsite":"Lawati Laman Web","viewCode":"Lihat Kod","download":"Muat turun","sendMessage":"Hantar Pesanan","explore":"Teroka","getInTouch":"Hubungi Kami"},"common":{"date":"Tarikh","duration":"Tempoh","location":"Lokasi","company":"Syarikat","role":"Peranan","technologies":"Teknologi","techStack":"Tumpukan Teknis","description":"Keterangan","metrics":"Metrik","loading":"Sedang memuatkan...","error":"Ralat","noData":"Tiada data tersedia","back":"Kembali","next":"Seterusnya","previous":"Sebelumnya","more":"Lebih","less":"Kurang"},"footer":{"copyright":"© 2024 Kuhandran Samudrapandiyan. Semua hak terpelihara.","links":{"privacy":"Dasar Privasi","terms":"Syarat Perkhidmatan","sitemap":"Peta Laman"},"social":{"github":"GitHub","linkedin":"LinkedIn","twitter":"Twitter","email":"E-mel"}},"messages":{"welcome":"Selamat datang ke portfolio saya","thanks":"Terima kasih telah melawat","connecting":"Menyambung...","connected":"Tersambung","offline":"Anda sedang dalam talian luring"}}
+{
+  "urls": {
+    "resume": {
+      "download": "https://static-api-opal.vercel.app/api/resume/resume.pdf",
+      "view": "https://static-api-opal.vercel.app/api/resume/resume.pdf"
+    },
+    "social": {
+      "linkedin": "https://linkedin.com/in/kuhandran-samudrapandiyan",
+      "email": "mailto:skuhandran@yahoo.com"
+    }
+  },
+  "navigation": {
+    "home": "Beranda",
+    "about": "Perihal",
+    "skills": "Kemahiran",
+    "experience": "Pengalaman",
+    "projects": "Projek",
+    "achievements": "Pencapaian",
+    "education": "Pendidikan",
+    "contact": "Hubungi"
+  },
+  "hero": {
+    "greeting": "Hai, saya Kuhandran",
+    "badge": "Hai, saya Kuhandran",
+    "mainHeading": "Pemimpin Teknikal Mendorong Transformasi Digital",
+    "roles": {
+      "primary": "Pengurus Penghantaran Teknikal",
+      "secondary": "Jurutera Full-Stack",
+      "tertiary": "Penggemar Data"
+    },
+    "description": "Pakar dalam aplikasi perusahaan, pembangunan React Native, dan visualisasi data. Menggabungkan keahlian teknikal 8+ tahun dengan pandangan perniagaan strategis untuk mendorong kecekapan operasi dan inovasi.",
+    "highlights": {
+      "experience": "Pengalaman 8+ Tahun",
+      "location": "Berbasis di Malaysia",
+      "relocation": "Terbuka untuk Pemindahan"
+    },
+    "cta": {
+      "primary": "Lihat Pekerjaan Saya",
+      "secondary": "Mari Terhubung"
+    },
+    "stats": {
+      "experience": {
+        "value": "8+",
+        "label": "Tahun Pengalaman"
+      },
+      "efficiency": {
+        "value": "15%",
+        "label": "Keuntungan Kecekapan"
+      },
+      "countries": {
+        "value": "2",
+        "label": "Negara"
+      },
+      "education": {
+        "value": "MBA",
+        "label": "Analitik Perniagaan"
+      }
+    },
+    "scroll": {
+      "text": "Tatal ke Bawah",
+      "ariaLabel": "Tatal ke bahagian perihal"
+    }
+  },
+  "about": {
+    "subtitle": "Siapa Saya",
+    "title": "Menjembatani Teknologi & Strategi Perniagaan",
+    "description": "Pemimpin teknikal dengan semangat untuk membina penyelesaian yang boleh diskalakan",
+    "image": {
+      "src": "/image/profile.png",
+      "alt": "Kuhandran SamudraPandiyan"
+    },
+    "stats": [
+      {
+        "icon": "Users",
+        "value": "8+",
+        "label": "Tahun Pengalaman"
+      },
+      {
+        "icon": "Briefcase",
+        "value": "2",
+        "label": "Negara"
+      },
+      {
+        "icon": "TrendingUp",
+        "value": "15%",
+        "label": "Keuntungan Kecekapan"
+      }
+    ],
+    "paragraphs": {
+      "current_role": "Kini berkhidmat sebagai Pengurus Projek Teknikal di FWD Insurance, saya memimpin pasukan penghantaran merentas sempadan dan mendorong inisiatif penambahbaikan berterusan yang telah mengurangkan tiket insiden yang sudah lama sebanyak 15%. Peranan saya menggabungkan seni bina teknikal, analisis sistem, dan pengurusan projek strategis.",
+      "previous_experience": "Dengan pengalaman lebih 6 tahun di Maybank, saya berkembang dari Pembangun Junior menjadi Jurutera Perisian Kanan, membina aplikasi React.js, melaksanakan API RESTful, dan mengoptimalkan pengalaman pengguna yang meningkatkan kecepatan pemuatan sebanyak 15%.",
+      "education": "Saya memiliki MBA dalam Analitik Perniagaan dari Cardiff Metropolitan University, yang membenarkan saya menjembatani keahlian teknikal dengan pandangan perniagaan strategis—gabungan unik yang mendorong inovasi dalam persekitaran perusahaan."
+    },
+    "highlights": {
+      "heading": "Sorotan Utama",
+      "items": [
+        "Pengurusan pasukan merentas sempadan & metodologi Agile",
+        "Pembangunan full-stack: React, React Native, Spring Boot",
+        "Visualisasi data & analitik dengan Power BI",
+        "Pembangun bersertifikat AWS dengan keahlian cloud",
+        "Pengalaman domain: Sektor Perbankan & Insurans",
+        "Sri Lanka dengan EP di Malaysia - Terbuka untuk pemindahan"
+      ]
+    },
+    "cta": {
+      "resume": "Muat turun Resume",
+      "linkedin": "Lihat LinkedIn",
+      "resumeUrl": "https://static-api-opal.vercel.app/api/resume/resume.pdf",
+      "linkedinUrl": "https://linkedin.com/in/kuhandran-samudrapandiyan"
+    }
+  },
+  "skills": {
+    "subtitle": "Kemahiran & Keahlian",
+    "title": "Kemahiran Teknikal",
+    "description": "Kebolehan full-stack dengan keahlian di seluruh teknologi moden",
+    "tabs": {
+      "frontend": "Pembangunan Frontend",
+      "backend": "Backend & API",
+      "data": "Data & Analitik",
+      "cloud": "Cloud & DevOps"
+    }
+  },
+  "projects": {
+    "subtitle": "Portfolio",
+    "title": "Projek Pilihan",
+    "description": "Mempamerkan penyelesaian berdampak di seluruh aplikasi perusahaan",
+    "empty": "Tiada projek ditemui"
+  },
+  "experience": {
+    "subtitle": "Perjalanan Kerjaya",
+    "title": "Pengalaman Profesional",
+    "description": "Rekod jejak mendorong inovasi dan memberikan hasil",
+    "empty": "Tiada entri pengalaman ditemui"
+  },
+  "achievements": {
+    "subtitle": "Pengiktirafan",
+    "title": "Anugerah & Pencapaian",
+    "description": "Pencapaian dan pengiktirafan sepanjang karir saya",
+    "empty": "Tiada pencapaian ditemui",
+    "sections": {
+      "awards": "Anugerah & Kehormatan",
+      "certifications": "Pensijilan Profesional"
+    }
+  },
+  "education": {
+    "subtitle": "Latar Belakang Akademik",
+    "title": "Pendidikan",
+    "description": "Pendidikan formal dan perjalanan pembelajaran berterusan",
+    "labels": {
+      "degree": "Ijazah",
+      "field": "Bidang Pengajian",
+      "graduated": "Lulus",
+      "cgpa": "CGPA",
+      "activities": "Aktiviti"
+    },
+    "empty": "Tiada entri pendidikan ditemui"
+  },
+  "contact": {
+    "subtitle": "Hubungi Kami",
+    "title": "Mari Bekerja Bersama",
+    "description": "Terbuka kepada peluang dan kerjasama baru",
+    "form": {
+      "heading": "Hantar Pesanan kepada Saya",
+      "labels": {
+        "name": "Nama Anda",
+        "email": "Alamat E-mel",
+        "subject": "Subjek",
+        "message": "Pesanan",
+        "file": "Lampirkan Fail (Pilihan)"
+      },
+      "placeholders": {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "subject": "Pertanyaan Projek",
+        "message": "Beritahu saya tentang projek anda..."
+      },
+      "fileUpload": {
+        "text": "Klik untuk memuat naik PDF atau DOCX (Maks 5MB)",
+        "invalidType": "Hanya fail PDF dan DOCX yang dibenarkan",
+        "invalidSize": "Saiz fail mesti kurang daripada 5MB",
+        "removeButton": "Buang fail"
+      },
+      "buttons": {
+        "submit": "Hantar Pesanan",
+        "submitting": "Menghantar..."
+      },
+      "messages": {
+        "successTitle": "Pesanan berjaya dihantar!",
+        "successDescription": "Terima kasih telah menghubungi. Saya akan balas anda tidak lama lagi.",
+        "errorTitle": "Gagal menghantar pesanan",
+        "errorDescription": "Sila cuba semula kemudian atau hubungi saya terus melalui e-mel."
+      }
+    },
+    "contactInfo": {
+      "heading": "Maklumat Hubungan",
+      "description": "Jangan ragu untuk menghubungi saya melalui mana-mana saluran ini. Saya sentiasa terbuka untuk membincangkan projek baru, peluang, atau kerjasama.",
+      "email": {
+        "label": "E-mel",
+        "value": "skuhandran@yahoo.com"
+      },
+      "phone": {
+        "label": "Telefon",
+        "value": "+60 14 933 7280"
+      },
+      "location": {
+        "label": "Lokasi",
+        "value": "Kuala Lumpur, Malaysia"
+      },
+      "linkedin": {
+        "label": "LinkedIn",
+        "value": "Hubungkan dengan saya"
+      }
+    },
+    "availability": {
+      "title": "Tersedia untuk Peluang",
+      "description": "Terbuka untuk jawatan sepenuh masa, perundingan, dan peluang pemindahan global."
+    }
+  },
+  "chatbot": {
+    "subtitle": "Pembantu AI",
+    "title": "Berbual dengan Saya",
+    "description": "Tanya apa saja tentang pengalaman, kemahiran, atau projek saya",
+    "placeholder": "Taip pesanan anda...",
+    "sessionExpiry": "Sesi akan tamat dalam",
+    "sendButton": "Hantar pesanan",
+    "ariaLabel": "Hantar pesanan",
+    "toggleChat": "Beralih perbincangan",
+    "closeChat": "Tutup perbincangan",
+    "initialMessage": "Hai! Saya adalah pembantu AI Kuhandran. Tanya apa saja tentang pengalaman, kemahiran, atau proyeknya!",
+    "quickActions": [
+      "Ceritakan tentang projek anda",
+      "Apakah kemahiran anda?",
+      "Pengalaman profesional",
+      "Bagaimana cara menghubungi anda?"
+    ],
+    "header": {
+      "title": "Pembantu AI",
+      "subtitle": "Tanya apa saja tentang Kuhandran"
+    },
+    "messages": {
+      "sessionExpired": "Sesi tamat atau tidak disahkan. Sila segarkan dan sahkan e-mel anda lagi.",
+      "sessionExpiredOtp": "Sesi anda telah tamat. Sila masukkan semula OTP yang dihantar ke e-mel anda.",
+      "noResponse": "Maaf, saya tidak memahami respons.",
+      "connectionError": "Maaf, saya mengalami masalah sambungan. Sila cuba lagi kemudian.",
+      "captchaRequired": "Sila lengkapkan captcha.",
+      "otpSent": "OTP dihantar ke e-mel anda. Sila periksa peti masuk anda.",
+      "otpFailed": "Gagal menghantar OTP. Cuba lagi.",
+      "otpError": "Ralat menghantar OTP. Cuba lagi.",
+      "verifySuccess": "E-mel disahkan! Anda kini boleh berbual.",
+      "otpError2": "Ralat mengesahkan OTP. Cuba lagi."
+    },
+    "otp": {
+      "label": "Masukkan OTP yang dihantar ke e-mel anda",
+      "placeholder": "OTP 6 digit",
+      "verifyButton": "Sahkan OTP",
+      "verifying": "Mengesahkan...",
+      "changeEmail": "Tukar e-mel"
+    }
+  },
+  "buttons": {
+    "viewMore": "Lihat Selengkapnya",
+    "learnMore": "Ketahui Selengkapnya",
+    "viewProject": "Lihat Projek",
+    "visitWebsite": "Lawati Laman Web",
+    "viewCode": "Lihat Kod",
+    "download": "Muat turun",
+    "sendMessage": "Hantar Pesanan",
+    "explore": "Teroka",
+    "getInTouch": "Hubungi Kami"
+  },
+  "common": {
+    "date": "Tarikh",
+    "duration": "Tempoh",
+    "location": "Lokasi",
+    "company": "Syarikat",
+    "role": "Peranan",
+    "technologies": "Teknologi",
+    "techStack": "Tumpukan Teknis",
+    "description": "Keterangan",
+    "metrics": "Metrik",
+    "loading": "Sedang memuatkan...",
+    "error": "Ralat",
+    "noData": "Tiada data tersedia",
+    "back": "Kembali",
+    "next": "Seterusnya",
+    "previous": "Sebelumnya",
+    "more": "Lebih",
+    "less": "Kurang"
+  },
+  "footer": {
+    "copyright": "© 2024 Kuhandran Samudrapandiyan. Semua hak terpelihara.",
+    "links": {
+      "privacy": "Dasar Privasi",
+      "terms": "Syarat Perkhidmatan",
+      "sitemap": "Peta Laman"
+    },
+    "social": {
+      "github": "GitHub",
+      "linkedin": "LinkedIn",
+      "twitter": "Twitter",
+      "email": "E-mel"
+    }
+  },
+  "messages": {
+    "welcome": "Selamat datang ke portfolio saya",
+    "thanks": "Terima kasih telah melawat",
+    "connecting": "Menyambung...",
+    "connected": "Tersambung",
+    "offline": "Anda sedang dalam talian luring"
+  }
+}

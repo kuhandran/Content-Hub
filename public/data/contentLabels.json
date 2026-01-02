@@ -1,4 +1,14 @@
 {
+  "urls": {
+    "resume": {
+      "download": "https://static-api-opal.vercel.app/api/resume/resume.pdf",
+      "view": "https://static-api-opal.vercel.app/api/resume/resume.pdf"
+    },
+    "social": {
+      "linkedin": "https://linkedin.com/in/kuhandran-samudrapandiyan",
+      "email": "mailto:skuhandran@yahoo.com"
+    }
+  },
   "navigation": {
     "home": "Home",
     "about": "About",
@@ -94,7 +104,9 @@
     },
     "cta": {
       "resume": "Download Resume",
-      "linkedin": "View LinkedIn"
+      "resumeUrl": "https://static-api-opal.vercel.app/api/resume/resume.pdf",
+      "linkedin": "View LinkedIn",
+      "linkedinUrl": "https://linkedin.com/in/kuhandran-samudrapandiyan"
     }
   },
   "skills": {
