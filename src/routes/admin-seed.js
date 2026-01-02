@@ -246,31 +246,40 @@ async function kvGet(key) {
  * Get manifest - tries filesystem first, falls back to embedded
  */
 function getManifest() {
+  console.error('[ADMIN-SEED] 🔍 STARTING getManifest() function');
+  
   // Try to load from filesystem first (local development)
   try {
     const manifestPath = path.join(__dirname, '../../public/manifest.json');
-    console.log('[ADMIN-SEED] Checking filesystem manifest at:', manifestPath);
+    console.error('[ADMIN-SEED] 🔍 Checking filesystem manifest at:', manifestPath);
+    console.error('[ADMIN-SEED] 🔍 fs.existsSync result:', fs.existsSync(manifestPath));
+    
     if (fs.existsSync(manifestPath)) {
       const fileContent = fs.readFileSync(manifestPath, 'utf8');
       const manifestData = JSON.parse(fileContent);
-      console.log('[ADMIN-SEED] ✅ Loaded manifest from filesystem with', Object.values(manifestData.files || {}).flat().length, 'files');
+      const fileCount = Object.values(manifestData.files || {}).flat().length;
+      console.error('[ADMIN-SEED] ✅ Loaded manifest from filesystem with', fileCount, 'files');
       return manifestData;
     } else {
-      console.log('[ADMIN-SEED] Manifest file does not exist at:', manifestPath);
+      console.error('[ADMIN-SEED] 📂 Manifest file does not exist at:', manifestPath);
     }
   } catch (err) {
-    console.log('[ADMIN-SEED] Could not load manifest from filesystem:', err.message);
+    console.error('[ADMIN-SEED] ❌ Could not load manifest from filesystem:', err.message);
   }
   
   // Fall back to embedded manifest (Vercel/production)
-  console.log('[ADMIN-SEED] Using embedded manifest constant');
+  console.error('[ADMIN-SEED] 🔄 Falling back to embedded manifest constant');
+  console.error('[ADMIN-SEED] 🔍 EMBEDDED_MANIFEST exists:', !!EMBEDDED_MANIFEST);
+  console.error('[ADMIN-SEED] 🔍 EMBEDDED_MANIFEST.files exists:', !!EMBEDDED_MANIFEST?.files);
+  
   if (!EMBEDDED_MANIFEST || !EMBEDDED_MANIFEST.files) {
-    console.error('[ADMIN-SEED] EMBEDDED_MANIFEST is corrupted or missing!');
+    console.error('[ADMIN-SEED] ❌ EMBEDDED_MANIFEST is corrupted or missing!');
     return { generated: new Date().toISOString(), files: { config: [], data: [], files: [], collections: [] } };
   }
   
   const embeddedCount = Object.values(EMBEDDED_MANIFEST.files).flat().length;
-  console.log('[ADMIN-SEED] ✅ Using embedded manifest with', embeddedCount, 'files');
+  console.error('[ADMIN-SEED] ✅ Using embedded manifest with', embeddedCount, 'files');
+  console.error('[ADMIN-SEED] 🔍 Files breakdown: config:', EMBEDDED_MANIFEST.files.config?.length || 0, 'data:', EMBEDDED_MANIFEST.files.data?.length || 0, 'files:', EMBEDDED_MANIFEST.files.files?.length || 0, 'collections:', EMBEDDED_MANIFEST.files.collections?.length || 0);
   return EMBEDDED_MANIFEST;
 }
 
@@ -279,14 +288,17 @@ function getManifest() {
  */
 router.post('/seed-files', async (req, res) => {
   try {
-    console.log('[ADMIN] Starting file seeding process...');
+    console.error('[ADMIN-SEED] 🚀 POST /seed-files called');
+    console.error('[ADMIN] Starting file seeding process...');
     
     // Get manifest (filesystem or embedded)
+    console.error('[ADMIN-SEED] 🔍 Calling getManifest()...');
     const manifest = getManifest();
+    console.error('[ADMIN-SEED] 🔍 getManifest() returned');
     
     // Validate manifest structure
     if (!manifest || !manifest.files) {
-      console.error('[ADMIN-SEED] Invalid manifest structure!');
+      console.error('[ADMIN-SEED] ❌ Invalid manifest structure!');
       return res.status(400).json({
         success: false,
         error: 'Invalid manifest structure',
@@ -295,11 +307,11 @@ router.post('/seed-files', async (req, res) => {
     }
     
     const totalFiles = Object.values(manifest.files || {}).flat().length;
-    console.log('[ADMIN-SEED] Manifest loaded with', totalFiles, 'total files');
-    console.log('[ADMIN-SEED] Config files:', (manifest.files.config || []).length);
-    console.log('[ADMIN-SEED] Data files:', (manifest.files.data || []).length);
-    console.log('[ADMIN-SEED] Files:', (manifest.files.files || []).length);
-    console.log('[ADMIN-SEED] Collections:', (manifest.files.collections || []).length);
+    console.error('[ADMIN-SEED] 🔍 Manifest loaded with', totalFiles, 'total files');
+    console.error('[ADMIN-SEED] 🔍 Config files:', (manifest.files.config || []).length);
+    console.error('[ADMIN-SEED] 🔍 Data files:', (manifest.files.data || []).length);
+    console.error('[ADMIN-SEED] 🔍 Files:', (manifest.files.files || []).length);
+    console.error('[ADMIN-SEED] 🔍 Collections:', (manifest.files.collections || []).length);
     
     let seedCount = 0;
     const results = {
@@ -310,8 +322,9 @@ router.post('/seed-files', async (req, res) => {
     };
 
     // Seed config files
+    console.error('[ADMIN-SEED] 🔍 Checking config files:', !!manifest.files.config, 'length:', (manifest.files.config || []).length);
     if (manifest.files.config && manifest.files.config.length > 0) {
-      console.log('[ADMIN-SEED] Seeding', manifest.files.config.length, 'config files');
+      console.error('[ADMIN-SEED] 📝 Seeding', manifest.files.config.length, 'config files');
       const configData = {
         path: 'config',
         count: manifest.files.config.length,
@@ -319,16 +332,17 @@ router.post('/seed-files', async (req, res) => {
         timestamp: new Date().toISOString()
       };
       const setResult = await kvSet('cms:list:config', configData);
-      console.log('[ADMIN-SEED] Config seeding result:', setResult);
+      console.error('[ADMIN-SEED] ✅ Config seeding result:', setResult);
       results.config = manifest.files.config.length;
       seedCount += manifest.files.config.length;
     } else {
-      console.log('[ADMIN-SEED] ⚠️  No config files to seed');
+      console.error('[ADMIN-SEED] ⚠️  No config files to seed');
     }
 
     // Seed data files
+    console.error('[ADMIN-SEED] 🔍 Checking data files:', !!manifest.files.data, 'length:', (manifest.files.data || []).length);
     if (manifest.files.data && manifest.files.data.length > 0) {
-      console.log('[ADMIN-SEED] Seeding', manifest.files.data.length, 'data files');
+      console.error('[ADMIN-SEED] 📝 Seeding', manifest.files.data.length, 'data files');
       const dataData = {
         path: 'data',
         count: manifest.files.data.length,
