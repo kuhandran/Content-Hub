@@ -30,6 +30,10 @@
   ],
   "rewrites": [
     {
+      "source": "/sync-manager",
+      "destination": "/api/index.js"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/index.js"
     }
