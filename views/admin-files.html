@@ -366,11 +366,11 @@
             btn.disabled = true;
             loader.style.display = 'inline-block';
             msg.className = 'message info';
-            msg.textContent = 'Refreshing file listings...';
+            msg.textContent = 'Syncing files to Redis...';
             results.classList.remove('show');
             
             try {
-                const response = await fetch(`${API_BASE}/admin/seed-files`, {
+                const response = await fetch(`${API_BASE}/auto-sync`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -381,14 +381,15 @@
                 
                 if (data.success) {
                     msg.className = 'message success';
-                    msg.textContent = `✅ ${data.message}`;
+                    msg.textContent = `✅ Successfully seeded ${data.filesSeeded} files into Redis (URL)`;
                     
-                    // Show results
-                    document.getElementById('resultConfig').textContent = data.results.config;
-                    document.getElementById('resultData').textContent = data.results.data;
-                    document.getElementById('resultFiles').textContent = data.results.files;
-                    document.getElementById('resultCollections').textContent = data.results.collections;
-                    document.getElementById('resultTotal').textContent = data.total;
+                    // Show results from manifest
+                    const manifest = data.manifest;
+                    document.getElementById('resultConfig').textContent = manifest.files.config?.length || 0;
+                    document.getElementById('resultData').textContent = manifest.files.data?.length || 0;
+                    document.getElementById('resultFiles').textContent = manifest.files.files?.length || 0;
+                    document.getElementById('resultCollections').textContent = manifest.files.collections?.length || 0;
+                    document.getElementById('resultTotal').textContent = data.filesSeeded;
                     results.classList.add('show');
                     
                     // Update last refresh
@@ -399,12 +400,12 @@
                     setTimeout(checkStatus, 1000);
                 } else {
                     msg.className = 'message error';
-                    msg.textContent = `❌ ${data.error || 'Failed to refresh files'}`;
+                    msg.textContent = `❌ ${data.error || 'Failed to sync files'}`;
                 }
             } catch (error) {
                 msg.className = 'message error';
                 msg.textContent = `❌ Error: ${error.message}`;
-                console.error('Refresh error:', error);
+                console.error('Sync error:', error);
             } finally {
                 btn.disabled = false;
                 loader.style.display = 'none';
@@ -413,7 +414,7 @@
         
         async function checkStatus() {
             try {
-                const response = await fetch(`${API_BASE}/admin/seed-status`);
+                const response = await fetch(`${API_BASE}/auto-sync/status`);
                 if (!response.ok) {
                     console.error('Status check failed:', response.status);
                     return;
@@ -421,23 +422,24 @@
                 
                 const data = await response.json();
                 
-                if (!data || !data.seeded) {
-                    console.error('Invalid response data:', data);
+                if (!data || !data.manifest) {
+                    console.error('No manifest data available');
                     return;
                 }
                 
                 // Update storage badge
                 const badge = document.getElementById('storageType');
-                const className = data.storage === 'Vercel KV' ? 'kv' : 'memory';
+                const className = data.redisConnected ? 'kv' : 'memory';
                 badge.className = `storage-badge ${className}`;
-                badge.textContent = data.storage;
+                badge.textContent = data.redisConnected ? 'Redis (URL)' : 'In-Memory';
                 
-                // Update counts
-                document.getElementById('configCount').textContent = data.seeded.config || 0;
-                document.getElementById('dataCount').textContent = data.seeded.data || 0;
-                document.getElementById('filesCount').textContent = data.seeded.files || 0;
-                document.getElementById('collectionsCount').textContent = data.seeded.collections || 0;
-                document.getElementById('totalCount').textContent = data.totalFiles || 0;
+                // Update counts from manifest
+                const manifest = data.manifest;
+                document.getElementById('configCount').textContent = manifest.files.config?.length || 0;
+                document.getElementById('dataCount').textContent = manifest.files.data?.length || 0;
+                document.getElementById('filesCount').textContent = manifest.files.files?.length || 0;
+                document.getElementById('collectionsCount').textContent = manifest.files.collections?.length || 0;
+                document.getElementById('totalCount').textContent = manifest.totalFiles || 0;
                 
             } catch (error) {
                 console.error('Status check error:', error);
