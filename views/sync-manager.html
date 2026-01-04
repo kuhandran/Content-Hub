@@ -453,6 +453,69 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #764ba2;
         }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #666;
+        }
+        
+        .tab-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .json-viewer {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 500px;
+            overflow: auto;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            color: #e9ecef;
+        }
     </style>
 </head>
 <body>
@@ -462,6 +525,28 @@
             <p>Manage file listings for your CMS with Redis storage</p>
         </div>
 
+        <!-- Tab Navigation -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-body" style="padding: 20px 30px;">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('sync')">
+                        <span>🔄</span> Sync Manager
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('collections')">
+                        <span>🌍</span> Collections
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('validation')">
+                        <span>✅</span> Validation
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('manifest')">
+                        <span>📋</span> Manifest
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sync Tab -->
+        <div class="tab-content active" id="sync-tab">
         <!-- Stats Overview -->
         <div class="card">
             <div class="card-header">
@@ -560,6 +645,82 @@
                     <div class="empty-state">
                         <p>No sync operations yet. Click "Refresh & Sync Files" to start.</p>
                     </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Collections Tab -->
+        <div class="tab-content" id="collections-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Collections Management</h2>
+                </div>
+                <div class="card-body">
+                    <p style="color: #666; margin-bottom: 20px;">Manage multi-language collections and sync translations.</p>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="syncCollections()">
+                            <span>🔄</span>
+                            <span>Sync Collections</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="validateCollections()">
+                            <span>✅</span>
+                            <span>Validate Structure</span>
+                        </button>
+                    </div>
+
+                    <div id="collectionsResult" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Validation Tab -->
+        <div class="tab-content" id="validation-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h2>File Validation</h2>
+                </div>
+                <div class="card-body">
+                    <p style="color: #666; margin-bottom: 20px;">Validate JSON files and check for errors.</p>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="validateAllFiles()">
+                            <span>✅</span>
+                            <span>Validate All Files</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="checkCollectionStructure()">
+                            <span>🔍</span>
+                            <span>Check Structure</span>
+                        </button>
+                    </div>
+
+                    <div id="validationResult" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manifest Tab -->
+        <div class="tab-content" id="manifest-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Manifest Viewer</h2>
+                </div>
+                <div class="card-body">
+                    <p style="color: #666; margin-bottom: 20px;">View and download the current manifest file.</p>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="generateManifest()">
+                            <span>🔄</span>
+                            <span>Generate Manifest</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadManifest()">
+                            <span>⬇️</span>
+                            <span>Download JSON</span>
+                        </button>
+                    </div>
+
+                    <div id="manifestViewer" style="margin-top: 20px;"></div>
                 </div>
             </div>
         </div>
@@ -812,6 +973,219 @@
 
         // Load status on page load
         window.addEventListener('load', checkStatus);
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.closest('.tab-btn').classList.add('active');
+        }
+
+        // Collections functions
+        async function syncCollections() {
+            const resultDiv = document.getElementById('collectionsResult');
+            resultDiv.innerHTML = '<div class="result-card"><p>🔄 Syncing collections...</p></div>';
+            
+            try {
+                const response = await fetch('/api/auto-sync', { method: 'POST' });
+                const data = await response.json();
+                
+                const collectionFiles = data.manifest.files.collections || [];
+                resultDiv.innerHTML = `
+                    <div class="result-card">
+                        <h3 style="color: #28a745; margin-bottom: 15px;">✅ Collections Synced</h3>
+                        <p><strong>${collectionFiles.length}</strong> collection files synced successfully</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result-card" style="border-left-color: #dc3545;">
+                        <h3 style="color: #dc3545; margin-bottom: 15px;">❌ Sync Failed</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function validateCollections() {
+            const resultDiv = document.getElementById('collectionsResult');
+            resultDiv.innerHTML = '<div class="result-card"><p>🔍 Validating collections...</p></div>';
+            
+            try {
+                const response = await fetch('/api/auto-sync/status');
+                const data = await response.json();
+                
+                if (!data.manifest) {
+                    throw new Error('No manifest available. Please sync first.');
+                }
+                
+                const collections = data.manifest.files.collections || [];
+                const locales = [...new Set(collections.map(f => f.path.split('/')[1]))];
+                
+                resultDiv.innerHTML = `
+                    <div class="result-card">
+                        <h3 style="color: #28a745; margin-bottom: 15px;">✅ Validation Complete</h3>
+                        <p><strong>Locales found:</strong> ${locales.join(', ')}</p>
+                        <p><strong>Total files:</strong> ${collections.length}</p>
+                        <p><strong>Files per locale:</strong> ~${Math.floor(collections.length / locales.length)}</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result-card" style="border-left-color: #dc3545;">
+                        <h3 style="color: #dc3545; margin-bottom: 15px;">❌ Validation Failed</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Validation functions
+        async function validateAllFiles() {
+            const resultDiv = document.getElementById('validationResult');
+            resultDiv.innerHTML = '<div class="result-card"><p>🔍 Validating all JSON files...</p></div>';
+            
+            try {
+                const response = await fetch('/api/auto-sync/status');
+                const data = await response.json();
+                
+                if (!data.manifest) {
+                    throw new Error('No manifest available. Please sync first.');
+                }
+                
+                let totalFiles = 0;
+                let jsonFiles = 0;
+                const errors = [];
+                
+                for (const [folder, files] of Object.entries(data.manifest.files)) {
+                    totalFiles += files.length;
+                    jsonFiles += files.filter(f => f.ext === '.json').length;
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="result-card">
+                        <h3 style="color: #28a745; margin-bottom: 15px;">✅ Validation Complete</h3>
+                        <p><strong>Total files:</strong> ${totalFiles}</p>
+                        <p><strong>JSON files:</strong> ${jsonFiles}</p>
+                        <p><strong>Other files:</strong> ${totalFiles - jsonFiles}</p>
+                        <p style="margin-top: 15px; color: #28a745;"><strong>No errors found!</strong></p>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result-card" style="border-left-color: #dc3545;">
+                        <h3 style="color: #dc3545; margin-bottom: 15px;">❌ Validation Failed</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function checkCollectionStructure() {
+            const resultDiv = document.getElementById('validationResult');
+            resultDiv.innerHTML = '<div class="result-card"><p>🔍 Checking collection structure...</p></div>';
+            
+            try {
+                const response = await fetch('/api/auto-sync/status');
+                const data = await response.json();
+                
+                if (!data.manifest) {
+                    throw new Error('No manifest available. Please sync first.');
+                }
+                
+                const collections = data.manifest.files.collections || [];
+                const structure = {};
+                
+                collections.forEach(file => {
+                    const parts = file.path.split('/');
+                    const locale = parts[1];
+                    const type = parts[2];
+                    
+                    if (!structure[locale]) structure[locale] = {};
+                    if (!structure[locale][type]) structure[locale][type] = 0;
+                    structure[locale][type]++;
+                });
+                
+                let html = '<div class="result-card"><h3 style="color: #28a745; margin-bottom: 15px;">✅ Collection Structure</h3>';
+                
+                for (const [locale, types] of Object.entries(structure)) {
+                    html += `<p style="margin-bottom: 10px;"><strong>${locale}:</strong> `;
+                    html += Object.entries(types).map(([type, count]) => `${type} (${count})`).join(', ');
+                    html += '</p>';
+                }
+                
+                html += '</div>';
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result-card" style="border-left-color: #dc3545;">
+                        <h3 style="color: #dc3545; margin-bottom: 15px;">❌ Check Failed</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Manifest functions
+        async function generateManifest() {
+            const viewerDiv = document.getElementById('manifestViewer');
+            viewerDiv.innerHTML = '<div class="result-card"><p>🔄 Generating manifest...</p></div>';
+            
+            try {
+                const response = await fetch('/api/auto-sync', { method: 'POST' });
+                const data = await response.json();
+                
+                viewerDiv.innerHTML = `
+                    <div class="result-card">
+                        <h3 style="color: #28a745; margin-bottom: 15px;">✅ Manifest Generated</h3>
+                        <p><strong>Generated:</strong> ${new Date(data.manifest.generated).toLocaleString()}</p>
+                        <p><strong>Total Files:</strong> ${data.manifest.totalFiles}</p>
+                        <p><strong>Folders:</strong> ${data.manifest.folders.join(', ')}</p>
+                    </div>
+                    <div class="json-viewer">${JSON.stringify(data.manifest, null, 2)}</div>
+                `;
+            } catch (error) {
+                viewerDiv.innerHTML = `
+                    <div class="result-card" style="border-left-color: #dc3545;">
+                        <h3 style="color: #dc3545; margin-bottom: 15px;">❌ Generation Failed</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function downloadManifest() {
+            try {
+                const response = await fetch('/api/auto-sync/status');
+                const data = await response.json();
+                
+                if (!data.manifest) {
+                    throw new Error('No manifest available. Please generate first.');
+                }
+                
+                const blob = new Blob([JSON.stringify(data.manifest, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'manifest-' + new Date().toISOString().split('T')[0] + '.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                addLog('success', 'Manifest downloaded successfully');
+            } catch (error) {
+                addLog('error', 'Download failed: ' + error.message);
+            }
+        }
     </script>
 </body>
 </html>

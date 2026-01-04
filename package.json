@@ -6,21 +6,9 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "dev:watch": "node scripts/watch-and-sync.js",
     "build": "node scripts/generate-manifest.js",
     "prod": "NODE_ENV=production node src/server.js",
-    "prod-secure": "NODE_ENV=production node --max-old-space-size=512 src/server.js",
-    "sync": "node scripts/watch-and-sync.js",
-    "auto-sync": "curl -X POST http://localhost:3000/api/auto-sync",
-    "docker:build": "docker build -t portfolio-cms:latest .",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f app",
-    "docker:restart": "docker-compose restart",
-    "lint": "echo 'No linter configured'",
-    "test": "echo 'No tests configured'",
-    "backup": "node scripts/backup.js",
-    "monitor": "node scripts/monitor.js"
+    "watch": "node scripts/watch-and-sync.js"
   },
   "keywords": [
     "cms",
