@@ -148,14 +148,15 @@ async function generateManifest(filesMap) {
       files: {}
     };
 
-    // Organize files by folder
+    // Organize files by folder with detailed metadata
     for (const [folder, files] of Object.entries(filesMap)) {
       manifest.files[folder] = files.map(f => ({
         name: f.name,
         path: f.path,
         size: f.size,
         ext: f.ext,
-        modified: f.modified
+        modified: f.modified,
+        folder: folder
       }));
     }
 

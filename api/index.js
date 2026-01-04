@@ -90,6 +90,11 @@ app.get('/dashboard', authMiddleware, (req, res) => {
   res.render('dashboard', { user: req.user });
 });
 
+// Sync Manager route
+app.get('/sync-manager', (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/sync-manager.html'));
+});
+
 // Login page
 app.get('/login', (req, res) => {
   res.render('login');
