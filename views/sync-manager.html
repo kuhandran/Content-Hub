@@ -699,6 +699,69 @@
                 </button>
             </div>
 
+            <!-- Upload Sections -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                <!-- Config Upload -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>⚙️ Upload Config</h3>
+                    </div>
+                    <div class="card-body">
+                        <input type="file" id="configFiles" multiple accept=".json" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
+                        <button class="btn btn-primary" onclick="uploadFiles('config')" style="width: 100%; font-size: 13px;">
+                            <span class="btn-icon">⬆️</span>
+                            <span>Upload</span>
+                        </button>
+                        <div id="configUploadProgress" style="margin-top: 12px; font-size: 12px; display: none;"></div>
+                    </div>
+                </div>
+
+                <!-- Data Upload -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📊 Upload Data</h3>
+                    </div>
+                    <div class="card-body">
+                        <input type="file" id="dataFiles" multiple accept=".json" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
+                        <button class="btn btn-primary" onclick="uploadFiles('data')" style="width: 100%; font-size: 13px;">
+                            <span class="btn-icon">⬆️</span>
+                            <span>Upload</span>
+                        </button>
+                        <div id="dataUploadProgress" style="margin-top: 12px; font-size: 12px; display: none;"></div>
+                    </div>
+                </div>
+
+                <!-- Files Upload -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📄 Upload Files</h3>
+                    </div>
+                    <div class="card-body">
+                        <input type="file" id="staticFiles" multiple accept=".html,.xml,.txt" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
+                        <button class="btn btn-primary" onclick="uploadFiles('files')" style="width: 100%; font-size: 13px;">
+                            <span class="btn-icon">⬆️</span>
+                            <span>Upload</span>
+                        </button>
+                        <div id="filesUploadProgress" style="margin-top: 12px; font-size: 12px; display: none;"></div>
+                    </div>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🖼️ Upload Images</h3>
+                    </div>
+                    <div class="card-body">
+                        <input type="file" id="imageFiles" multiple accept="image/*" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
+                        <button class="btn btn-primary" onclick="uploadFiles('image')" style="width: 100%; font-size: 13px;">
+                            <span class="btn-icon">⬆️</span>
+                            <span>Upload</span>
+                        </button>
+                        <div id="imageUploadProgress" style="margin-top: 12px; font-size: 12px; display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Progress Section -->
             <div class="progress-section" id="progressSection">
                 <div class="progress-text" id="progressText">Initializing...</div>
@@ -747,6 +810,40 @@
                         <span class="btn-icon">✅</span>
                         <span>Validate</span>
                     </button>
+                </div>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <h3>📤 Upload Collection Files</h3>
+                </div>
+                <div class="card-body">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #334155;">Select Language:</label>
+                        <select id="collectionLocale" style="width: 100%; padding: 10px; border: 1px solid #e9ecef; border-radius: 8px; font-size: 14px;">
+                            <option value="en">English (en)</option>
+                            <option value="ar-AE">Arabic (ar-AE)</option>
+                            <option value="de">German (de)</option>
+                            <option value="es">Spanish (es)</option>
+                            <option value="fr">French (fr)</option>
+                            <option value="hi">Hindi (hi)</option>
+                            <option value="id">Indonesian (id)</option>
+                            <option value="my">Malay (my)</option>
+                            <option value="si">Sinhala (si)</option>
+                            <option value="ta">Tamil (ta)</option>
+                            <option value="th">Thai (th)</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #334155;">Select Files:</label>
+                        <input type="file" id="collectionFiles" multiple accept=".json" style="width: 100%; padding: 10px; border: 1px solid #e9ecef; border-radius: 8px; font-size: 14px;">
+                    </div>
+                    <button class="btn btn-primary" onclick="uploadCollectionFiles()">
+                        <span class="btn-icon">⬆️</span>
+                        <span>Upload Files</span>
+                    </button>
+                    <div id="collectionUploadProgress" style="margin-top: 16px; display: none;"></div>
                 </div>
             </div>
 
@@ -1296,6 +1393,135 @@
                 addLog('success', 'Manifest downloaded successfully');
             } catch (error) {
                 addLog('error', 'Download failed: ' + error.message);
+            }
+        }
+
+        // Upload functions
+        async function uploadFiles(folder) {
+            const fileInputId = folder === 'files' ? 'staticFiles' : `${folder}Files`;
+            const fileInput = document.getElementById(fileInputId);
+            const progressDiv = document.getElementById(`${folder}UploadProgress`);
+            const files = fileInput.files;
+
+            if (files.length === 0) {
+                alert('Please select files to upload');
+                return;
+            }
+
+            progressDiv.style.display = 'block';
+            progressDiv.innerHTML = '<p style="color: #667eea;">⏳ Uploading...</p>';
+
+            try {
+                let uploaded = 0;
+                let failed = 0;
+
+                for (const file of files) {
+                    try {
+                        const content = await file.text();
+                        const filePath = `${folder}/${file.name}`;
+                        
+                        const response = await fetch('/api/auto-sync/upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                folder: folder,
+                                filename: file.name,
+                                content: content,
+                                path: filePath
+                            })
+                        });
+
+                        if (response.ok) {
+                            uploaded++;
+                        } else {
+                            failed++;
+                        }
+                    } catch (error) {
+                        failed++;
+                    }
+                }
+
+                progressDiv.innerHTML = `
+                    <p style="color: #16a34a;">✅ ${uploaded} uploaded</p>
+                    ${failed > 0 ? `<p style="color: #dc2626;">❌ ${failed} failed</p>` : ''}
+                `;
+                
+                addLog('success', `Uploaded ${uploaded} files to ${folder}/`);
+                if (failed > 0) addLog('warning', `${failed} files failed to upload`);
+
+                // Clear file input
+                fileInput.value = '';
+
+                // Refresh file list
+                setTimeout(() => startSync(), 1000);
+            } catch (error) {
+                progressDiv.innerHTML = `<p style="color: #dc2626;">❌ Upload failed: ${error.message}</p>`;
+                addLog('error', `Upload to ${folder}/ failed: ${error.message}`);
+            }
+        }
+
+        async function uploadCollectionFiles() {
+            const fileInput = document.getElementById('collectionFiles');
+            const localeSelect = document.getElementById('collectionLocale');
+            const progressDiv = document.getElementById('collectionUploadProgress');
+            const files = fileInput.files;
+            const locale = localeSelect.value;
+
+            if (files.length === 0) {
+                alert('Please select files to upload');
+                return;
+            }
+
+            progressDiv.style.display = 'block';
+            progressDiv.innerHTML = '<p style="color: #667eea;">⏳ Uploading...</p>';
+
+            try {
+                let uploaded = 0;
+                let failed = 0;
+
+                for (const file of files) {
+                    try {
+                        const content = await file.text();
+                        const filePath = `collections/${locale}/${file.name}`;
+                        
+                        const response = await fetch('/api/auto-sync/upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                folder: 'collections',
+                                filename: file.name,
+                                content: content,
+                                path: filePath,
+                                locale: locale
+                            })
+                        });
+
+                        if (response.ok) {
+                            uploaded++;
+                        } else {
+                            failed++;
+                        }
+                    } catch (error) {
+                        failed++;
+                    }
+                }
+
+                progressDiv.innerHTML = `
+                    <p style="color: #16a34a;">✅ ${uploaded} files uploaded to ${locale}</p>
+                    ${failed > 0 ? `<p style="color: #dc2626;">❌ ${failed} failed</p>` : ''}
+                `;
+                
+                addLog('success', `Uploaded ${uploaded} collection files to ${locale}/`);
+                if (failed > 0) addLog('warning', `${failed} files failed to upload`);
+
+                // Clear file input
+                fileInput.value = '';
+
+                // Refresh
+                setTimeout(() => syncCollections(), 1000);
+            } catch (error) {
+                progressDiv.innerHTML = `<p style="color: #dc2626;">❌ Upload failed: ${error.message}</p>`;
+                addLog('error', `Collection upload failed: ${error.message}`);
             }
         }
     </script>

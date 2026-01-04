@@ -297,4 +297,56 @@ router.get('/status', async (req, res) => {
   }
 });
 
+/**
+ * Upload file endpoint
+ */
+router.post('/upload', async (req, res) => {
+  try {
+    const { folder, filename, content, path: filePath } = req.body;
+
+    if (!folder || !filename || !content || !filePath) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: folder, filename, content, path'
+      });
+    }
+
+    // Validate folder
+    const allowedFolders = ['collections', 'config', 'data', 'files', 'image', 'resume'];
+    if (!allowedFolders.includes(folder)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid folder. Allowed: ${allowedFolders.join(', ')}`
+      });
+    }
+
+    if (!redis) {
+      return res.status(500).json({
+        success: false,
+        error: 'Redis not connected'
+      });
+    }
+
+    // Store file in Redis
+    const key = `cms:file:${filePath}`;
+    await redis.set(key, content);
+
+    console.log(`[AUTO-SYNC] ✅ Uploaded file: ${filePath}`);
+
+    res.json({
+      success: true,
+      message: `File uploaded successfully to ${filePath}`,
+      key: key,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('[AUTO-SYNC] ❌ Upload failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
