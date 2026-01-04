@@ -166,10 +166,17 @@ async function generateManifest(filesMap) {
       console.log('[AUTO-SYNC] ✅ Manifest saved to Redis');
     }
 
-    // Save to filesystem (for fallback)
-    const manifestPath = path.join(__dirname, '../../public/manifest.json');
-    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-    console.log('[AUTO-SYNC] ✅ Manifest saved to filesystem');
+    // Save to filesystem only in development (Vercel has read-only filesystem)
+    const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
+    if (!isProduction) {
+      try {
+        const manifestPath = path.join(__dirname, '../../public/manifest.json');
+        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+        console.log('[AUTO-SYNC] ✅ Manifest saved to filesystem (dev only)');
+      } catch (fsError) {
+        console.warn('[AUTO-SYNC] ⚠️  Could not write to filesystem (expected in production):', fsError.message);
+      }
+    }
 
     return manifest;
   } catch (error) {
