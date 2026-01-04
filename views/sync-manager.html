@@ -896,6 +896,11 @@
             const container = document.getElementById('fileCategories');
             container.innerHTML = '';
 
+            if (!manifest || !manifest.files) {
+                container.innerHTML = '<div class="empty-state"><p>No files found. Please sync first.</p></div>';
+                return;
+            }
+
             const categories = [
                 { key: 'config', name: 'Config Files', icon: '⚙️', color: '#667eea' },
                 { key: 'data', name: 'Data Files', icon: '📊', color: '#16a34a' },
@@ -1067,6 +1072,15 @@
         }
 
         function updateStats(manifest) {
+            if (!manifest || !manifest.files) {
+                document.getElementById('configCount').textContent = '0';
+                document.getElementById('dataCount').textContent = '0';
+                document.getElementById('staticCount').textContent = '0';
+                document.getElementById('collectionsCount').textContent = '0';
+                document.getElementById('imagesCount').textContent = '0';
+                document.getElementById('totalCount').textContent = '0';
+                return;
+            }
             document.getElementById('configCount').textContent = manifest.files.config?.length || 0;
             document.getElementById('dataCount').textContent = manifest.files.data?.length || 0;
             document.getElementById('staticCount').textContent = manifest.files.files?.length || 0;
