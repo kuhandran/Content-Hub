@@ -30,38 +30,8 @@
   ],
   "rewrites": [
     {
-      "source": "/api/(.*)",
+      "source": "/api/:path*",
       "destination": "/api/index.js"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/resume/(.*)",
-      "dest": "/public/resume/$1"
-    },
-    {
-      "src": "/image/(.*)",
-      "dest": "/public/image/$1"
-    },
-    {
-      "src": "/files/(.*)",
-      "dest": "/public/files/$1"
-    },
-    {
-      "src": "/config/(.*)",
-      "dest": "/public/config/$1"
-    },
-    {
-      "src": "/collections/(.*)",
-      "dest": "/public/collections/$1"
-    },
-    {
-      "src": "/data/(.*)",
-      "dest": "/public/data/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.js"
     }
   ]
 }
