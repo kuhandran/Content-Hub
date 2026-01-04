@@ -63,11 +63,5 @@
       "src": "/(.*)",
       "dest": "/api/index.js"
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/auto-sync",
-      "schedule": "0 0 * * *"
-    }
   ]
 }
