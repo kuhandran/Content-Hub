@@ -1178,12 +1178,22 @@
                 document.getElementById('totalCount').textContent = '0';
                 return;
             }
-            document.getElementById('configCount').textContent = manifest.files.config?.length || 0;
-            document.getElementById('dataCount').textContent = manifest.files.data?.length || 0;
-            document.getElementById('staticCount').textContent = manifest.files.files?.length || 0;
-            document.getElementById('collectionsCount').textContent = manifest.files.collections?.length || 0;
-            document.getElementById('imagesCount').textContent = manifest.files.image?.length || 0;
-            document.getElementById('totalCount').textContent = manifest.totalFiles || 0;
+            
+            // Calculate totals from arrays
+            const configCount = manifest.files.config?.length || 0;
+            const dataCount = manifest.files.data?.length || 0;
+            const staticCount = manifest.files.files?.length || 0;
+            const collectionsCount = manifest.files.collections?.length || 0;
+            const imageCount = manifest.files.image?.length || 0;
+            const resumeCount = manifest.files.resume?.length || 0;
+            const totalCount = configCount + dataCount + staticCount + collectionsCount + imageCount + resumeCount;
+            
+            document.getElementById('configCount').textContent = configCount;
+            document.getElementById('dataCount').textContent = dataCount;
+            document.getElementById('staticCount').textContent = staticCount;
+            document.getElementById('collectionsCount').textContent = collectionsCount;
+            document.getElementById('imagesCount').textContent = imageCount;
+            document.getElementById('totalCount').textContent = totalCount;
         }
 
         // Load status on page load
