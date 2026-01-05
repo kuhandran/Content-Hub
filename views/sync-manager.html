@@ -678,7 +678,7 @@
                     <div class="action-buttons">
                         <button class="btn btn-primary" onclick="startSync()">
                             <span class="btn-icon">🔄</span>
-                            <span>Sync Now</span>
+                            <span>Refresh from Redis</span>
                         </button>
                         <button class="btn btn-secondary" onclick="checkStatus()">
                             <span class="btn-icon">📊</span>
@@ -695,7 +695,7 @@
                 <h2>Sync Files</h2>
                 <button class="btn btn-primary" id="syncBtn" onclick="startSync()">
                     <span class="btn-icon">🔄</span>
-                    <span>Trigger Sync</span>
+                    <span>Refresh Status</span>
                 </button>
             </div>
 
@@ -1110,59 +1110,46 @@
             syncBtn.disabled = true;
 
             try {
-                addLog('info', 'Starting file sync operation...');
-                updateProgress(10, 'Initializing sync...');
+                addLog('info', 'Refreshing file status from Redis...');
+                updateProgress(30, 'Loading current state...');
 
-                // Get previous state
+                // Get current state from Redis
                 const statusResponse = await fetch('/api/auto-sync/status');
-                previousSync = await statusResponse.json();
-
-                updateProgress(30, 'Scanning directories...');
-                addLog('info', 'Scanning public folders...');
-
-                const response = await fetch('/api/auto-sync', {
-                    method: 'POST'
-                });
-
-                updateProgress(60, 'Processing files...');
-
-                const data = await response.json();
-                currentSync = data;
-
-                updateProgress(80, 'Updating storage...');
-                addLog('success', `Scanned ${data.filesScanned} files`);
-                addLog('success', `Seeded ${data.filesSeeded} files to Redis`);
-
-                if (data.filesFailed > 0) {
-                    addLog('warning', `Failed to seed ${data.filesFailed} files`);
+                const data = await statusResponse.json();
+                
+                if (!data.manifest) {
+                    throw new Error('No manifest found in Redis');
                 }
 
-                updateProgress(100, 'Sync completed!');
+                updateProgress(70, 'Processing files...');
+                
+                // Calculate totals from manifest
+                const files = data.manifest.files || {};
+                const configCount = (files.config || []).length;
+                const dataCount = (files.data || []).length;
+                const staticCount = (files.files || []).length;
+                const collectionsCount = (files.collections || []).length;
+                const imageCount = (files.image || []).length;
+                const resumeCount = (files.resume || []).length;
+                const totalCount = configCount + dataCount + staticCount + collectionsCount + imageCount + resumeCount;
+
+                addLog('success', `Loaded ${totalCount} files from Redis`);
+                addLog('info', `Config: ${configCount}, Data: ${dataCount}, Files: ${staticCount}, Collections: ${collectionsCount}, Images: ${imageCount}`);
+
+                updateProgress(100, 'Refresh completed!');
                 
                 // Update UI
+                currentSync = { manifest: data.manifest };
                 updateStats(data.manifest);
                 renderFileCategories(data.manifest);
                 document.getElementById('lastSync').innerHTML = '<span class="btn-icon">✅</span> Just now';
 
-                // Show comparison
-                if (previousSync && previousSync.manifest) {
-                    const comparison = compareSync(previousSync.manifest, data.manifest);
-                    showComparison(comparison);
-                    
-                    if (comparison.newFiles.length > 0) {
-                        addLog('info', `Found ${comparison.newFiles.length} new files`);
-                    }
-                    if (comparison.missingFiles.length > 0) {
-                        addLog('warning', `${comparison.missingFiles.length} files are missing`);
-                    }
-                }
-
                 setTimeout(hideProgress, 2000);
-                addLog('success', 'Sync operation completed successfully!');
+                addLog('success', 'Status refreshed successfully!');
 
             } catch (error) {
                 hideProgress();
-                addLog('error', 'Sync failed: ' + error.message);
+                addLog('error', 'Refresh failed: ' + error.message);
             } finally {
                 syncBtn.disabled = false;
             }
