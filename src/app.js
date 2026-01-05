@@ -78,7 +78,43 @@ app.get('/login', (req, res) => {
     }
   }
   
-  res.render('login');
+  res.render('login', { error: null });
+});
+
+// Login form submission (web-based)
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  const AUTH_USER = process.env.AUTH_USER || 'admin';
+  const AUTH_PASS = process.env.AUTH_PASS || 'password';
+  const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+  // Verify credentials
+  if (username !== AUTH_USER || password !== AUTH_PASS) {
+    return res.render('login', { error: 'Invalid username or password' });
+  }
+
+  // Create JWT token
+  const jwt = require('jsonwebtoken');
+  const token = jwt.sign(
+    { username, loginTime: new Date() },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+
+  // Set cookie and redirect
+  res.cookie('auth_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  });
+
+  res.redirect('/dashboard');
+});
+
+// Logout route
+app.get('/logout', (req, res) => {
+  res.clearCookie('auth_token');
+  res.redirect('/login');
 });
 
 // Dashboard page (requires auth)
