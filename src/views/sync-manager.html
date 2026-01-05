@@ -15,6 +15,10 @@
             box-sizing: border-box;
         }
         
+        html {
+            height: 100%;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: #f5f7fa;
@@ -94,6 +98,8 @@
             flex: 1;
             padding: 20px;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
         
         .content-header {
@@ -101,6 +107,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
+            flex-shrink: 0;
         }
         
         .content-header h2 {
@@ -112,10 +119,12 @@
         
         .content-section {
             display: none;
+            flex: 1;
         }
         
         .content-section.active {
-            display: block;
+            display: flex;
+            flex-direction: column;
         }
         
         .card {
