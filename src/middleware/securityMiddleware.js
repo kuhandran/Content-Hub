@@ -9,7 +9,7 @@ const securityMiddleware = (req, res, next) => {
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net",
       "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com",
       "img-src 'self' data: https:",
       "font-src 'self' data:",
