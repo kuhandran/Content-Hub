@@ -533,6 +533,16 @@
                     <div class="label">JSON Data</div>
                 </div>
                 <div class="stat-card">
+                    <h3>Image Files</h3>
+                    <div class="count" x-text="stats.imageCount">-</div>
+                    <div class="label">Images</div>
+                </div>
+                <div class="stat-card">
+                    <h3>JS Files</h3>
+                    <div class="count" x-text="stats.jsCount">-</div>
+                    <div class="label">Scripts</div>
+                </div>
+                <div class="stat-card">
                     <h3>Collections</h3>
                     <div class="count" x-text="stats.collectionsCount">-</div>
                     <div class="label">Multi-language</div>
@@ -573,19 +583,63 @@
                 </button>
             </div>
 
+            <!-- Config Upload -->
             <div class="card">
                 <div class="card-header">
-                    <h3>📦 Upload Files</h3>
+                    <h3>⚙️ Config Files</h3>
                 </div>
                 <div class="card-body">
-                    <div style="margin-bottom: 16px;">
-                        <input type="file" x-ref="uploadFiles" multiple style="margin-bottom: 12px;">
-                        <button class="btn btn-primary" @click="uploadFiles('config')" style="width: 100%;">
-                            <span class="btn-icon">⬆️</span>
-                            <span>Upload</span>
-                        </button>
-                    </div>
+                    <input type="file" x-ref="configFiles" multiple accept=".json,.xml,.yml,.yaml" style="margin-bottom: 12px;">
+                    <button class="btn btn-primary" @click="uploadFilesByFolder('config', $refs.configFiles)" style="width: 100%;">
+                        <span class="btn-icon">⬆️</span>
+                        <span>Upload Config</span>
+                    </button>
                     <div x-show="uploads.config.message" x-html="uploads.config.message" style="margin-top: 12px; font-size: 12px;"></div>
+                </div>
+            </div>
+
+            <!-- Data Upload -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📊 Data Files</h3>
+                </div>
+                <div class="card-body">
+                    <input type="file" x-ref="dataFiles" multiple accept=".json" style="margin-bottom: 12px;">
+                    <button class="btn btn-primary" @click="uploadFilesByFolder('data', $refs.dataFiles)" style="width: 100%;">
+                        <span class="btn-icon">⬆️</span>
+                        <span>Upload Data</span>
+                    </button>
+                    <div x-show="uploads.data.message" x-html="uploads.data.message" style="margin-top: 12px; font-size: 12px;"></div>
+                </div>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>🖼️ Image Files</h3>
+                </div>
+                <div class="card-body">
+                    <input type="file" x-ref="imageFiles" multiple accept="image/*" style="margin-bottom: 12px;">
+                    <button class="btn btn-primary" @click="uploadFilesByFolder('image', $refs.imageFiles)" style="width: 100%;">
+                        <span class="btn-icon">⬆️</span>
+                        <span>Upload Images</span>
+                    </button>
+                    <div x-show="uploads.image.message" x-html="uploads.image.message" style="margin-top: 12px; font-size: 12px;"></div>
+                </div>
+            </div>
+
+            <!-- JavaScript Upload -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📝 JavaScript Files</h3>
+                </div>
+                <div class="card-body">
+                    <input type="file" x-ref="jsFiles" multiple accept=".js" style="margin-bottom: 12px;">
+                    <button class="btn btn-primary" @click="uploadFilesByFolder('js', $refs.jsFiles)" style="width: 100%;">
+                        <span class="btn-icon">⬆️</span>
+                        <span>Upload Scripts</span>
+                    </button>
+                    <div x-show="uploads.js.message" x-html="uploads.js.message" style="margin-top: 12px; font-size: 12px;"></div>
                 </div>
             </div>
         </div>
@@ -594,19 +648,72 @@
         <div class="content-section" :class="{ 'active': activeSection === 'collections' }">
             <div class="content-header">
                 <h2>Collections Management</h2>
-                <button class="btn btn-primary" @click="startSync()">
+                <button class="btn btn-primary" @click="loadCollectionStatus()">
                     <span class="btn-icon">🔄</span>
-                    <span>Sync Collections</span>
+                    <span>Refresh Status</span>
                 </button>
             </div>
 
+            <!-- Summary Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Collections</h3>
+                    <div class="count" x-text="collectionStats.totalCollections">-</div>
+                    <div class="label">Languages</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Config Files</h3>
+                    <div class="count" x-text="collectionStats.totalConfigFiles">-</div>
+                    <div class="label">Configuration</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Data Files</h3>
+                    <div class="count" x-text="collectionStats.totalDataFiles">-</div>
+                    <div class="label">Data</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total</h3>
+                    <div class="count" x-text="collectionStats.totalFiles">-</div>
+                    <div class="label">All Files</div>
+                </div>
+            </div>
+
+            <!-- Collection Details -->
             <div class="card">
                 <div class="card-header">
-                    <h3>🌍 Collection Details</h3>
+                    <h3>📍 Collection Details by Country</h3>
                 </div>
                 <div class="card-body">
-                    <p style="color: #64748b;">Collections: <strong x-text="stats.collectionsCount">-</strong></p>
-                    <p style="color: #64748b; margin-top: 8px;">Manage multilingual content across different locales</p>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                            <thead>
+                                <tr style="background: #f8fafc; border-bottom: 2px solid #e9ecef;">
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #1e293b;">Country/Language</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #1e293b;">Config Files</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #1e293b;">Data Files</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #1e293b;">Total Files</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #1e293b;">Sync Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="(collection, code) in collections" :key="code">
+                                    <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;" @mouseenter="$el.style.background='#f8fafc'" @mouseleave="$el.style.background='transparent'">
+                                        <td style="padding: 12px; color: #1e293b; font-weight: 500;" x-text="collection.locale.toUpperCase()"></td>
+                                        <td style="padding: 12px; text-align: center; color: #667eea;">
+                                            <span style="background: #f1f5ff; padding: 4px 8px; border-radius: 4px; font-weight: 600;" x-text="collection.configFiles"></span>
+                                        </td>
+                                        <td style="padding: 12px; text-align: center; color: #667eea;">
+                                            <span style="background: #f1f5ff; padding: 4px 8px; border-radius: 4px; font-weight: 600;" x-text="collection.dataFiles"></span>
+                                        </td>
+                                        <td style="padding: 12px; text-align: center; font-weight: 600; color: #1e293b;" x-text="collection.totalFiles"></td>
+                                        <td style="padding: 12px; text-align: center;">
+                                            <span style="background: #dcfce7; color: #16a34a; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;" x-text="collection.syncStatus.toUpperCase()"></span>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -772,9 +879,19 @@
                 },
                 lastSync: 'Never synced',
                 uploads: {
-                    config: { loading: false, message: '' }
+                    config: { loading: false, message: '' },
+                    data: { loading: false, message: '' },
+                    image: { loading: false, message: '' },
+                    js: { loading: false, message: '' }
                 },
                 logs: [],
+                collections: {},
+                collectionStats: {
+                    totalCollections: 0,
+                    totalConfigFiles: 0,
+                    totalDataFiles: 0,
+                    totalFiles: 0
+                },
                 
                 init() {
                     this.checkStatus();
@@ -865,27 +982,39 @@
                 },
                 
                 updateStats(manifest) {
-                    if (!manifest || !manifest.files) {
+                    if (!manifest) {
                         this.stats = {
                             configCount: '0',
                             dataCount: '0',
+                            imageCount: '0',
+                            jsCount: '0',
                             collectionsCount: '0',
                             totalCount: '0'
                         };
                         return;
                     }
                     
-                    const configCount = manifest.files.config?.length || 0;
-                    const dataCount = manifest.files.data?.length || 0;
-                    const collectionsCount = manifest.files.collections?.length || 0;
-                    const totalCount = configCount + dataCount + collectionsCount;
+                    const summary = manifest.summary || {};
                     
                     this.stats = {
-                        configCount: String(configCount),
-                        dataCount: String(dataCount),
-                        collectionsCount: String(collectionsCount),
-                        totalCount: String(totalCount)
+                        configCount: String(summary.totalConfigFiles || 0),
+                        dataCount: String(summary.totalDataFiles || 0),
+                        imageCount: String(summary.totalImageFiles || 0),
+                        jsCount: String(summary.totalJsFiles || 0),
+                        collectionsCount: String(summary.totalCollections || 0),
+                        totalCount: String(summary.totalFiles || 0)
                     };
+                    
+                    // Update collection stats
+                    if (manifest.collections) {
+                        this.collectionStats = {
+                            totalCollections: summary.totalCollections || 0,
+                            totalConfigFiles: summary.totalConfigFiles || 0,
+                            totalDataFiles: summary.totalDataFiles || 0,
+                            totalFiles: summary.totalFiles || 0
+                        };
+                        this.collections = manifest.collections;
+                    }
                 },
                 
                 async uploadFiles(folder) {
@@ -925,6 +1054,63 @@
                         this.addLog('error', `Upload failed: ${error.message}`);
                     } finally {
                         this.uploads[folder].loading = false;
+                    }
+                },
+                
+                async uploadFilesByFolder(folder, fileInput) {
+                    const files = fileInput.files;
+                    
+                    if (files.length === 0) {
+                        this.uploads[folder].message = '<p style="color: #f59e0b;">⚠️ No files selected</p>';
+                        return;
+                    }
+                    
+                    this.uploads[folder].loading = true;
+                    this.uploads[folder].message = '<p style="color: #667eea;">⏳ Uploading...</p>';
+                    
+                    try {
+                        let uploaded = 0;
+                        
+                        for (const file of files) {
+                            const content = await file.text();
+                            const filePath = `${folder}/${file.name}`;
+                            
+                            const response = await fetch('/api/auto-sync/upload', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ folder, filePath, content })
+                            });
+                            
+                            if (response.ok) uploaded++;
+                        }
+                        
+                        this.uploads[folder].message = `<p style="color: #16a34a;">✅ ${uploaded} ${folder} files uploaded</p>`;
+                        this.addLog('success', `Uploaded ${uploaded} files to ${folder}/`);
+                        
+                        fileInput.value = '';
+                        setTimeout(() => this.startSync(), 1000);
+                    } catch (error) {
+                        this.uploads[folder].message = `<p style="color: #dc2626;">❌ Upload failed: ${error.message}</p>`;
+                        this.addLog('error', `Upload to ${folder} failed: ${error.message}`);
+                    } finally {
+                        this.uploads[folder].loading = false;
+                    }
+                },
+                
+                async loadCollectionStatus() {
+                    try {
+                        this.addLog('info', 'Loading collection status...');
+                        const response = await fetch('/api/auto-sync/status');
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.updateStats(data);
+                            this.addLog('success', `Loaded ${data.summary.totalCollections} collections`);
+                        } else {
+                            this.addLog('error', 'Failed to load collection status');
+                        }
+                    } catch (error) {
+                        this.addLog('error', 'Error loading collection status: ' + error.message);
                     }
                 },
                 

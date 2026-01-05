@@ -334,7 +334,7 @@ router.post('/', async (req, res) => {
 });
 
 /**
- * GET /api/auto-sync/status - Check sync status
+ * GET /api/auto-sync/status - Check sync status with detailed collections info
  */
 router.get('/status', async (req, res) => {
   try {
@@ -362,10 +362,91 @@ router.get('/status', async (req, res) => {
       }
     }
 
+    // Scan for collection details
+    const publicDir = path.join(__dirname, '../../public/collections');
+    const collectionDetails = {};
+    let totalCollections = 0;
+    let totalConfigFiles = 0;
+    let totalDataFiles = 0;
+    let totalImageFiles = 0;
+    let totalJsFiles = 0;
+
+    if (fs.existsSync(publicDir)) {
+      const locales = fs.readdirSync(publicDir, { withFileTypes: true });
+      
+      for (const locale of locales) {
+        if (locale.isDirectory()) {
+          const localeCode = locale.name;
+          const configDir = path.join(publicDir, localeCode, 'config');
+          const dataDir = path.join(publicDir, localeCode, 'data');
+          
+          let configCount = 0;
+          let dataCount = 0;
+
+          if (fs.existsSync(configDir)) {
+            configCount = fs.readdirSync(configDir).filter(f => !fs.statSync(path.join(configDir, f)).isDirectory()).length;
+            totalConfigFiles += configCount;
+          }
+
+          if (fs.existsSync(dataDir)) {
+            dataCount = fs.readdirSync(dataDir).filter(f => !fs.statSync(path.join(dataDir, f)).isDirectory()).length;
+            totalDataFiles += dataCount;
+          }
+
+          collectionDetails[localeCode] = {
+            locale: localeCode,
+            configFiles: configCount,
+            dataFiles: dataCount,
+            totalFiles: configCount + dataCount,
+            syncStatus: 'ready'
+          };
+          totalCollections++;
+        }
+      }
+    }
+
+    // Count image and JS files
+    const imageDir = path.join(__dirname, '../../public/image');
+    const jsDir = path.join(__dirname, '../../public/js');
+
+    if (fs.existsSync(imageDir)) {
+      const images = fs.readdirSync(imageDir).filter(f => !fs.statSync(path.join(imageDir, f)).isDirectory());
+      totalImageFiles = images.length;
+    }
+
+    if (fs.existsSync(jsDir)) {
+      const scripts = fs.readdirSync(jsDir).filter(f => !fs.statSync(path.join(jsDir, f)).isDirectory());
+      totalJsFiles = scripts.length;
+    }
+
+    // Count files in config and data folders
+    const mainConfigDir = path.join(__dirname, '../../public/config');
+    const mainDataDir = path.join(__dirname, '../../public/data');
+
+    if (fs.existsSync(mainConfigDir)) {
+      const configs = fs.readdirSync(mainConfigDir).filter(f => !fs.statSync(path.join(mainConfigDir, f)).isDirectory());
+      totalConfigFiles += configs.length;
+    }
+
+    if (fs.existsSync(mainDataDir)) {
+      const data = fs.readdirSync(mainDataDir).filter(f => !fs.statSync(path.join(mainDataDir, f)).isDirectory());
+      totalDataFiles += data.length;
+    }
+
     res.json({
+      success: true,
       redisConnected,
       lastSync: manifest?.generated || 'Never',
-      totalFiles: manifest?.totalFiles || 0,
+      timestamp: new Date().toISOString(),
+      summary: {
+        totalCollections,
+        totalConfigFiles,
+        totalDataFiles,
+        totalImageFiles,
+        totalJsFiles,
+        totalFiles: manifest?.totalFiles || 0
+      },
+      collections: collectionDetails,
       folders: manifest?.folders || [],
       manifest: manifest
     });
@@ -373,6 +454,7 @@ router.get('/status', async (req, res) => {
   } catch (error) {
     console.error('[AUTO-SYNC] Error getting sync status:', error);
     res.status(500).json({
+      success: false,
       error: error.message
     });
   }
