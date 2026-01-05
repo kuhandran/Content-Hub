@@ -69,6 +69,7 @@ const backupRoutes = require('./routes/backup');
 const scannerRoutes = require('./routes/scanner');
 const adminRoutes = require('./routes/admin');
 const { router: adminSeedRoutes } = require('./routes/admin-seed');
+const autoSyncRoutes = require('./routes/auto-sync');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -79,6 +80,7 @@ app.use('/api/backup', backupRoutes);
 app.use('/api/scanner', scannerRoutes);
 app.use('/api/admin', adminSeedRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/auto-sync', autoSyncRoutes);
 
 // Login page (without auth, but redirect if already authenticated)
 app.get('/login', (req, res) => {
@@ -196,9 +198,14 @@ app.get('/', (req, res) => {
   }
 });
 
-// Sync Manager page
+// Sync Manager page (in modal)
 app.get('/sync-manager', require('./middleware/authMiddleware'), (req, res) => {
   res.sendFile(__dirname + '/views/sync-manager.html');
+});
+
+// Sync Manager full page (with navbar and sidebar)
+app.get('/syncmanager', require('./middleware/authMiddleware'), (req, res) => {
+  res.render('syncmanager-page', { user: req.user });
 });
 
 // API health check

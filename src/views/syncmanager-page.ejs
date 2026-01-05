@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Content Hub - Real-time Sync</title>
+    <title>Content Hub - Sync Manager</title>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
@@ -19,10 +19,85 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: #f5f7fa;
-            height: 100%;
+            height: 100vh;
             display: flex;
+            flex-direction: column;
         }
         
+        /* Navbar */
+        .navbar {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            text-decoration: none;
+        }
+        
+        .navbar-brand span { font-size: 24px; }
+        
+        .navbar-nav {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .nav-btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        
+        .nav-btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .nav-btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+        
+        .nav-btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 1px solid #e9ecef;
+        }
+        
+        .nav-btn-secondary:hover {
+            border-color: #667eea;
+            background: #f8fafc;
+        }
+        
+        /* Main Container */
+        .container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
         .sidebar {
             width: 240px;
             background: white;
@@ -31,6 +106,7 @@
             flex-direction: column;
             height: 100%;
             flex-shrink: 0;
+            overflow-y: auto;
         }
         
         .sidebar-header {
@@ -39,21 +115,20 @@
         }
         
         .sidebar-header h1 {
-            font-size: 16px;
+            font-size: 14px;
             color: #1e293b;
             margin-bottom: 4px;
             font-weight: 600;
         }
         
         .sidebar-header p {
-            font-size: 12px;
+            font-size: 11px;
             color: #64748b;
         }
         
         .nav-menu {
             flex: 1;
             padding: 12px 0;
-            overflow-y: auto;
         }
         
         .nav-item {
@@ -86,6 +161,9 @@
             text-align: center;
         }
         
+        .nav-item span { display: flex; align-items: center; }
+        
+        /* Main Content */
         .main-content {
             flex: 1;
             padding: 20px;
@@ -301,169 +379,188 @@
     </style>
 </head>
 <body x-data="syncManagerApp()" @load.window="init()" x-cloak>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h1>🎯 Content Hub</h1>
-            <p>Real-time Content Sync</p>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="navbar-brand">
+            <span>📊</span>
+            <span>Content Hub - Sync Manager</span>
         </div>
-        
-        <div class="nav-menu">
-            <div class="nav-item" :class="{ 'active': activeSection === 'overview' }" @click="switchSection('overview')">
-                <span class="icon">📊</span>
-                <span>Overview</span>
-            </div>
-            <div class="nav-item" :class="{ 'active': activeSection === 'sync' }" @click="switchSection('sync')">
-                <span class="icon">🔄</span>
-                <span>Sync Files</span>
-            </div>
-            <div class="nav-item" :class="{ 'active': activeSection === 'collections' }" @click="switchSection('collections')">
-                <span class="icon">🌍</span>
-                <span>Collections</span>
-            </div>
-            <div class="nav-item" :class="{ 'active': activeSection === 'logs' }" @click="switchSection('logs')">
-                <span class="icon">📝</span>
-                <span>Logs</span>
-            </div>
+        <div class="navbar-nav">
+            <a href="/dashboard" class="nav-btn nav-btn-secondary">
+                <span>← Back to Dashboard</span>
+            </a>
+            <a href="/logout" class="nav-btn nav-btn-secondary">
+                <span>🚪 Logout</span>
+            </a>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Breadcrumb Navigation -->
-        <div class="breadcrumb" x-show="navigationStack.length > 1">
-            <template x-for="(crumb, idx) in getBreadcrumbs()" :key="idx">
-                <template x-if="idx > 0">
-                    <span class="breadcrumb-sep">/</span>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>🎯 Navigation</h1>
+                <p>Real-time Content Sync</p>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="nav-item" :class="{ 'active': activeSection === 'overview' }" @click="switchSection('overview')">
+                    <span class="icon">📊</span>
+                    <span>Overview</span>
+                </div>
+                <div class="nav-item" :class="{ 'active': activeSection === 'sync' }" @click="switchSection('sync')">
+                    <span class="icon">🔄</span>
+                    <span>Sync Files</span>
+                </div>
+                <div class="nav-item" :class="{ 'active': activeSection === 'collections' }" @click="switchSection('collections')">
+                    <span class="icon">🌍</span>
+                    <span>Collections</span>
+                </div>
+                <div class="nav-item" :class="{ 'active': activeSection === 'logs' }" @click="switchSection('logs')">
+                    <span class="icon">📝</span>
+                    <span>Logs</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Breadcrumb Navigation -->
+            <div class="breadcrumb" x-show="navigationStack.length > 1">
+                <template x-for="(crumb, idx) in getBreadcrumbs()" :key="idx">
+                    <template x-if="idx > 0">
+                        <span class="breadcrumb-sep">/</span>
+                    </template>
+                    <a @click="switchSection(crumb.section)" x-text="crumb.name"></a>
                 </template>
-                <a @click="switchSection(crumb.section)" x-text="crumb.name"></a>
-            </template>
-            <template x-if="navigationStack.length > 1">
-                <span class="breadcrumb-sep">/</span>
-                <a @click="goBack()" style="color: #dc2626;">← Back</a>
-            </template>
-        </div>
-
-        <!-- Overview Section -->
-        <div class="content-section" :class="{ 'active': activeSection === 'overview' }">
-            <div class="content-header">
-                <h2>Storage Overview</h2>
-                <span class="status-badge synced" x-text="lastSync">Never synced</span>
+                <template x-if="navigationStack.length > 1">
+                    <span class="breadcrumb-sep">/</span>
+                    <a @click="goBack()" style="color: #dc2626;">← Back</a>
+                </template>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>Config Files</h3>
-                    <div class="count" x-text="stats.configCount">-</div>
-                    <div class="label">Configuration</div>
+            <!-- Overview Section -->
+            <div class="content-section" :class="{ 'active': activeSection === 'overview' }">
+                <div class="content-header">
+                    <h2>Storage Overview</h2>
+                    <span class="status-badge synced" x-text="lastSync">Never synced</span>
                 </div>
-                <div class="stat-card">
-                    <h3>Data Files</h3>
-                    <div class="count" x-text="stats.dataCount">-</div>
-                    <div class="label">JSON Data</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Collections</h3>
-                    <div class="count" x-text="stats.collectionsCount">-</div>
-                    <div class="label">Multi-language</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Total Files</h3>
-                    <div class="count" x-text="stats.totalCount">-</div>
-                    <div class="label">All Files</div>
-                </div>
-            </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h3>Quick Actions</h3>
-                </div>
-                <div class="card-body">
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" @click="startSync()" :disabled="loading">
-                            <span class="btn-icon">🔄</span>
-                            <span x-text="loading ? 'Syncing...' : 'Sync Now'">Sync Now</span>
-                        </button>
-                        <button class="btn btn-secondary" @click="checkStatus()">
-                            <span class="btn-icon">📊</span>
-                            <span>Check Status</span>
-                        </button>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Config Files</h3>
+                        <div class="count" x-text="stats.configCount">-</div>
+                        <div class="label">Configuration</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Data Files</h3>
+                        <div class="count" x-text="stats.dataCount">-</div>
+                        <div class="label">JSON Data</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Collections</h3>
+                        <div class="count" x-text="stats.collectionsCount">-</div>
+                        <div class="label">Multi-language</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Files</h3>
+                        <div class="count" x-text="stats.totalCount">-</div>
+                        <div class="label">All Files</div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Sync Section -->
-        <div class="content-section" :class="{ 'active': activeSection === 'sync' }">
-            <div class="content-header">
-                <h2>Sync Files</h2>
-                <button class="btn btn-primary" @click="startSync()" :disabled="loading">
-                    <span class="btn-icon">🔄</span>
-                    <span x-text="loading ? 'Syncing...' : 'Refresh'">Refresh</span>
-                </button>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h3>📦 Upload Files</h3>
-                </div>
-                <div class="card-body">
-                    <div style="margin-bottom: 16px;">
-                        <input type="file" x-ref="uploadFiles" multiple style="margin-bottom: 12px;">
-                        <button class="btn btn-primary" @click="uploadFiles('config')" style="width: 100%;">
-                            <span class="btn-icon">⬆️</span>
-                            <span>Upload</span>
-                        </button>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Quick Actions</h3>
                     </div>
-                    <div x-show="uploads.config.message" x-html="uploads.config.message" style="margin-top: 12px; font-size: 12px;"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Collections Section -->
-        <div class="content-section" :class="{ 'active': activeSection === 'collections' }">
-            <div class="content-header">
-                <h2>Collections Management</h2>
-                <button class="btn btn-primary" @click="startSync()">
-                    <span class="btn-icon">🔄</span>
-                    <span>Sync Collections</span>
-                </button>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h3>🌍 Collection Details</h3>
-                </div>
-                <div class="card-body">
-                    <p style="color: #64748b;">Collections: <strong x-text="stats.collectionsCount">-</strong></p>
-                    <p style="color: #64748b; margin-top: 8px;">Manage multilingual content across different locales</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Logs Section -->
-        <div class="content-section" :class="{ 'active': activeSection === 'logs' }">
-            <div class="content-header">
-                <h2>Sync Logs</h2>
-                <button class="btn btn-secondary" @click="clearLogs()">
-                    <span class="btn-icon">🗑️</span>
-                    <span>Clear</span>
-                </button>
-            </div>
-
-            <div class="card">
-                <div class="card-body">
-                    <div style="background: #1e293b; border-radius: 10px; padding: 16px; max-height: 400px; overflow-y: auto; font-family: 'Monaco', 'Courier New', monospace; font-size: 12px;">
-                        <div x-show="logs.length === 0" class="empty-state" style="margin: 0;">
-                            <p>No logs yet</p>
+                    <div class="card-body">
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" @click="startSync()" :disabled="loading">
+                                <span class="btn-icon">🔄</span>
+                                <span x-text="loading ? 'Syncing...' : 'Sync Now'">Sync Now</span>
+                            </button>
+                            <button class="btn btn-secondary" @click="checkStatus()">
+                                <span class="btn-icon">📊</span>
+                                <span>Check Status</span>
+                            </button>
                         </div>
-                        <template x-for="log in logs" :key="log.timestamp + log.message">
-                            <div style="padding: 6px 0; border-bottom: 1px solid #334155; color: #e2e8f0;">
-                                <span style="color: #94a3b8; margin-right: 8px;" x-text="log.timestamp"></span>
-                                <span style="font-weight: 600; margin-right: 8px;" :style="{ color: log.level === 'success' ? '#4ade80' : log.level === 'error' ? '#f87171' : '#38bdf8' }" x-text="'[' + log.level.toUpperCase() + ']'"></span>
-                                <span style="color: #e2e8f0;" x-text="log.message"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sync Section -->
+            <div class="content-section" :class="{ 'active': activeSection === 'sync' }">
+                <div class="content-header">
+                    <h2>Sync Files</h2>
+                    <button class="btn btn-primary" @click="startSync()" :disabled="loading">
+                        <span class="btn-icon">🔄</span>
+                        <span x-text="loading ? 'Syncing...' : 'Refresh'">Refresh</span>
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📦 Upload Files</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="margin-bottom: 16px;">
+                            <input type="file" x-ref="uploadFiles" multiple style="margin-bottom: 12px;">
+                            <button class="btn btn-primary" @click="uploadFiles('config')" style="width: 100%;">
+                                <span class="btn-icon">⬆️</span>
+                                <span>Upload</span>
+                            </button>
+                        </div>
+                        <div x-show="uploads.config.message" x-html="uploads.config.message" style="margin-top: 12px; font-size: 12px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collections Section -->
+            <div class="content-section" :class="{ 'active': activeSection === 'collections' }">
+                <div class="content-header">
+                    <h2>Collections Management</h2>
+                    <button class="btn btn-primary" @click="startSync()">
+                        <span class="btn-icon">🔄</span>
+                        <span>Sync Collections</span>
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🌍 Collection Details</h3>
+                    </div>
+                    <div class="card-body">
+                        <p style="color: #64748b;">Collections: <strong x-text="stats.collectionsCount">-</strong></p>
+                        <p style="color: #64748b; margin-top: 8px;">Manage multilingual content across different locales</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Section -->
+            <div class="content-section" :class="{ 'active': activeSection === 'logs' }">
+                <div class="content-header">
+                    <h2>Sync Logs</h2>
+                    <button class="btn btn-secondary" @click="clearLogs()">
+                        <span class="btn-icon">🗑️</span>
+                        <span>Clear</span>
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div style="background: #1e293b; border-radius: 10px; padding: 16px; max-height: 500px; overflow-y: auto; font-family: 'Monaco', 'Courier New', monospace; font-size: 12px;">
+                            <div x-show="logs.length === 0" class="empty-state" style="margin: 0;">
+                                <p>No logs yet</p>
                             </div>
-                        </template>
+                            <template x-for="log in logs" :key="log.timestamp + log.message">
+                                <div style="padding: 6px 0; border-bottom: 1px solid #334155; color: #e2e8f0;">
+                                    <span style="color: #94a3b8; margin-right: 8px;" x-text="log.timestamp"></span>
+                                    <span style="font-weight: 600; margin-right: 8px;" :style="{ color: log.level === 'success' ? '#4ade80' : log.level === 'error' ? '#f87171' : '#38bdf8' }" x-text="'[' + log.level.toUpperCase() + ']'"></span>
+                                    <span style="color: #e2e8f0;" x-text="log.message"></span>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </div>

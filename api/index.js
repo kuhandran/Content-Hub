@@ -173,9 +173,14 @@ app.get('/dashboard', authMiddleware, (req, res) => {
   res.render('dashboard', { user: req.user });
 });
 
-// Sync Manager route
+// Sync Manager route (in modal)
 app.get('/sync-manager', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, '../src/views/sync-manager.html'));
+});
+
+// Sync Manager full page route (with navbar and sidebar)
+app.get('/syncmanager', authMiddleware, (req, res) => {
+  res.render('syncmanager-page', { user: req.user });
 });
 
 // Login page
