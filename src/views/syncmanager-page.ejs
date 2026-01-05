@@ -435,8 +435,8 @@
                     <a @click="switchSection(crumb.section)" x-text="crumb.name"></a>
                 </template>
                 <template x-if="navigationStack.length > 1">
-                    <span class="breadcrumb-sep">/</span>
-                    <a @click="goBack()" style="color: #dc2626;">← Back</a>
+                    <span class="breadcrumb-sep" style="margin-left: 8px;">|</span>
+                    <a @click="goBack()" style="color: #dc2626; margin-left: 8px;">← Back</a>
                 </template>
             </div>
 
@@ -472,6 +472,17 @@
 
                 <div class="card">
                     <div class="card-header">
+                        <h3>Total Size Summary</h3>
+                    </div>
+                    <div class="card-body">
+                        <p style="color: #64748b; margin-bottom: 8px;">Total Size: <strong x-text="stats.totalSize">-</strong></p>
+                        <p style="color: #64748b; margin-bottom: 8px;">Total Size (MB): <strong x-text="stats.totalSizeMB">-</strong></p>
+                        <p style="color: #94a3b8; font-size: 12px; margin-top: 12px;">Last Generated: <span x-text="stats.manifestGenerated">-</span></p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
                         <h3>Quick Actions</h3>
                     </div>
                     <div class="card-body">
@@ -485,6 +496,74 @@
                                 <span>Check Status</span>
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Detailed File Listing -->
+                <div class="card" style="border: 2px solid #667eea; background: #f8fafc;">
+                    <div class="card-header" style="background: #e8efff; border-bottom: 2px solid #667eea;">
+                        <h3 style="color: #667eea;">📁 File Listing by Category <span x-show="fileList.length > 0" style="font-size: 12px; color: #94a3b8;" x-text="'(' + fileList.length + ' files)'"></span></h3>
+                    </div>
+                    <div class="card-body" style="min-height: 250px; display: flex; flex-direction: column; padding: 24px;">
+                        <div x-show="fileList.length === 0" class="empty-state" style="flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px;">
+                            <p style="font-size: 16px; color: #64748b; margin: 0;">ℹ️ No files loaded yet</p>
+                            <p style="font-size: 14px; color: #94a3b8; margin: 0;">Click the "Check Status" button above to load all file details</p>
+                        </div>
+                        <div x-show="fileList.length > 0" style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
+                            <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+                                <thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10;">
+                                    <tr style="border-bottom: 2px solid #e9ecef; background: #f8f9fa;">
+                                        <th style="padding: 12px 8px; text-align: left; font-weight: 600; color: #64748b;">Category</th>
+                                        <th style="padding: 12px 8px; text-align: left; font-weight: 600; color: #64748b;">File Name</th>
+                                        <th style="padding: 12px 8px; text-align: left; font-weight: 600; color: #64748b;">Path</th>
+                                        <th style="padding: 12px 8px; text-align: right; font-weight: 600; color: #64748b;">Size (Bytes)</th>
+                                        <th style="padding: 12px 8px; text-align: right; font-weight: 600; color: #64748b;">Size (KB)</th>
+                                        <th style="padding: 12px 8px; text-align: center; font-weight: 600; color: #64748b;">Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(file, index) in fileList" :key="index">
+                                        <tr style="border-bottom: 1px solid #e9ecef;" :style="index % 2 === 0 && {'background': '#f8f9fa'}">
+                                            <td style="padding: 10px 8px; color: #667eea; font-weight: 500;" x-text="file.category"></td>
+                                            <td style="padding: 10px 8px; color: #1e293b;" x-text="file.file"></td>
+                                            <td style="padding: 10px 8px; color: #64748b; max-width: 300px; word-break: break-word;" x-text="file.path"></td>
+                                            <td style="padding: 10px 8px; color: #64748b; text-align: right;" x-text="file.size.toLocaleString()"></td>
+                                            <td style="padding: 10px 8px; color: #64748b; text-align: right;" x-text="file.sizeKB"></td>
+                                            <td style="padding: 10px 8px; color: #667eea; text-align: center; font-weight: 500;" x-text="file.type"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Summary -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📊 Summary by Category</h3>
+                    </div>
+                    <div class="card-body">
+                        <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #e9ecef; background: #f8f9fa;">
+                                    <th style="padding: 12px 8px; text-align: left; font-weight: 600; color: #64748b;">Category</th>
+                                    <th style="padding: 12px 8px; text-align: right; font-weight: 600; color: #64748b;">File Count</th>
+                                    <th style="padding: 12px 8px; text-align: right; font-weight: 600; color: #64748b;">Total Size (Bytes)</th>
+                                    <th style="padding: 12px 8px; text-align: right; font-weight: 600; color: #64748b;">Total Size (MB)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="(summary, category) in categorySummary" :key="category">
+                                    <tr style="border-bottom: 1px solid #e9ecef;">
+                                        <td style="padding: 10px 8px; color: #667eea; font-weight: 500;" x-text="category"></td>
+                                        <td style="padding: 10px 8px; color: #64748b; text-align: right;" x-text="summary.count"></td>
+                                        <td style="padding: 10px 8px; color: #64748b; text-align: right;" x-text="summary.size.toLocaleString()"></td>
+                                        <td style="padding: 10px 8px; color: #64748b; text-align: right;" x-text="summary.sizeMB"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -553,7 +632,7 @@
                             <div x-show="logs.length === 0" class="empty-state" style="margin: 0;">
                                 <p>No logs yet</p>
                             </div>
-                            <template x-for="log in logs" :key="log.timestamp + log.message">
+                            <template x-for="(log, logIndex) in logs" :key="logIndex">
                                 <div style="padding: 6px 0; border-bottom: 1px solid #334155; color: #e2e8f0;">
                                     <span style="color: #94a3b8; margin-right: 8px;" x-text="log.timestamp"></span>
                                     <span style="font-weight: 600; margin-right: 8px;" :style="{ color: log.level === 'success' ? '#4ade80' : log.level === 'error' ? '#f87171' : '#38bdf8' }" x-text="'[' + log.level.toUpperCase() + ']'"></span>
@@ -577,8 +656,13 @@
                     configCount: '-',
                     dataCount: '-',
                     collectionsCount: '-',
-                    totalCount: '-'
+                    totalCount: '-',
+                    totalSize: '-',
+                    totalSizeMB: '-',
+                    manifestGenerated: '-'
                 },
+                fileList: [],
+                categorySummary: {},
                 lastSync: 'Never synced',
                 uploads: {
                     config: { loading: false, message: '' }
@@ -640,7 +724,21 @@
                         if (data && data.manifest) {
                             this.updateStats(data.manifest);
                             this.lastSync = new Date(data.lastSync).toLocaleString();
-                            this.addLog('success', `Status retrieved: ${data.totalFiles} files`);
+                            const totalCount = (data.manifest.files.config?.length || 0) + 
+                                             (data.manifest.files.data?.length || 0) + 
+                                             (data.manifest.files.files?.length || 0) +
+                                             (data.manifest.files.collections?.length || 0);
+                            this.addLog('success', `Status retrieved: ${totalCount} files`);
+                            // Scroll to file listing table after a brief delay
+                            setTimeout(() => {
+                                const tableElement = document.querySelector('h3')?.textContent.includes('File Listing') && 
+                                                   document.querySelector('h3').closest('.card');
+                                if (tableElement) {
+                                    tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }
+                            }, 300);
+                                }
+                            }, 300);
                         } else {
                             this.addLog('warning', 'No sync data available');
                         }
@@ -662,6 +760,13 @@
                             this.updateStats(data.manifest);
                             this.lastSync = 'Just now';
                             this.addLog('success', 'Status refreshed successfully!');
+                            // Scroll to file listing table after a brief delay
+                            setTimeout(() => {
+                                const tableElement = document.querySelector('[x-show="fileList.length > 0"]')?.closest('.card');
+                                if (tableElement) {
+                                    tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }
+                            }, 300);
                         } else {
                             throw new Error('No manifest found in Redis');
                         }
@@ -678,22 +783,72 @@
                             configCount: '0',
                             dataCount: '0',
                             collectionsCount: '0',
-                            totalCount: '0'
+                            totalCount: '0',
+                            totalSize: '0',
+                            totalSizeMB: '0',
+                            manifestGenerated: '-'
                         };
+                        this.fileList = [];
+                        this.categorySummary = {};
                         return;
                     }
                     
+                    // Build file list
+                    const allFiles = [];
+                    const categorySummary = {};
+                    let totalSize = 0;
+                    
+                    for (const [category, files] of Object.entries(manifest.files)) {
+                        if (!Array.isArray(files)) continue;
+                        
+                        categorySummary[category] = {
+                            count: 0,
+                            size: 0,
+                            sizeMB: '0.00'
+                        };
+                        
+                        for (const file of files) {
+                            allFiles.push({
+                                category: category,
+                                file: file.name,
+                                path: file.path,
+                                size: file.size,
+                                sizeKB: (file.size / 1024).toFixed(2),
+                                type: file.ext
+                            });
+                            
+                            categorySummary[category].count++;
+                            categorySummary[category].size += file.size;
+                            totalSize += file.size;
+                        }
+                        
+                        categorySummary[category].sizeMB = (categorySummary[category].size / 1024 / 1024).toFixed(2);
+                    }
+                    
+                    // Sort file list
+                    allFiles.sort((a, b) => {
+                        if (a.category !== b.category) return a.category.localeCompare(b.category);
+                        return a.path.localeCompare(b.path);
+                    });
+                    
                     const configCount = manifest.files.config?.length || 0;
                     const dataCount = manifest.files.data?.length || 0;
+                    const filesCount = manifest.files.files?.length || 0;
                     const collectionsCount = manifest.files.collections?.length || 0;
-                    const totalCount = configCount + dataCount + collectionsCount;
+                    const totalCount = configCount + dataCount + filesCount + collectionsCount;
                     
                     this.stats = {
                         configCount: String(configCount),
                         dataCount: String(dataCount),
                         collectionsCount: String(collectionsCount),
-                        totalCount: String(totalCount)
+                        totalCount: String(totalCount),
+                        totalSize: totalSize.toLocaleString(),
+                        totalSizeMB: (totalSize / 1024 / 1024).toFixed(2),
+                        manifestGenerated: manifest.generated ? new Date(manifest.generated).toLocaleString() : '-'
                     };
+                    
+                    this.fileList = allFiles;
+                    this.categorySummary = categorySummary;
                 },
                 
                 async uploadFiles(folder) {
