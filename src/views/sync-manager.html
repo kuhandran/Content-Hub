@@ -596,7 +596,7 @@
         }
     </style>
 </head>
-<body x-data="syncManagerApp()" x-init="init()" x-cloak>
+<body x-data="syncManagerApp()" @load.window="init()" x-cloak>
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
@@ -1557,7 +1557,7 @@
                 
                 init() {
                     this.checkStatus();
-                    window.addEventListener('load', () => checkStatus());
+                    window.addEventListener('load', () => this.checkStatus());
                 },
                 
                 switchSection(sectionName) {
