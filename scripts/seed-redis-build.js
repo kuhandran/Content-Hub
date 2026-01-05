@@ -5,14 +5,13 @@
 
 const fs = require('fs');
 const path = require('path');
-const Redis = require('ioredis');
+const { createClient } = require('redis');
 
 async function seedRedis() {
-  const redisUrl = process.env.KV_REST_API_URL || process.env.REDIS_URL;
-  const redisToken = process.env.KV_REST_API_TOKEN;
+  const redisUrl = process.env.REDIS_URL;
 
   if (!redisUrl) {
-    console.log('[SEED] ⚠️  No Redis URL found, skipping seed');
+    console.log('[SEED] ⚠️  No REDIS_URL found, skipping seed');
     return;
   }
 
@@ -20,16 +19,17 @@ async function seedRedis() {
   
   let redis;
   try {
-    if (redisToken) {
-      // Vercel KV
-      redis = new Redis(redisUrl, {
-        token: redisToken,
-        tls: { rejectUnauthorized: false }
-      });
-    } else {
-      // Standard Redis
-      redis = new Redis(redisUrl);
-    }
+    redis = createClient({
+      url: redisUrl,
+      socket: {
+        tls: true,
+        rejectUnauthorized: false
+      }
+    });
+
+    redis.on('error', (err) => console.error('[SEED] Redis error:', err));
+    await redis.connect();
+    console.log('[SEED] ✅ Connected to Redis');
   } catch (error) {
     console.error('[SEED] ❌ Redis connection failed:', error.message);
     return;
