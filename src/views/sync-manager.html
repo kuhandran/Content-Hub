@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Content Hub - Real-time Sync</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
     <style>
         * {
             margin: 0;
@@ -20,7 +24,7 @@
         
         /* Sidebar Navigation */
         .sidebar {
-            width: 280px;
+            width: 320px;
             background: white;
             border-right: 1px solid #e9ecef;
             display: flex;
@@ -32,19 +36,19 @@
         }
         
         .sidebar-header {
-            padding: 30px 24px;
+            padding: 32px 28px;
             border-bottom: 1px solid #e9ecef;
         }
         
         .sidebar-header h1 {
-            font-size: 20px;
+            font-size: 22px;
             color: #1e293b;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             font-weight: 600;
         }
         
         .sidebar-header p {
-            font-size: 13px;
+            font-size: 14px;
             color: #64748b;
         }
         
@@ -57,13 +61,13 @@
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 14px 24px;
+            gap: 14px;
+            padding: 16px 28px;
             color: #64748b;
             cursor: pointer;
             transition: all 0.2s;
             border-left: 3px solid transparent;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 500;
         }
         
@@ -79,16 +83,16 @@
         }
         
         .nav-item .icon {
-            font-size: 20px;
-            width: 24px;
+            font-size: 22px;
+            width: 26px;
             text-align: center;
         }
         
         /* Main Content */
         .main-content {
-            margin-left: 280px;
+            margin-left: 320px;
             flex: 1;
-            padding: 30px;
+            padding: 32px;
             overflow-y: auto;
         }
         
@@ -100,7 +104,7 @@
         }
         
         .content-header h2 {
-            font-size: 28px;
+            font-size: 30px;
             color: #1e293b;
             font-weight: 600;
         }
@@ -188,17 +192,17 @@
         }
         
         .btn {
-            padding: 12px 20px;
+            padding: 14px 24px;
             border: none;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
         }
         
         .btn-primary {
@@ -229,7 +233,7 @@
         }
         
         .btn-icon {
-            font-size: 16px;
+            font-size: 18px;
         }
         
         .progress-section {
@@ -592,7 +596,7 @@
         }
     </style>
 </head>
-<body>
+<body x-data="syncManagerApp()" x-init="init()" x-cloak>
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
@@ -601,27 +605,27 @@
         </div>
         
         <div class="nav-menu">
-            <div class="nav-item active" onclick="switchSection('overview')" data-section="overview">
+            <div class="nav-item" :class="{ 'active': activeSection === 'overview' }" @click="switchSection('overview')">
                 <span class="icon">📊</span>
                 <span>Overview</span>
             </div>
-            <div class="nav-item" onclick="switchSection('sync')" data-section="sync">
+            <div class="nav-item" :class="{ 'active': activeSection === 'sync' }" @click="switchSection('sync')">
                 <span class="icon">🔄</span>
                 <span>Sync Files</span>
             </div>
-            <div class="nav-item" onclick="switchSection('collections')" data-section="collections">
+            <div class="nav-item" :class="{ 'active': activeSection === 'collections' }" @click="switchSection('collections')">
                 <span class="icon">🌍</span>
                 <span>Collections</span>
             </div>
-            <div class="nav-item" onclick="switchSection('validation')" data-section="validation">
+            <div class="nav-item" :class="{ 'active': activeSection === 'validation' }" @click="switchSection('validation')">
                 <span class="icon">✅</span>
                 <span>Validation</span>
             </div>
-            <div class="nav-item" onclick="switchSection('manifest')" data-section="manifest">
+            <div class="nav-item" :class="{ 'active': activeSection === 'manifest' }" @click="switchSection('manifest')">
                 <span class="icon">📋</span>
                 <span>Manifest</span>
             </div>
-            <div class="nav-item" onclick="switchSection('logs')" data-section="logs">
+            <div class="nav-item" :class="{ 'active': activeSection === 'logs' }" @click="switchSection('logs')">
                 <span class="icon">📝</span>
                 <span>Logs</span>
             </div>
@@ -631,41 +635,41 @@
     <!-- Main Content -->
     <div class="main-content">
         <!-- Overview Section -->
-        <div class="content-section active" id="overview-section">
+        <div class="content-section" :class="{ 'active': activeSection === 'overview' }">
             <div class="content-header">
                 <h2>Storage Overview</h2>
-                <span class="status-badge synced" id="lastSync">Never synced</span>
+                <span class="status-badge synced" x-text="lastSync">Never synced</span>
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Config Files</h3>
-                    <div class="count" id="configCount">-</div>
+                    <div class="count" x-text="stats.configCount">-</div>
                     <div class="label">Configuration</div>
                 </div>
                 <div class="stat-card">
                     <h3>Data Files</h3>
-                    <div class="count" id="dataCount">-</div>
+                    <div class="count" x-text="stats.dataCount">-</div>
                     <div class="label">JSON Data</div>
                 </div>
                 <div class="stat-card">
                     <h3>Static Files</h3>
-                    <div class="count" id="staticCount">-</div>
+                    <div class="count" x-text="stats.staticCount">-</div>
                     <div class="label">HTML/XML</div>
                 </div>
                 <div class="stat-card">
                     <h3>Collections</h3>
-                    <div class="count" id="collectionsCount">-</div>
+                    <div class="count" x-text="stats.collectionsCount">-</div>
                     <div class="label">Multi-language</div>
                 </div>
                 <div class="stat-card">
                     <h3>Images</h3>
-                    <div class="count" id="imagesCount">-</div>
+                    <div class="count" x-text="stats.imagesCount">-</div>
                     <div class="label">Media Files</div>
                 </div>
                 <div class="stat-card">
                     <h3>Total Files</h3>
-                    <div class="count" id="totalCount">-</div>
+                    <div class="count" x-text="stats.totalCount">-</div>
                     <div class="label">All Categories</div>
                 </div>
             </div>
@@ -676,11 +680,11 @@
                 </div>
                 <div class="card-body">
                     <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="startSync()">
+                        <button class="btn btn-primary" @click="startSync()">
                             <span class="btn-icon">🔄</span>
                             <span>Refresh from Redis</span>
                         </button>
-                        <button class="btn btn-secondary" onclick="checkStatus()">
+                        <button class="btn btn-secondary" @click="checkStatus()">
                             <span class="btn-icon">📊</span>
                             <span>Check Status</span>
                         </button>
@@ -690,12 +694,12 @@
         </div>
 
         <!-- Sync Section -->
-        <div class="content-section" id="sync-section">
+        <div class="content-section" :class="{ 'active': activeSection === 'sync' }">
             <div class="content-header">
                 <h2>Sync Files</h2>
-                <button class="btn btn-primary" id="syncBtn" onclick="startSync()">
+                <button class="btn btn-primary" @click="startSync()" :disabled="loading">
                     <span class="btn-icon">🔄</span>
-                    <span>Refresh Status</span>
+                    <span x-text="loading ? 'Syncing...' : 'Refresh Status'">Refresh Status</span>
                 </button>
             </div>
 
@@ -707,12 +711,12 @@
                         <h3>⚙️ Upload Config</h3>
                     </div>
                     <div class="card-body">
-                        <input type="file" id="configFiles" multiple accept=".json" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
-                        <button class="btn btn-primary" onclick="uploadFiles('config')" style="width: 100%; font-size: 13px;">
+                        <input type="file" x-ref="configFiles" multiple accept=".json" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
+                        <button class="btn btn-primary" @click="uploadFiles('config')" :disabled="uploads.config.loading" style="width: 100%; font-size: 13px;">
                             <span class="btn-icon">⬆️</span>
-                            <span>Upload</span>
+                            <span x-text="uploads.config.loading ? 'Uploading...' : 'Upload'">Upload</span>
                         </button>
-                        <div id="configUploadProgress" style="margin-top: 12px; font-size: 12px; display: none;"></div>
+                        <div x-show="uploads.config.message" x-html="uploads.config.message" style="margin-top: 12px; font-size: 12px;" x-transition></div>
                     </div>
                 </div>
 
@@ -722,12 +726,12 @@
                         <h3>📊 Upload Data</h3>
                     </div>
                     <div class="card-body">
-                        <input type="file" id="dataFiles" multiple accept=".json" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
-                        <button class="btn btn-primary" onclick="uploadFiles('data')" style="width: 100%; font-size: 13px;">
+                        <input type="file" x-ref="dataFiles" multiple accept=".json" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
+                        <button class="btn btn-primary" @click="uploadFiles('data')" :disabled="uploads.data.loading" style="width: 100%; font-size: 13px;">
                             <span class="btn-icon">⬆️</span>
-                            <span>Upload</span>
+                            <span x-text="uploads.data.loading ? 'Uploading...' : 'Upload'">Upload</span>
                         </button>
-                        <div id="dataUploadProgress" style="margin-top: 12px; font-size: 12px; display: none;"></div>
+                        <div x-show="uploads.data.message" x-html="uploads.data.message" style="margin-top: 12px; font-size: 12px;" x-transition></div>
                     </div>
                 </div>
 
@@ -737,12 +741,12 @@
                         <h3>📄 Upload Files</h3>
                     </div>
                     <div class="card-body">
-                        <input type="file" id="staticFiles" multiple accept=".html,.xml,.txt" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
-                        <button class="btn btn-primary" onclick="uploadFiles('files')" style="width: 100%; font-size: 13px;">
+                        <input type="file" x-ref="staticFiles" multiple accept=".html,.xml,.txt" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
+                        <button class="btn btn-primary" @click="uploadFiles('files')" :disabled="uploads.files.loading" style="width: 100%; font-size: 13px;">
                             <span class="btn-icon">⬆️</span>
-                            <span>Upload</span>
+                            <span x-text="uploads.files.loading ? 'Uploading...' : 'Upload'">Upload</span>
                         </button>
-                        <div id="filesUploadProgress" style="margin-top: 12px; font-size: 12px; display: none;"></div>
+                        <div x-show="uploads.files.message" x-html="uploads.files.message" style="margin-top: 12px; font-size: 12px;" x-transition></div>
                     </div>
                 </div>
 
@@ -752,12 +756,12 @@
                         <h3>🖼️ Upload Images</h3>
                     </div>
                     <div class="card-body">
-                        <input type="file" id="imageFiles" multiple accept="image/*" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
-                        <button class="btn btn-primary" onclick="uploadFiles('image')" style="width: 100%; font-size: 13px;">
+                        <input type="file" x-ref="imageFiles" multiple accept="image/*" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
+                        <button class="btn btn-primary" @click="uploadFiles('image')" :disabled="uploads.image.loading" style="width: 100%; font-size: 13px;">
                             <span class="btn-icon">⬆️</span>
-                            <span>Upload</span>
+                            <span x-text="uploads.image.loading ? 'Uploading...' : 'Upload'">Upload</span>
                         </button>
-                        <div id="imageUploadProgress" style="margin-top: 12px; font-size: 12px; display: none;"></div>
+                        <div x-show="uploads.image.message" x-html="uploads.image.message" style="margin-top: 12px; font-size: 12px;" x-transition></div>
                     </div>
                 </div>
             </div>
@@ -892,7 +896,7 @@
         <div class="content-section" id="logs-section">
             <div class="content-header">
                 <h2>Sync Logs</h2>
-                <button class="btn btn-secondary" onclick="clearLogs()">
+                <button class="btn btn-secondary" @click="clearLogs()">
                     <span class="btn-icon">🗑️</span>
                     <span>Clear Logs</span>
                 </button>
@@ -900,10 +904,17 @@
 
             <div class="card">
                 <div class="card-body">
-                    <div class="logs-container" id="logsContainer">
-                        <div class="empty-state">
+                    <div class="logs-container">
+                        <div x-show="logs.length === 0" class="empty-state">
                             <p>No sync operations yet. Navigate to Sync Files to start.</p>
                         </div>
+                        <template x-for="log in logs" :key="log.timestamp + log.message">
+                            <div class="log-entry">
+                                <span class="log-timestamp" x-text="log.timestamp"></span>
+                                <span class="log-level" :class="log.level" x-text="'[' + log.level.toUpperCase() + ']'"></span>
+                                <span class="log-message" x-text="log.message"></span>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -1519,6 +1530,206 @@
             } catch (error) {
                 progressDiv.innerHTML = `<p style="color: #dc2626;">❌ Upload failed: ${error.message}</p>`;
                 addLog('error', `Collection upload failed: ${error.message}`);
+            }
+        }
+        
+        // Alpine.js Component
+        function syncManagerApp() {
+            return {
+                activeSection: 'overview',
+                loading: false,
+                stats: {
+                    configCount: '-',
+                    dataCount: '-',
+                    staticCount: '-',
+                    collectionsCount: '-',
+                    imagesCount: '-',
+                    totalCount: '-'
+                },
+                lastSync: 'Never synced',
+                uploads: {
+                    config: { loading: false, message: '' },
+                    data: { loading: false, message: '' },
+                    files: { loading: false, message: '' },
+                    image: { loading: false, message: '' }
+                },
+                logs: [],
+                
+                init() {
+                    this.checkStatus();
+                    window.addEventListener('load', () => checkStatus());
+                },
+                
+                switchSection(sectionName) {
+                    this.activeSection = sectionName;
+                },
+                
+                addLog(level, message) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    this.logs.unshift({ timestamp, level, message });
+                    
+                    // Keep only last 100 logs
+                    if (this.logs.length > 100) {
+                        this.logs = this.logs.slice(0, 100);
+                    }
+                    
+                    // Also call the original addLog for compatibility
+                    window.addLog = (level, message) => this.addLog(level, message);
+                },
+                
+                clearLogs() {
+                    this.logs = [];
+                    this.addLog('info', 'Logs cleared');
+                },
+                
+                async checkStatus() {
+                    try {
+                        this.addLog('info', 'Checking storage status...');
+                        
+                        const response = await fetch('/api/auto-sync/status');
+                        const data = await response.json();
+                        
+                        if (data && data.manifest) {
+                            this.updateStats(data.manifest);
+                            this.lastSync = `<span class="btn-icon">✅</span> ${new Date(data.lastSync).toLocaleString()}`;
+                            this.addLog('success', `Status retrieved: ${data.totalFiles} total files`);
+                        } else {
+                            this.addLog('warning', 'No sync data available');
+                        }
+                    } catch (error) {
+                        this.addLog('error', 'Failed to check status: ' + error.message);
+                    }
+                },
+                
+                async startSync() {
+                    this.loading = true;
+                    
+                    try {
+                        this.addLog('info', 'Refreshing file status from Redis...');
+                        
+                        const statusResponse = await fetch('/api/auto-sync/status');
+                        const data = await statusResponse.json();
+                        
+                        if (!data.manifest) {
+                            throw new Error('No manifest found in Redis');
+                        }
+                        
+                        const files = data.manifest.files || {};
+                        const configCount = (files.config || []).length;
+                        const dataCount = (files.data || []).length;
+                        const staticCount = (files.files || []).length;
+                        const collectionsCount = (files.collections || []).length;
+                        const imageCount = (files.image || []).length;
+                        const resumeCount = (files.resume || []).length;
+                        const totalCount = configCount + dataCount + staticCount + collectionsCount + imageCount + resumeCount;
+                        
+                        this.addLog('success', `Loaded ${totalCount} files from Redis`);
+                        this.addLog('info', `Config: ${configCount}, Data: ${dataCount}, Files: ${staticCount}, Collections: ${collectionsCount}, Images: ${imageCount}`);
+                        
+                        this.updateStats(data.manifest);
+                        this.lastSync = '<span class="btn-icon">✅</span> Just now';
+                        
+                        this.addLog('success', 'Status refreshed successfully!');
+                    } catch (error) {
+                        this.addLog('error', 'Refresh failed: ' + error.message);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                updateStats(manifest) {
+                    if (!manifest || !manifest.files) {
+                        this.stats = {
+                            configCount: '0',
+                            dataCount: '0',
+                            staticCount: '0',
+                            collectionsCount: '0',
+                            imagesCount: '0',
+                            totalCount: '0'
+                        };
+                        return;
+                    }
+                    
+                    const configCount = manifest.files.config?.length || 0;
+                    const dataCount = manifest.files.data?.length || 0;
+                    const staticCount = manifest.files.files?.length || 0;
+                    const collectionsCount = manifest.files.collections?.length || 0;
+                    const imageCount = manifest.files.image?.length || 0;
+                    const resumeCount = manifest.files.resume?.length || 0;
+                    const totalCount = configCount + dataCount + staticCount + collectionsCount + imageCount + resumeCount;
+                    
+                    this.stats = {
+                        configCount,
+                        dataCount,
+                        staticCount,
+                        collectionsCount,
+                        imagesCount: imageCount,
+                        totalCount
+                    };
+                },
+                
+                async uploadFiles(folder) {
+                    const refName = folder === 'files' ? 'staticFiles' : folder + 'Files';
+                    const files = this.$refs[refName].files;
+                    
+                    if (files.length === 0) {
+                        alert('Please select files to upload');
+                        return;
+                    }
+                    
+                    this.uploads[folder].loading = true;
+                    this.uploads[folder].message = '<p style="color: #667eea;">⏳ Uploading...</p>';
+                    
+                    try {
+                        let uploaded = 0;
+                        let failed = 0;
+                        
+                        for (const file of files) {
+                            try {
+                                const content = await file.text();
+                                const filePath = `${folder}/${file.name}`;
+                                
+                                const response = await fetch('/api/auto-sync/upload', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        folder: folder,
+                                        filename: file.name,
+                                        content: content,
+                                        path: filePath
+                                    })
+                                });
+                                
+                                if (response.ok) {
+                                    uploaded++;
+                                } else {
+                                    failed++;
+                                }
+                            } catch (error) {
+                                failed++;
+                            }
+                        }
+                        
+                        this.uploads[folder].message = `
+                            <p style="color: #16a34a;">✅ ${uploaded} uploaded</p>
+                            ${failed > 0 ? `<p style="color: #dc2626;">❌ ${failed} failed</p>` : ''}
+                        `;
+                        
+                        this.addLog('success', `Uploaded ${uploaded} files to ${folder}/`);
+                        if (failed > 0) this.addLog('warning', `${failed} files failed to upload`);
+                        
+                        // Clear file input
+                        this.$refs[refName].value = '';
+                        
+                        // Refresh file list
+                        setTimeout(() => this.startSync(), 1000);
+                    } catch (error) {
+                        this.uploads[folder].message = `<p style="color: #dc2626;">❌ Upload failed: ${error.message}</p>`;
+                        this.addLog('error', `Upload to ${folder}/ failed: ${error.message}`);
+                    } finally {
+                        this.uploads[folder].loading = false;
+                    }
+                }
             }
         }
     </script>

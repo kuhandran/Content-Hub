@@ -2,7 +2,7 @@
   "name": "content-hub",
   "version": "1.0.0",
   "description": "Real-time content management hub with Redis storage and zero-downtime sync",
-  "main": "api/index.js",
+  "main": "src/api/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/kuhandran/Content-Hub.git"

@@ -4,8 +4,12 @@ const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
 const jwt = require('jsonwebtoken');
 const allowedOrigins = require('./config/allowedOrigins');
+const securityMiddleware = require('./middleware/securityMiddleware');
 
 const app = express();
+
+// Security headers middleware (first!)
+app.use(securityMiddleware);
 
 // CORS middleware - Allow requests from localhost and production
 app.use((req, res, next) => {
@@ -37,7 +41,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // Set view engine
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '../views'));
+app.set('views', path.join(__dirname, 'views'));
 
 // Import cache manager
 const CacheManager = require('./core/cache-manager');

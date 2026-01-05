@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Management - Admin</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+        
+        [x-cloak] { display: none !important; }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -267,7 +270,7 @@
         }
     </style>
 </head>
-<body>
+<body x-data="adminFilesApp()" x-cloak @keydown.escape.window="message.show = false">
     <div class="container">
         <div class="header">
             <h1>📁 File Management</h1>
@@ -279,27 +282,27 @@
             <div class="status-box">
                 <div class="status-item">
                     <span class="status-label">Storage Type</span>
-                    <span class="storage-badge" id="storageType">Loading...</span>
+                    <span class="storage-badge" :class="status.redisConnected ? 'kv' : 'memory'" x-text="status.redisConnected ? 'Redis (URL)' : 'In-Memory'">Loading...</span>
                 </div>
                 <div class="status-item">
                     <span class="status-label">Config Files</span>
-                    <span class="status-value" id="configCount">-</span>
+                    <span class="status-value" x-text="status.configCount">-</span>
                 </div>
                 <div class="status-item">
                     <span class="status-label">Data Files</span>
-                    <span class="status-value" id="dataCount">-</span>
+                    <span class="status-value" x-text="status.dataCount">-</span>
                 </div>
                 <div class="status-item">
                     <span class="status-label">Static Files</span>
-                    <span class="status-value" id="filesCount">-</span>
+                    <span class="status-value" x-text="status.filesCount">-</span>
                 </div>
                 <div class="status-item">
                     <span class="status-label">Collections</span>
-                    <span class="status-value" id="collectionsCount">-</span>
+                    <span class="status-value" x-text="status.collectionsCount">-</span>
                 </div>
                 <div class="status-item">
                     <span class="status-label">Total Files</span>
-                    <span class="status-value" id="totalCount">-</span>
+                    <span class="status-value" x-text="status.totalCount">-</span>
                 </div>
             </div>
             
@@ -307,36 +310,39 @@
             <div class="action-section">
                 <div class="action-title">🔄 Refresh Files</div>
                 <div class="button-group">
-                    <button class="btn-primary" id="refreshBtn" onclick="refreshFiles()">
-                        <span class="loader" id="loader"></span>
-                        Refresh File Listings
+                    <button class="btn-primary" @click="refreshFiles()" :disabled="loading">
+                        <svg x-show="loading" class="loader" style="display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255, 255, 255, 0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 10px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span x-text="loading ? 'Syncing...' : 'Refresh File Listings'">Refresh File Listings</span>
                     </button>
-                    <button class="btn-secondary" onclick="checkStatus()">Check Status</button>
+                    <button class="btn-secondary" @click="checkStatus()" :disabled="loading">Check Status</button>
                 </div>
-                <div id="message" class="message"></div>
-                <div id="results" class="results">
+                <div x-show="message.show" x-transition :class="'message ' + message.type" x-text="message.text"></div>
+                <div x-show="results.show" x-transition class="results show">
                     <div class="result-item">
                         <span class="result-label">Config:</span>
-                        <span class="result-count" id="resultConfig">0</span>
+                        <span class="result-count" x-text="results.config">0</span>
                     </div>
                     <div class="result-item">
                         <span class="result-label">Data:</span>
-                        <span class="result-count" id="resultData">0</span>
+                        <span class="result-count" x-text="results.data">0</span>
                     </div>
                     <div class="result-item">
                         <span class="result-label">Files:</span>
-                        <span class="result-count" id="resultFiles">0</span>
+                        <span class="result-count" x-text="results.files">0</span>
                     </div>
                     <div class="result-item">
                         <span class="result-label">Collections:</span>
-                        <span class="result-count" id="resultCollections">0</span>
+                        <span class="result-count" x-text="results.collections">0</span>
                     </div>
                     <div class="result-item">
                         <span class="result-label">Total Seeded:</span>
-                        <span class="result-count" id="resultTotal">0</span>
+                        <span class="result-count" x-text="results.total">0</span>
                     </div>
                 </div>
-                <div id="lastRefresh" class="last-refresh"></div>
+                <div x-show="lastRefresh" x-transition class="last-refresh" x-text="lastRefresh"></div>
             </div>
             
             <!-- Info Section -->
@@ -351,106 +357,119 @@
     </div>
 
     <script>
-        const API_BASE = '/api';
-        const STORAGE_KEY = 'cms:list:';
-        
-        // Load status on page load
-        document.addEventListener('DOMContentLoaded', checkStatus);
-        
-        async function refreshFiles() {
-            const btn = document.getElementById('refreshBtn');
-            const loader = document.getElementById('loader');
-            const msg = document.getElementById('message');
-            const results = document.getElementById('results');
-            
-            btn.disabled = true;
-            loader.style.display = 'inline-block';
-            msg.className = 'message info';
-            msg.textContent = 'Syncing files to Redis...';
-            results.classList.remove('show');
-            
-            try {
-                const response = await fetch(`${API_BASE}/auto-sync`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
+        function adminFilesApp() {
+            return {
+                loading: false,
+                status: {
+                    redisConnected: false,
+                    configCount: '-',
+                    dataCount: '-',
+                    filesCount: '-',
+                    collectionsCount: '-',
+                    totalCount: '-'
+                },
+                message: {
+                    show: false,
+                    type: '',
+                    text: ''
+                },
+                results: {
+                    show: false,
+                    config: 0,
+                    data: 0,
+                    files: 0,
+                    collections: 0,
+                    total: 0
+                },
+                lastRefresh: '',
+                
+                init() {
+                    this.checkStatus();
+                },
+                
+                async refreshFiles() {
+                    this.loading = true;
+                    this.message = { show: true, type: 'info', text: 'Syncing files to Redis...' };
+                    this.results.show = false;
+                    
+                    try {
+                        const response = await fetch('/api/auto-sync', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.message = {
+                                show: true,
+                                type: 'success',
+                                text: `✅ Successfully seeded ${data.filesSeeded} files into Redis (URL)`
+                            };
+                            
+                            const manifest = data.manifest;
+                            this.results = {
+                                show: true,
+                                config: manifest.files.config?.length || 0,
+                                data: manifest.files.data?.length || 0,
+                                files: manifest.files.files?.length || 0,
+                                collections: manifest.files.collections?.length || 0,
+                                total: data.filesSeeded
+                            };
+                            
+                            this.lastRefresh = `Last refreshed: ${new Date(data.timestamp).toLocaleString()}`;
+                            
+                            setTimeout(() => this.checkStatus(), 1000);
+                        } else {
+                            this.message = {
+                                show: true,
+                                type: 'error',
+                                text: `❌ ${data.error || 'Failed to sync files'}`
+                            };
+                        }
+                    } catch (error) {
+                        this.message = {
+                            show: true,
+                            type: 'error',
+                            text: `❌ Error: ${error.message}`
+                        };
+                        console.error('Sync error:', error);
+                    } finally {
+                        this.loading = false;
                     }
-                });
+                },
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    msg.className = 'message success';
-                    msg.textContent = `✅ Successfully seeded ${data.filesSeeded} files into Redis (URL)`;
-                    
-                    // Show results from manifest
-                    const manifest = data.manifest;
-                    document.getElementById('resultConfig').textContent = manifest.files.config?.length || 0;
-                    document.getElementById('resultData').textContent = manifest.files.data?.length || 0;
-                    document.getElementById('resultFiles').textContent = manifest.files.files?.length || 0;
-                    document.getElementById('resultCollections').textContent = manifest.files.collections?.length || 0;
-                    document.getElementById('resultTotal').textContent = data.filesSeeded;
-                    results.classList.add('show');
-                    
-                    // Update last refresh
-                    document.getElementById('lastRefresh').textContent = 
-                        `Last refreshed: ${new Date(data.timestamp).toLocaleString()}`;
-                    
-                    // Update status after successful refresh
-                    setTimeout(checkStatus, 1000);
-                } else {
-                    msg.className = 'message error';
-                    msg.textContent = `❌ ${data.error || 'Failed to sync files'}`;
+                async checkStatus() {
+                    try {
+                        const response = await fetch('/api/auto-sync/status');
+                        if (!response.ok) {
+                            console.error('Status check failed:', response.status);
+                            return;
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (!data || !data.manifest) {
+                            console.error('No manifest data available');
+                            return;
+                        }
+                        
+                        this.status.redisConnected = data.redisConnected;
+                        
+                        const manifest = data.manifest;
+                        this.status = {
+                            redisConnected: data.redisConnected,
+                            configCount: manifest.files.config?.length || 0,
+                            dataCount: manifest.files.data?.length || 0,
+                            filesCount: manifest.files.files?.length || 0,
+                            collectionsCount: manifest.files.collections?.length || 0,
+                            totalCount: manifest.totalFiles || 0
+                        };
+                    } catch (error) {
+                        console.error('Status check error:', error);
+                    }
                 }
-            } catch (error) {
-                msg.className = 'message error';
-                msg.textContent = `❌ Error: ${error.message}`;
-                console.error('Sync error:', error);
-            } finally {
-                btn.disabled = false;
-                loader.style.display = 'none';
             }
-        }
-        
-        async function checkStatus() {
-            try {
-                const response = await fetch(`${API_BASE}/auto-sync/status`);
-                if (!response.ok) {
-                    console.error('Status check failed:', response.status);
-                    return;
-                }
-                
-                const data = await response.json();
-                
-                if (!data || !data.manifest) {
-                    console.error('No manifest data available');
-                    return;
-                }
-                
-                // Update storage badge
-                const badge = document.getElementById('storageType');
-                const className = data.redisConnected ? 'kv' : 'memory';
-                badge.className = `storage-badge ${className}`;
-                badge.textContent = data.redisConnected ? 'Redis (URL)' : 'In-Memory';
-                
-                // Update counts from manifest
-                const manifest = data.manifest;
-                document.getElementById('configCount').textContent = manifest.files.config?.length || 0;
-                document.getElementById('dataCount').textContent = manifest.files.data?.length || 0;
-                document.getElementById('filesCount').textContent = manifest.files.files?.length || 0;
-                document.getElementById('collectionsCount').textContent = manifest.files.collections?.length || 0;
-                document.getElementById('totalCount').textContent = manifest.totalFiles || 0;
-                
-            } catch (error) {
-                console.error('Status check error:', error);
-            }
-        }
-        
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-            return '';
         }
     </script>
 </body>

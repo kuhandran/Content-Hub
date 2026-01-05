@@ -71,9 +71,7 @@ GET    /sync-manager           - File management UI
 See [docs/README.md](docs/README.md) for complete project structure and documentation.
 
 ```
-portfolio-data-api/
-├── api/                    # Vercel serverless functions
-├── docs/                   # Documentation
+content-hub/
 ├── public/                 # Static files (seeded to Redis)
 │   ├── collections/        # Multi-language content
 │   ├── config/            # Configuration files
@@ -81,15 +79,68 @@ portfolio-data-api/
 │   ├── files/             # Static files
 │   ├── image/             # Images
 │   └── resume/            # Resume files
-├── scripts/               # Build scripts
-├── src/                   # Source code
-│   ├── routes/           # API routes
-│   └── middleware/       # Express middleware
-├── views/                # Admin UI views
+├── scripts/               # Build and utility scripts
+│   ├── generate-manifest.js
+│   ├── seed-redis-build.js
+│   └── watch-and-sync.js
+├── src/                   # Source code (single source folder)
+│   ├── api/              # Vercel serverless entry point
+│   │   └── index.js
+│   ├── config/           # Application configuration
+│   ├── core/             # Core functionality (cache, etc.)
+│   ├── data/             # Embedded data and manifests
+│   ├── lib/              # Utility libraries
+│   ├── middleware/       # Express middleware
+│   ├── routes/           # API route handlers
+│   ├── utils/            # Utility functions
+│   ├── views/            # EJS templates and HTML pages
+│   ├── app.js            # Express app configuration
+│   └── server.js         # Development server
+├── logs/                 # Application logs
 ├── package.json
 ├── vercel.json           # Vercel configuration
 └── README.md             # This file
 ```
+
+### Source Folder Structure (`src/`)
+
+All application code is organized under a single `src/` folder following best practices:
+
+- **`api/`** - Vercel serverless entry point
+  - `index.js` - Main serverless function handler
+  
+- **`config/`** - Application configuration
+  - `allowedOrigins.js` - CORS configuration
+  
+- **`core/`** - Core functionality
+  - `cache-manager.js` - Caching layer
+  
+- **`data/`** - Embedded data
+  - `embedded-manifest.js` - File manifest
+  - `embedded-static-files.js` - Static file contents
+  
+- **`lib/`** - Utility libraries
+  - `redis-storage.js` - Redis operations
+  - `vercel-kv-storage.js` - Vercel KV wrapper
+  
+- **`middleware/`** - Express middleware
+  - `authMiddleware.js` - Authentication
+  - `loggingMiddleware.js` - Request logging
+  
+- **`routes/`** - API route handlers
+  - `admin.js`, `auth.js`, `collections.js`, etc.
+  
+- **`utils/`** - Utility functions
+  - `logger.js`, `storage.js`, etc.
+  
+- **`views/`** - Templates and UI
+  - `dashboard.ejs` - Admin dashboard
+  - `login.ejs` - Login page
+  - `sync-manager.html` - File management interface
+  
+- **Root files**
+  - `app.js` - Express application setup
+  - `server.js` - Development server
 
 ## 🛠️ Technology Stack
 

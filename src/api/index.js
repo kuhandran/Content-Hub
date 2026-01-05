@@ -6,11 +6,15 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
 const jwt = require('jsonwebtoken');
-const logger = require('../src/utils/logger');
-const loggingMiddleware = require('../src/middleware/loggingMiddleware');
-const allowedOrigins = require('../src/config/allowedOrigins');
+const logger = require('../utils/logger');
+const loggingMiddleware = require('../middleware/loggingMiddleware');
+const securityMiddleware = require('../middleware/securityMiddleware');
+const allowedOrigins = require('../config/allowedOrigins');
 
 const app = express();
+
+// Security headers middleware (first!)
+app.use(securityMiddleware);
 
 // Logging middleware - log all requests/responses
 app.use(loggingMiddleware);
@@ -48,25 +52,25 @@ app.use(fileUpload({ limits: { fileSize: 50 * 1024 * 1024 } }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../../public')));
 
 // Set view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 
 // Import routes
-const authRoutes = require('../src/routes/auth');
-const fileRoutes = require('../src/routes/files-redis');
-const configRoutes = require('../src/routes/config');
-const scannerRoutes = require('../src/routes/scanner');
-const collectionsRoutes = require('../src/routes/collections');
-const configReadRoutes = require('../src/routes/config-read');
-const imageReadRoutes = require('../src/routes/image-read');
-const resumeReadRoutes = require('../src/routes/resume-read');
-const filesStorageReadRoutes = require('../src/routes/files-storage-read');
-const adminRoutes = require('../src/routes/admin');
-const { router: adminSeedRoutes } = require('../src/routes/admin-seed');
-const autoSyncRoutes = require('../src/routes/auto-sync');
+const authRoutes = require('../routes/auth');
+const fileRoutes = require('../routes/files-redis');
+const configRoutes = require('../routes/config');
+const scannerRoutes = require('../routes/scanner');
+const collectionsRoutes = require('../routes/collections');
+const configReadRoutes = require('../routes/config-read');
+const imageReadRoutes = require('../routes/image-read');
+const resumeReadRoutes = require('../routes/resume-read');
+const filesStorageReadRoutes = require('../routes/files-storage-read');
+const adminRoutes = require('../routes/admin');
+const { router: adminSeedRoutes } = require('../routes/admin-seed');
+const autoSyncRoutes = require('../routes/auto-sync');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -83,7 +87,7 @@ app.use('/api/admin', adminSeedRoutes);  // Seed files endpoint (must be before 
 app.use('/api/admin', adminRoutes);
 
 // Import middleware
-const authMiddleware = require('../src/middleware/authMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // Dashboard route
 app.get('/dashboard', authMiddleware, (req, res) => {

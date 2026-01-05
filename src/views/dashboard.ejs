@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Content Hub - Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
     body {
       background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 50%, #dbeafe 100%);
@@ -27,9 +28,11 @@
       transform: translateY(-4px);
       box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
     }
+    
+    [x-cloak] { display: none !important; }
   </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen" x-data="dashboardApp()" x-cloak>
 
   <!-- Header -->
   <header class="bg-white shadow-sm border-b border-gray-200">
@@ -147,7 +150,7 @@
             <h3 class="text-xl font-bold text-gray-900 mb-2">Sync & Upload Files</h3>
             <p class="text-gray-600 mb-4">Upload and sync content across all languages instantly without any downtime</p>
             <button 
-              onclick="openFileManagement()"
+              @click="modalOpen = true"
               class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,51 +259,49 @@
   </main>
 
   <!-- Modal for File Management -->
-  <div id="fileManagementModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
+  <div 
+    x-show="modalOpen" 
+    x-transition.opacity
+    @click.self="modalOpen = false"
+    @keydown.escape.window="modalOpen = false"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+    style="display: none;"
+  >
+    <div 
+      class="bg-white rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col"
+      x-transition.scale.origin.top
+      @click.stop
+    >
       <div class="flex items-center justify-between p-6 border-b border-gray-200">
         <div class="flex items-center gap-3">
           <img src="/files/logo.svg" alt="Logo" class="w-8 h-8">
           <h3 class="text-xl font-bold text-gray-900">Content Hub</h3>
         </div>
-        <button onclick="closeFileManagement()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+        <button @click="modalOpen = false" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
           <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </button>
       </div>
       <div class="flex-1 overflow-hidden">
-        <iframe id="fileManagementFrame" src="/sync-manager" class="w-full h-full border-0"></iframe>
+        <iframe src="/sync-manager" class="w-full h-full border-0"></iframe>
       </div>
     </div>
   </div>
 
   <script>
-    function openFileManagement() {
-      document.getElementById('fileManagementModal').classList.remove('hidden');
-      document.getElementById('fileManagementModal').classList.add('flex');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeFileManagement() {
-      document.getElementById('fileManagementModal').classList.add('hidden');
-      document.getElementById('fileManagementModal').classList.remove('flex');
-      document.body.style.overflow = 'auto';
-    }
-
-    // Close modal on ESC key
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        closeFileManagement();
+    function dashboardApp() {
+      return {
+        modalOpen: false,
+        
+        init() {
+          // Body overflow management
+          this.$watch('modalOpen', value => {
+            document.body.style.overflow = value ? 'hidden' : 'auto';
+          });
+        }
       }
-    });
-
-    // Close modal on backdrop click
-    document.getElementById('fileManagementModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeFileManagement();
-      }
-    });
+    }
   </script>
 
 </body>
