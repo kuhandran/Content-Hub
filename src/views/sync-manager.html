@@ -460,6 +460,98 @@
             justify-content: flex-end;
         }
         
+        .files-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-top: 12px;
+        }
+        
+        .files-table thead {
+            background: #f8fafc;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .files-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .files-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #475569;
+        }
+        
+        .files-table tbody tr:hover {
+            background: #f8fafc;
+        }
+        
+        .file-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .file-status.synced {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .file-folder-badge {
+            background: #dbeafe;
+            color: #0284c7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        .api-endpoint {
+            background: #f1f5ff;
+            border: 1px solid #e0e7ff;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 11px;
+            color: #667eea;
+            overflow-x: auto;
+            margin: 4px 0;
+            word-break: break-all;
+        }
+        
+        .copy-btn {
+            padding: 4px 8px;
+            font-size: 11px;
+            border: 1px solid #e9ecef;
+            background: white;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .copy-btn:hover {
+            background: #f1f5f9;
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 8px 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+        
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -494,6 +586,10 @@
             <div class="nav-item" :class="{ 'active': activeSection === 'explorer' }" @click="switchSection('explorer')">
                 <span class="icon">📁</span>
                 <span>File Explorer</span>
+            </div>
+            <div class="nav-item" :class="{ 'active': activeSection === 'syncedfiles' }" @click="switchSection('syncedfiles')">
+                <span class="icon">✅</span>
+                <span>Synced Files</span>
             </div>
         </div>
     </div>
@@ -852,6 +948,120 @@
         </div>
     </div>
 
+    <!-- Synced Files Section -->
+    <div class="content-section" :class="{ 'active': activeSection === 'syncedfiles' }">
+        <div class="content-header">
+            <h2>Synced Files List</h2>
+            <button class="btn btn-primary" @click="loadSyncedFiles()">
+                <span class="btn-icon">🔄</span>
+                <span>Refresh List</span>
+            </button>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="card">
+            <div class="card-body">
+                <input 
+                    type="text" 
+                    x-model="fileSearchQuery" 
+                    placeholder="Search by filename or path..." 
+                    class="search-input"
+                    @input="filterSyncedFiles()"
+                >
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" @click="fileFilterFolder = ''; filterSyncedFiles()">All Files</button>
+                    <button class="btn btn-secondary" :style="{ background: fileFilterFolder === 'config' ? '#f1f5ff' : 'white', color: fileFilterFolder === 'config' ? '#667eea' : '#64748b' }" @click="fileFilterFolder = 'config'; filterSyncedFiles()">⚙️ Config</button>
+                    <button class="btn btn-secondary" :style="{ background: fileFilterFolder === 'data' ? '#f1f5ff' : 'white', color: fileFilterFolder === 'data' ? '#667eea' : '#64748b' }" @click="fileFilterFolder = 'data'; filterSyncedFiles()">📊 Data</button>
+                    <button class="btn btn-secondary" :style="{ background: fileFilterFolder === 'image' ? '#f1f5ff' : 'white', color: fileFilterFolder === 'image' ? '#667eea' : '#64748b' }" @click="fileFilterFolder = 'image'; filterSyncedFiles()">🖼️ Images</button>
+                    <button class="btn btn-secondary" :style="{ background: fileFilterFolder === 'js' ? '#f1f5ff' : 'white', color: fileFilterFolder === 'js' ? '#667eea' : '#64748b' }" @click="fileFilterFolder = 'js'; filterSyncedFiles()">📝 Scripts</button>
+                    <button class="btn btn-secondary" :style="{ background: fileFilterFolder === 'collections' ? '#f1f5ff' : 'white', color: fileFilterFolder === 'collections' ? '#667eea' : '#64748b' }" @click="fileFilterFolder = 'collections'; filterSyncedFiles()">🌍 Collections</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- File List Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Synced</h3>
+                <div class="count" x-text="syncedFilesList.length">-</div>
+                <div class="label">Files</div>
+            </div>
+            <div class="stat-card">
+                <h3>Filtered Results</h3>
+                <div class="count" x-text="filteredSyncedFiles.length">-</div>
+                <div class="label">Showing</div>
+            </div>
+        </div>
+
+        <!-- Files Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3>📋 All Synced Files</h3>
+            </div>
+            <div class="card-body" style="overflow-x: auto;">
+                <table class="files-table">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Folder</th>
+                            <th>Path</th>
+                            <th>Size</th>
+                            <th>Status</th>
+                            <th>Modified</th>
+                            <th>API Endpoint</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="file in filteredSyncedFiles" :key="file.path">
+                            <tr>
+                                <td style="font-weight: 500; color: #1e293b;" x-text="file.name"></td>
+                                <td><span class="file-folder-badge" x-text="file.folder.toUpperCase()"></span></td>
+                                <td style="font-family: 'Monaco', 'Courier New', monospace; font-size: 11px; color: #667eea;" x-text="file.fullPath"></td>
+                                <td x-text="file.sizeFormatted"></td>
+                                <td>
+                                    <span class="file-status synced">
+                                        <span>✅</span>
+                                        <span x-text="file.status.toUpperCase()"></span>
+                                    </span>
+                                </td>
+                                <td style="font-size: 11px; color: #94a3b8;" x-text="file.modifiedFormatted"></td>
+                                <td>
+                                    <button class="copy-btn" @click="copyToClipboard(file.apiEndpoint)">📋 Copy</button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+                <div x-show="filteredSyncedFiles.length === 0" class="empty-state" style="margin-top: 20px;">
+                    <p>No synced files found</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Access Example -->
+        <div class="card">
+            <div class="card-header">
+                <h3>🔗 API Access Examples</h3>
+            </div>
+            <div class="card-body">
+                <div style="margin-bottom: 16px;">
+                    <p style="color: #475569; font-size: 13px; margin-bottom: 8px;"><strong>Get all synced files:</strong></p>
+                    <div class="api-endpoint">GET /api/auto-sync/files</div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <p style="color: #475569; font-size: 13px; margin-bottom: 8px;"><strong>View file content:</strong></p>
+                    <div class="api-endpoint">GET /api/files/read/{folder}/{path}</div>
+                    <p style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Example: GET /api/files/read/config/apiConfig.json</p>
+                </div>
+                <div>
+                    <p style="color: #475569; font-size: 13px; margin-bottom: 8px;"><strong>Download file:</strong></p>
+                    <div class="api-endpoint">GET /api/files/read/{folder}/{path}?download=true</div>
+                    <p style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Example: GET /api/files/read/data/skills.json?download=true</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Delete Confirmation Modal -->
     <div class="modal-overlay" :class="{ 'active': showDeleteModal }">
         <div class="modal-dialog">
@@ -892,9 +1102,14 @@
                     totalDataFiles: 0,
                     totalFiles: 0
                 },
+                syncedFilesList: [],
+                filteredSyncedFiles: [],
+                fileSearchQuery: '',
+                fileFilterFolder: '',
                 
                 init() {
                     this.checkStatus();
+                    this.loadSyncedFiles();
                 },
                 
                 switchSection(sectionName) {
@@ -917,7 +1132,8 @@
                         'sync': 'Sync Files',
                         'collections': 'Collections',
                         'logs': 'Logs',
-                        'explorer': 'File Explorer'
+                        'explorer': 'File Explorer',
+                        'syncedfiles': 'Synced Files'
                     };
                     return this.navigationStack.map(section => ({
                         name: sectionNames[section] || section,
@@ -1314,6 +1530,46 @@
                     } catch (error) {
                         this.addLog('error', 'Invalid JSON or save error: ' + error.message);
                     }
+                },
+
+                async loadSyncedFiles() {
+                    try {
+                        const response = await fetch('/api/auto-sync/files');
+                        const data = await response.json();
+                        if (data.success) {
+                            this.syncedFilesList = data.files || [];
+                            this.filteredSyncedFiles = data.files || [];
+                            this.addLog('success', `Loaded ${data.totalFiles} synced files`);
+                        }
+                    } catch (error) {
+                        this.addLog('error', 'Failed to load synced files: ' + error.message);
+                    }
+                },
+
+                filterSyncedFiles() {
+                    let results = this.syncedFilesList;
+                    
+                    if (this.fileFilterFolder && this.fileFilterFolder !== 'all') {
+                        results = results.filter(f => f.folder === this.fileFilterFolder);
+                    }
+                    
+                    if (this.fileSearchQuery) {
+                        const q = this.fileSearchQuery.toLowerCase();
+                        results = results.filter(f => 
+                            f.name.toLowerCase().includes(q) || 
+                            f.fullPath.toLowerCase().includes(q)
+                        );
+                    }
+                    
+                    this.filteredSyncedFiles = results;
+                },
+
+                copyToClipboard(text) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        this.addLog('success', 'API endpoint copied to clipboard');
+                    }).catch(() => {
+                        this.addLog('error', 'Failed to copy to clipboard');
+                    });
                 }
             }
         }

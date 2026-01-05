@@ -461,6 +461,74 @@ router.get('/status', async (req, res) => {
 });
 
 /**
+ * GET /api/auto-sync/files - Get detailed list of all synced files
+ */
+router.get('/files', async (req, res) => {
+  try {
+    const allFiles = scanPublicFolders();
+    const filesList = [];
+    const timestamp = new Date().toISOString();
+
+    // Convert file structure to list format
+    for (const [folder, files] of Object.entries(allFiles)) {
+      for (const file of files) {
+        const apiEndpoint = `/api/files/read/${folder}/${file.path}`;
+        
+        filesList.push({
+          name: file.name,
+          folder,
+          path: `${folder}/${file.path}`,
+          fullPath: file.path,
+          size: file.size,
+          sizeFormatted: formatBytes(file.size),
+          ext: file.ext,
+          modified: file.modified,
+          modifiedFormatted: new Date(file.modified).toLocaleString(),
+          status: 'synced',
+          apiEndpoint,
+          downloadUrl: apiEndpoint + '?download=true'
+        });
+      }
+    }
+
+    // Sort by folder then by name
+    filesList.sort((a, b) => {
+      if (a.folder !== b.folder) return a.folder.localeCompare(b.folder);
+      return a.name.localeCompare(b.name);
+    });
+
+    res.json({
+      success: true,
+      timestamp,
+      totalFiles: filesList.length,
+      files: filesList,
+      folderBreakdown: Object.entries(allFiles).reduce((acc, [folder, files]) => {
+        acc[folder] = files.length;
+        return acc;
+      }, {})
+    });
+
+  } catch (error) {
+    console.error('[AUTO-SYNC] Error getting file list:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * Helper function to format bytes
+ */
+function formatBytes(bytes) {
+  if (!bytes) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+/**
  * Upload file endpoint
  */
 router.post('/upload', async (req, res) => {
