@@ -294,6 +294,172 @@
         
         .empty-state p { font-size: 14px; }
         
+        .file-tree {
+            background: white;
+            border-radius: 8px;
+            overflow-y: auto;
+            max-height: 400px;
+            margin-bottom: 16px;
+        }
+        
+        .folder-item, .file-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .folder-item:hover, .file-item:hover {
+            background: #f8fafc;
+        }
+        
+        .folder-item.active, .file-item.active {
+            background: #f1f5ff;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .folder-item.expanded > .arrow {
+            transform: rotate(90deg);
+        }
+        
+        .arrow {
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .subfolder {
+            display: none;
+            margin-left: 20px;
+        }
+        
+        .folder-item.expanded ~ .subfolder {
+            display: block;
+        }
+        
+        .file-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .detail-card {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .detail-label {
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        
+        .detail-value {
+            font-size: 13px;
+            color: #1e293b;
+            word-break: break-all;
+            font-family: 'Monaco', 'Courier New', monospace;
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        
+        .json-editor {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .json-editor textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+        
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #15803d;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal-dialog {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 400px;
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1e293b;
+        }
+        
+        .modal-content {
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #475569;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -324,6 +490,10 @@
             <div class="nav-item" :class="{ 'active': activeSection === 'logs' }" @click="switchSection('logs')">
                 <span class="icon">📝</span>
                 <span>Logs</span>
+            </div>
+            <div class="nav-item" :class="{ 'active': activeSection === 'explorer' }" @click="switchSection('explorer')">
+                <span class="icon">📁</span>
+                <span>File Explorer</span>
             </div>
         </div>
     </div>
@@ -463,14 +633,132 @@
                                 <span style="font-weight: 600; margin-right: 8px;" :style="{ color: log.level === 'success' ? '#4ade80' : log.level === 'error' ? '#f87171' : '#38bdf8' }" x-text="'[' + log.level.toUpperCase() + ']'"></span>
                                 <span style="color: #e2e8f0;" x-text="log.message"></span>
                             </div>
-                        </template>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- File Explorer Section -->
+        <div class="content-section" :class="{ 'active': activeSection === 'explorer' }">
+            <div class="content-header">
+                <h2>File Explorer</h2>
+                <button class="btn btn-primary" @click="loadFileTree()">
+                    <span class="btn-icon">🔄</span>
+                    <span>Refresh</span>
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>📁 Folder Structure</h3>
+                </div>
+                <div class="card-body">
+                    <div class="file-tree" id="fileTree">
+                        <div style="padding: 20px; text-align: center; color: #94a3b8;">
+                            <p x-show="loading">Loading file structure...</p>
+                            <p x-show="!loading && (!fileTree || fileTree.length === 0)">No files found</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Details Section -->
+            <template x-if="selectedFile">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📄 File Details: <span x-text="selectedFile.name"></span></h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="file-details">
+                            <div class="detail-card">
+                                <div class="detail-label">Full Path</div>
+                                <div class="detail-value" x-text="selectedFile.path"></div>
+                            </div>
+                            <div class="detail-card">
+                                <div class="detail-label">File Size</div>
+                                <div class="detail-value" x-text="formatBytes(selectedFile.size)"></div>
+                            </div>
+                            <div class="detail-card">
+                                <div class="detail-label">File Type</div>
+                                <div class="detail-value" x-text="selectedFile.ext || 'unknown'"></div>
+                            </div>
+                            <div class="detail-card">
+                                <div class="detail-label">Last Modified</div>
+                                <div class="detail-value" x-text="new Date(selectedFile.modified).toLocaleString()"></div>
+                            </div>
+                        </div>
+
+                        <!-- File Actions -->
+                        <div class="file-actions">
+                            <button class="btn btn-primary" @click="viewFileContent()" x-show="selectedFile.type === 'file'">
+                                <span class="btn-icon">👁️</span>
+                                <span>View Content</span>
+                            </button>
+                            <button class="btn btn-secondary" @click="downloadFile()" x-show="selectedFile.type === 'file'">
+                                <span class="btn-icon">⬇️</span>
+                                <span>Download</span>
+                            </button>
+                            <button class="btn btn-danger" @click="confirmDelete()">
+                                <span class="btn-icon">🗑️</span>
+                                <span>Delete</span>
+                            </button>
+                        </div>
+
+                        <!-- JSON Editor (for JSON files) -->
+                        <template x-if="selectedFile.ext === '.json' && fileContent">
+                            <div class="json-editor">
+                                <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+                                    <h4 style="font-size: 14px; font-weight: 600; color: #1e293b; margin: 0;">Edit JSON</h4>
+                                </div>
+                                <textarea x-model="jsonEditorContent" placeholder="Edit JSON content here..."></textarea>
+                                <div style="margin-top: 12px; display: flex; gap: 8px;">
+                                    <button class="btn btn-success" @click="saveJsonFile()">
+                                        <span class="btn-icon">💾</span>
+                                        <span>Save Changes</span>
+                                    </button>
+                                    <button class="btn btn-secondary" @click="closeFileView()">
+                                        <span class="btn-icon">✕</span>
+                                        <span>Close</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- File Preview (for text files) -->
+                        <template x-if="fileContent && selectedFile.ext !== '.json'">
+                            <div class="card" style="margin-top: 16px;">
+                                <div class="card-header">
+                                    <h3>File Preview</h3>
+                                </div>
+                                <div class="card-body">
+                                    <pre style="background: #f8fafc; padding: 12px; border-radius: 6px; overflow-x: auto; max-height: 400px; font-size: 12px; font-family: 'Monaco', 'Courier New', monospace; line-height: 1.5; color: #1e293b;" x-text="fileContent"></pre>
+                                    <button class="btn btn-secondary" @click="closeFileView()" style="margin-top: 12px;">
+                                        <span class="btn-icon">✕</span>
+                                        <span>Close</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
     </div>
 
-    <script>
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" :class="{ 'active': showDeleteModal }">
+        <div class="modal-dialog">
+            <div class="modal-title">Confirm Delete</div>
+            <div class="modal-content">
+                <p>Are you sure you want to delete <strong x-text="selectedFile?.name"></strong>?</p>
+                <p style="color: #dc2626; margin-top: 8px; font-size: 12px;">⚠️ This action cannot be undone.</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" @click="showDeleteModal = false">Cancel</button>
+                <button class="btn btn-danger" @click="deleteFile()">Delete</button>
+            </div>
+        </div>
+    </div>
         function syncManagerApp() {
             return {
                 activeSection: 'overview',
@@ -511,7 +799,8 @@
                         'overview': 'Overview',
                         'sync': 'Sync Files',
                         'collections': 'Collections',
-                        'logs': 'Logs'
+                        'logs': 'Logs',
+                        'explorer': 'File Explorer'
                     };
                     return this.navigationStack.map(section => ({
                         name: sectionNames[section] || section,
@@ -636,6 +925,208 @@
                         this.addLog('error', `Upload failed: ${error.message}`);
                     } finally {
                         this.uploads[folder].loading = false;
+                    }
+                },
+                
+                // File Explorer Methods
+                fileTree: [],
+                selectedFile: null,
+                fileContent: '',
+                jsonEditorContent: '',
+                showDeleteModal: false,
+                
+                async loadFileTree() {
+                    this.loading = true;
+                    try {
+                        const response = await fetch('/api/files/tree');
+                        const data = await response.json();
+                        
+                        if (data.success && data.tree) {
+                            this.fileTree = data.tree;
+                            this.renderFileTree(data.tree);
+                            this.addLog('success', 'File tree loaded successfully');
+                        } else {
+                            this.addLog('error', 'Failed to load file tree');
+                        }
+                    } catch (error) {
+                        this.addLog('error', 'Error loading file tree: ' + error.message);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                renderFileTree(tree, parentPath = '/public', container = null) {
+                    if (!container) {
+                        container = document.getElementById('fileTree');
+                        container.innerHTML = '';
+                    }
+                    
+                    if (!tree || tree.length === 0) {
+                        container.innerHTML = '<div class="empty-state"><p>No files found</p></div>';
+                        return;
+                    }
+                    
+                    tree.forEach(item => {
+                        const currentPath = parentPath + '/' + item.name;
+                        const div = document.createElement('div');
+                        
+                        if (item.type === 'folder') {
+                            div.className = 'folder-item';
+                            div.innerHTML = `
+                                <span class="arrow">▶</span>
+                                <span>📁 ${item.name}</span>
+                            `;
+                            div.onclick = () => {
+                                div.classList.toggle('expanded');
+                                if (div.classList.contains('expanded')) {
+                                    this.loadSubfolder(item, currentPath, div);
+                                }
+                            };
+                        } else {
+                            div.className = 'file-item';
+                            div.innerHTML = `<span>📄 ${item.name}</span>`;
+                            div.onclick = () => {
+                                document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+                                div.classList.add('active');
+                                this.selectedFile = {
+                                    name: item.name,
+                                    path: currentPath,
+                                    size: item.size || 0,
+                                    modified: item.modified || new Date().toISOString(),
+                                    type: item.type,
+                                    ext: this.getFileExtension(item.name)
+                                };
+                                this.fileContent = '';
+                                this.jsonEditorContent = '';
+                            };
+                        }
+                        
+                        container.appendChild(div);
+                    });
+                },
+                
+                async loadSubfolder(folderItem, path, element) {
+                    try {
+                        const response = await fetch(`/api/files/list${path}`);
+                        const data = await response.json();
+                        
+                        if (data.success && data.items) {
+                            // Create subfolder container if not exists
+                            let subfolder = element.nextElementSibling;
+                            if (!subfolder || !subfolder.classList.contains('subfolder')) {
+                                subfolder = document.createElement('div');
+                                subfolder.className = 'subfolder';
+                                element.parentNode.insertBefore(subfolder, element.nextSibling);
+                            }
+                            
+                            this.renderFileTree(data.items, path, subfolder);
+                        }
+                    } catch (error) {
+                        this.addLog('error', 'Error loading folder: ' + error.message);
+                    }
+                },
+                
+                getFileExtension(filename) {
+                    const match = filename.match(/\.[^/.]+$/);
+                    return match ? match[0] : '';
+                },
+                
+                formatBytes(bytes) {
+                    if (!bytes) return '0 Bytes';
+                    const k = 1024;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+                },
+                
+                async viewFileContent() {
+                    if (!this.selectedFile) return;
+                    
+                    try {
+                        const response = await fetch(`/api/files/read${this.selectedFile.path}`);
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.fileContent = data.content;
+                            if (this.selectedFile.ext === '.json') {
+                                try {
+                                    this.jsonEditorContent = JSON.stringify(JSON.parse(data.content), null, 2);
+                                } catch (e) {
+                                    this.jsonEditorContent = data.content;
+                                }
+                            }
+                            this.addLog('success', `Loaded file: ${this.selectedFile.name}`);
+                        } else {
+                            this.addLog('error', 'Failed to load file content');
+                        }
+                    } catch (error) {
+                        this.addLog('error', 'Error reading file: ' + error.message);
+                    }
+                },
+                
+                downloadFile() {
+                    if (!this.selectedFile) return;
+                    
+                    const a = document.createElement('a');
+                    a.href = `/api/files/read${this.selectedFile.path}?download=true`;
+                    a.download = this.selectedFile.name;
+                    a.click();
+                    this.addLog('info', `Downloaded: ${this.selectedFile.name}`);
+                },
+                
+                closeFileView() {
+                    this.fileContent = '';
+                    this.jsonEditorContent = '';
+                },
+                
+                confirmDelete() {
+                    this.showDeleteModal = true;
+                },
+                
+                async deleteFile() {
+                    if (!this.selectedFile) return;
+                    
+                    try {
+                        const response = await fetch(`/api/files/delete${this.selectedFile.path}`, {
+                            method: 'DELETE'
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.showDeleteModal = false;
+                            this.selectedFile = null;
+                            this.fileContent = '';
+                            this.addLog('success', `Deleted: ${this.selectedFile?.name || 'file'}`);
+                            await this.loadFileTree();
+                        } else {
+                            this.addLog('error', 'Failed to delete file');
+                        }
+                    } catch (error) {
+                        this.addLog('error', 'Error deleting file: ' + error.message);
+                    }
+                },
+                
+                async saveJsonFile() {
+                    if (!this.selectedFile || this.selectedFile.ext !== '.json') return;
+                    
+                    try {
+                        // Validate JSON
+                        const parsed = JSON.parse(this.jsonEditorContent);
+                        
+                        const response = await fetch(`/api/files/edit${this.selectedFile.path}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ content: this.jsonEditorContent })
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.addLog('success', `Saved: ${this.selectedFile.name}`);
+                        } else {
+                            this.addLog('error', 'Failed to save file');
+                        }
+                    } catch (error) {
+                        this.addLog('error', 'Invalid JSON or save error: ' + error.message);
                     }
                 }
             }
