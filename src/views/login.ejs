@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Content Hub - Login</title>
-  <!-- Added Tailwind CSS CDN link for development purposes -->
+  <!-- Tailwind CSS CDN -->
   <link href="https://cdn.tailwindcss.com" rel="stylesheet">
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
@@ -12,69 +12,259 @@
       display: none !important;
     }
 
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
       min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
     }
-    
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      padding: 1rem;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+    }
+
     .logo-img {
       filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1rem;
+      display: block;
+    }
+
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #111827;
+      margin: 0;
+      text-align: center;
+    }
+
+    .logo-subtitle {
+      font-size: 0.875rem;
+      color: #4b5563;
+      margin: 0.5rem 0 0 0;
+      text-align: center;
+    }
+
+    .badge {
+      background-color: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .badge-icon {
+      width: 20px;
+      height: 20px;
+      color: #2563eb;
+      flex-shrink: 0;
+    }
+
+    .badge-text {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #1e3a8a;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      transition: all 0.2s;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus {
+      outline: none;
+      ring: 2px solid #3b82f6;
+      border-color: transparent;
+    }
+
+    .form-input:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .password-wrapper {
+      position: relative;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+
+    .password-toggle:hover {
+      color: #374151;
+    }
+
+    .form-input.has-toggle {
+      padding-right: 3rem;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(to right, #2563eb, #1d4ed8);
+      color: white;
+      font-weight: 600;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      background: linear-gradient(to right, #1d4ed8, #1e40af);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .footer-divider {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .footer-text {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: #4b5563;
+    }
+
+    .success-icon {
+      width: 16px;
+      height: 16px;
+      color: #10b981;
+      flex-shrink: 0;
+    }
+
+    .subtitle-text {
+      margin-top: 1.5rem;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.875rem;
     }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
+
     .animate-fade-in {
       animation: fadeIn 0.6s ease-out;
     }
+
+    .spinner {
+      animation: spin 1s linear infinite;
+      width: 20px;
+      height: 20px;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4" x-data="loginApp()" x-cloak>
+<body x-data="loginApp()" x-cloak>
   
-  <div class="w-full max-w-md animate-fade-in">
+  <div class="login-container animate-fade-in">
     <!-- Login Card -->
-    <div class="bg-white rounded-2xl shadow-2xl p-8">
+    <div class="login-card">
       
       <!-- Logo Section -->
-      <div class="text-center mb-8">
-        <img src="/files/logo.svg" alt="Logo" class="logo-img w-16 h-16 mx-auto mb-4">
-        <h1 class="text-2xl font-bold text-gray-900">Content Hub</h1>
-        <p class="text-sm text-gray-600 mt-2">Real-time content management</p>
+      <div style="margin-bottom: 2rem;">
+        <img src="/files/logo.svg" alt="Logo" class="logo-img">
+        <h1 class="logo-text">Content Hub</h1>
+        <p class="logo-subtitle">Real-time content management</p>
       </div>
 
       <!-- Secure Access Badge -->
-      <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-6 flex items-center gap-2">
-        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="badge">
+        <svg class="badge-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
         </svg>
-        <span class="text-sm font-medium text-blue-900">IP-Restricted & Authenticated Access</span>
+        <span class="badge-text">IP-Restricted & Authenticated Access</span>
       </div>
 
       <!-- Error Message -->
       <% if (error) { %>
-        <div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-6 flex items-start gap-2" x-show="true" x-transition>
-          <svg class="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1.5rem; display: flex; gap: 0.5rem;">
+          <svg style="width: 20px; height: 20px; color: #dc2626; margin-top: 0.125rem; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
-          <p class="text-sm text-red-800"><%= error %></p>
+          <p style="font-size: 0.875rem; color: #991b1b; margin: 0;"><%= error %></p>
         </div>
       <% } %>
 
       <!-- Login Form -->
-      <form action="/login" method="POST" class="space-y-5" @submit="handleSubmit">
+      <form action="/login" method="POST" @submit="handleSubmit">
         
         <!-- Username Field -->
-        <div>
-          <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+        <div class="form-group">
+          <label for="username" class="form-label">Username</label>
           <input 
             type="text" 
             id="username" 
             name="username" 
             required
             x-model="username"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+            class="form-input"
             placeholder="Enter username"
             autocomplete="username"
             :disabled="loading"
@@ -82,16 +272,16 @@
         </div>
 
         <!-- Password Field -->
-        <div>
-          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-          <div class="relative">
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <div class="password-wrapper">
             <input 
               :type="showPassword ? 'text' : 'password'" 
               id="password" 
               name="password" 
               required
               x-model="password"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none pr-12"
+              class="form-input has-toggle"
               placeholder="Enter password"
               autocomplete="current-password"
               :disabled="loading"
@@ -99,14 +289,14 @@
             <button 
               type="button"
               @click="showPassword = !showPassword"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              class="password-toggle"
               tabindex="-1"
             >
-              <svg x-show="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg x-show="!showPassword" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
               </svg>
-              <svg x-show="showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+              <svg x-show="showPassword" style="width: 20px; height: 20px; display: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
               </svg>
             </button>
@@ -117,9 +307,9 @@
         <button 
           type="submit"
           :disabled="loading || !username || !password"
-          class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+          class="submit-btn"
         >
-          <svg x-show="loading" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="display: none;">
+          <svg x-show="loading" class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="display: none;">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
@@ -128,9 +318,9 @@
       </form>
 
       <!-- Footer Info -->
-      <div class="mt-6 pt-6 border-t border-gray-200">
-        <div class="flex items-center justify-center gap-2 text-sm text-gray-600">
-          <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+      <div class="footer-divider">
+        <div class="footer-text">
+          <svg class="success-icon" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
           </svg>
           <span>Zero-downtime content updates</span>
@@ -139,11 +329,9 @@
     </div>
 
     <!-- Additional Info -->
-    <div class="mt-6 text-center">
-      <p class="text-white text-sm opacity-90">
-        Manage content in real-time • No server restarts required
-      </p>
-    </div>
+    <p class="subtitle-text">
+      Manage content in real-time • No server restarts required
+    </p>
   </div>
 
   <script>
