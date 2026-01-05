@@ -253,7 +253,7 @@
       <% } %>
 
       <!-- Login Form -->
-      <form action="/login" method="POST" @submit="handleSubmit">
+      <form action="/login" method="POST" id="loginForm">
         
         <!-- Username Field -->
         <div class="form-group">
@@ -263,7 +263,6 @@
             id="username" 
             name="username" 
             required
-            x-model="username"
             class="form-input"
             placeholder="Enter username"
             autocomplete="username"
@@ -280,7 +279,6 @@
               id="password" 
               name="password" 
               required
-              x-model="password"
               class="form-input has-toggle"
               placeholder="Enter password"
               autocomplete="current-password"
@@ -306,7 +304,7 @@
         <!-- Login Button -->
         <button 
           type="submit"
-          :disabled="loading || !username || !password"
+          :disabled="loading"
           class="submit-btn"
         >
           <svg x-show="loading" class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="display: none;">
@@ -337,8 +335,6 @@
   <script>
     function loginApp() {
       return {
-        username: '',
-        password: '',
         showPassword: false,
         loading: false,
         
@@ -347,19 +343,26 @@
           this.$nextTick(() => {
             document.getElementById('username')?.focus();
           });
-        },
-        
-        handleSubmit(event) {
-          // Simple client-side validation
-          if (!this.username || !this.password) {
-            event.preventDefault();
-            return;
+          
+          // Handle form submission
+          const form = document.getElementById('loginForm');
+          if (form) {
+            form.addEventListener('submit', (event) => {
+              const username = document.getElementById('username')?.value || '';
+              const password = document.getElementById('password')?.value || '';
+              
+              // Validate
+              if (!username || !password) {
+                event.preventDefault();
+                console.log('[LOGIN] Validation failed - missing username or password');
+                return;
+              }
+              
+              // Show loading state
+              console.log('[LOGIN] Form submitted with username:', username);
+              this.loading = true;
+            });
           }
-          
-          // Show loading state
-          this.loading = true;
-          
-          // Form will submit naturally
         }
       }
     }
