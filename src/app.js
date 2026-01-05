@@ -92,10 +92,50 @@ app.post('/login', async (req, res) => {
   const AUTH_PASS = process.env.AUTH_PASS || 'password';
   const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
+  console.log(`\n[LOGIN_FORM] 🔐 LOGIN REQUEST RECEIVED`);
+  console.log(`[LOGIN_FORM] ├─ Username: ${username}`);
+  console.log(`[LOGIN_FORM] ├─ Password submitted: YES`);
+  console.log(`[LOGIN_FORM] ├─ Password length: ${password ? password.length : 0}`);
+  console.log(`[LOGIN_FORM] ├─ Password bytes (hex): ${password ? Buffer.from(password).toString('hex') : 'N/A'}`);
+  
   // Verify credentials
-  if (username !== AUTH_USER || password !== AUTH_PASS) {
+  if (username !== AUTH_USER) {
+    console.log(`[LOGIN_FORM] ❌ INVALID USERNAME`);
+    console.log(`[LOGIN_FORM] ├─ Expected: "${AUTH_USER}"`);
+    console.log(`[LOGIN_FORM] └─ Got: "${username}"\n`);
     return res.render('login', { error: 'Invalid username or password' });
   }
+
+  // Detailed password comparison
+  console.log(`[LOGIN_FORM] 🔍 PASSWORD COMPARISON`);
+  console.log(`[LOGIN_FORM] ├─ Submitted: "${password}"`);
+  console.log(`[LOGIN_FORM] ├─ Submitted length: ${password ? password.length : 0}`);
+  console.log(`[LOGIN_FORM] ├─ Submitted hex: ${password ? Buffer.from(password).toString('hex') : 'N/A'}`);
+  console.log(`[LOGIN_FORM] ├─ Expected: "${AUTH_PASS}"`);
+  console.log(`[LOGIN_FORM] ├─ Expected length: ${AUTH_PASS ? AUTH_PASS.length : 0}`);
+  console.log(`[LOGIN_FORM] ├─ Expected hex: ${AUTH_PASS ? Buffer.from(AUTH_PASS).toString('hex') : 'N/A'}`);
+  console.log(`[LOGIN_FORM] ├─ Exact match: ${password === AUTH_PASS ? '✅ YES' : '❌ NO'}`);
+  
+  if (password && AUTH_PASS) {
+    const trimmed = password.trim() === AUTH_PASS.trim();
+    const caseInsensitive = password.toLowerCase() === AUTH_PASS.toLowerCase();
+    console.log(`[LOGIN_FORM] ├─ After trim: ${trimmed ? '✅ YES' : '❌ NO'}`);
+    console.log(`[LOGIN_FORM] ├─ Case insensitive: ${caseInsensitive ? '✅ YES' : '❌ NO'}`);
+    console.log(`[LOGIN_FORM] └─ Character analysis:`);
+    for (let i = 0; i < Math.max(password.length, AUTH_PASS.length); i++) {
+      const submitted = password[i] || '';
+      const expected = AUTH_PASS[i] || '';
+      const match = submitted === expected ? '✅' : '❌';
+      console.log(`[LOGIN_FORM]    [${i}] Submitted: '${submitted}' (${submitted.charCodeAt(0) || 'N/A'}) vs Expected: '${expected}' (${expected.charCodeAt(0) || 'N/A'}) ${match}`);
+    }
+  }
+
+  if (password !== AUTH_PASS) {
+    console.log(`[LOGIN_FORM] ❌ PASSWORD MISMATCH\n`);
+    return res.render('login', { error: 'Invalid username or password' });
+  }
+
+  console.log(`[LOGIN_FORM] ✅ CREDENTIALS VERIFIED - Creating token...\n`);
 
   // Create JWT token
   const jwt = require('jsonwebtoken');

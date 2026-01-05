@@ -62,6 +62,27 @@ router.post('/login', (req, res) => {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
+  // Detailed password comparison logging
+  console.log(`[AUTH] 🔍 PASSWORD VERIFICATION`);
+  console.log(`[AUTH] ├─ Submitted password: "${password}"`);
+  console.log(`[AUTH] ├─ Submitted password length: ${password ? password.length : 0}`);
+  console.log(`[AUTH] ├─ Submitted password bytes: ${password ? Buffer.from(password).toString('hex') : 'N/A'}`);
+  console.log(`[AUTH] ├─ Expected password: "${AUTH_PASS}"`);
+  console.log(`[AUTH] ├─ Expected password length: ${AUTH_PASS ? AUTH_PASS.length : 0}`);
+  console.log(`[AUTH] ├─ Expected password bytes: ${AUTH_PASS ? Buffer.from(AUTH_PASS).toString('hex') : 'N/A'}`);
+  console.log(`[AUTH] ├─ Match result: ${password === AUTH_PASS ? '✅ MATCH' : '❌ NO MATCH'}`);
+  
+  // Check for common issues
+  if (password && AUTH_PASS) {
+    const submittedTrimmed = password.trim();
+    const expectedTrimmed = AUTH_PASS.trim();
+    const trimMatch = submittedTrimmed === expectedTrimmed;
+    console.log(`[AUTH] ├─ After trim: ${trimMatch ? '✅ MATCH' : '❌ NO MATCH'}`);
+    console.log(`[AUTH] ├─ Has leading/trailing spaces: ${password !== submittedTrimmed}`);
+    console.log(`[AUTH] ├─ Case match: ${password === AUTH_PASS}`);
+    console.log(`[AUTH] └─ Case insensitive match: ${password.toLowerCase() === AUTH_PASS.toLowerCase()}`);
+  }
+
   if (password !== AUTH_PASS) {
     console.log(`[AUTH] ❌ INVALID PASSWORD for user ${username}`);
     return res.status(401).json({ error: 'Invalid credentials' });
