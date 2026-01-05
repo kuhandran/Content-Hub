@@ -186,25 +186,89 @@ async function generateManifest(filesMap) {
 }
 
 /**
- * POST /api/auto-sync - Trigger auto-sync
- * Can be called by Vercel Cron or manually
+ * Rebuild manifest from Redis keys
+ */
+async function rebuildManifestFromRedis() {
+  if (!redis) {
+    throw new Error('Redis not connected');
+  }
+
+  console.log('[AUTO-SYNC] 🔍 Scanning Redis for cms:file:* keys...');
+  
+  // Scan all file keys in Redis
+  const keys = [];
+  let cursor = 0;
+  
+  do {
+    const result = await redis.scan(cursor, {
+      MATCH: 'cms:file:*',
+      COUNT: 100
+    });
+    cursor = result.cursor;
+    keys.push(...result.keys);
+  } while (cursor !== 0);
+
+  console.log(`[AUTO-SYNC] Found ${keys.length} files in Redis`);
+
+  // Organize files by folder
+  const filesMap = {
+    collections: [],
+    config: [],
+    data: [],
+    files: [],
+    image: [],
+    resume: []
+  };
+
+  for (const key of keys) {
+    const filePath = key.replace('cms:file:', '');
+    const parts = filePath.split('/');
+    const folder = parts[0];
+    const filename = parts[parts.length - 1];
+    
+    if (filesMap.hasOwnProperty(folder)) {
+      // Get file content to calculate size
+      const content = await redis.get(key);
+      const size = Buffer.byteLength(content || '', 'utf8');
+      
+      const fileObj = {
+        name: filename,
+        path: filePath,
+        size: size,
+        ext: path.extname(filename)
+      };
+
+      // Add locale for collections
+      if (folder === 'collections' && parts.length >= 3) {
+        fileObj.locale = parts[1];
+        fileObj.type = parts[2];
+      }
+
+      filesMap[folder].push(fileObj);
+    }
+  }
+
+  // Generate manifest
+  const manifest = {
+    generated: new Date().toISOString(),
+    folders: Object.keys(filesMap).filter(f => filesMap[f].length > 0),
+    totalFiles: keys.length,
+    files: filesMap
+  };
+
+  // Save manifest to Redis
+  await redis.set('cms:manifest', JSON.stringify(manifest, null, 2));
+  console.log('[AUTO-SYNC] ✅ Manifest rebuilt and saved to Redis');
+
+  return { manifest, filesCount: keys.length };
+}
+
+/**
+ * POST /api/auto-sync - Rebuild manifest from Redis
+ * Works in production by reading from Redis instead of filesystem
  */
 router.post('/', async (req, res) => {
-  console.log('[AUTO-SYNC] 🔄 Auto-sync triggered');
-  
-  // Verify Vercel Cron secret or allow manual trigger with auth
-  const cronSecret = req.headers['authorization'];
-  const vercelCronSecret = process.env.CRON_SECRET;
-  
-  // Log cron request info
-  const isVercelCron = req.headers['user-agent']?.includes('vercel-cron');
-  console.log(`[AUTO-SYNC] Request from: ${isVercelCron ? 'Vercel Cron' : 'Manual trigger'}`);
-  
-  // Optional: Uncomment to require authentication
-  // if (vercelCronSecret && cronSecret !== `Bearer ${vercelCronSecret}`) {
-  //   console.error('[AUTO-SYNC] ❌ Unauthorized: Invalid cron secret');
-  //   return res.status(401).json({ error: 'Unauthorized' });
-  // }
+  console.log('[AUTO-SYNC] 🔄 Sync triggered - rebuilding from Redis');
   
   try {
     // Check Redis connection
@@ -219,31 +283,48 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // Scan public folders
-    const filesMap = scanPublicFolders();
+    // Check if in production (Vercel) or local
+    const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
+    
+    if (isProduction) {
+      // In production: Rebuild manifest from Redis
+      const result = await rebuildManifestFromRedis();
+      
+      res.json({
+        success: true,
+        timestamp: new Date().toISOString(),
+        filesScanned: result.filesCount,
+        filesSeeded: 0,
+        filesFailed: 0,
+        folders: result.manifest.folders,
+        manifest: result.manifest,
+        source: 'redis',
+        message: 'Manifest rebuilt from Redis keys'
+      });
+    } else {
+      // In local: Scan filesystem and seed to Redis
+      const filesMap = scanPublicFolders();
+      const seedResults = await seedFilesToRedis(filesMap);
+      const manifest = await generateManifest(filesMap);
 
-    // Seed files to Redis
-    const seedResults = await seedFilesToRedis(filesMap);
+      console.log('[AUTO-SYNC] ✅ Local sync completed');
+      console.log(`[AUTO-SYNC] Seeded: ${seedResults.seeded}, Failed: ${seedResults.failed}`);
 
-    // Generate manifest
-    const manifest = await generateManifest(filesMap);
-
-    console.log('[AUTO-SYNC] ✅ Auto-sync completed');
-    console.log(`[AUTO-SYNC] Seeded: ${seedResults.seeded}, Failed: ${seedResults.failed}`);
-
-    res.json({
-      success: true,
-      timestamp: new Date().toISOString(),
-      filesScanned: manifest.totalFiles,
-      filesSeeded: seedResults.seeded,
-      filesFailed: seedResults.failed,
-      folders: manifest.folders,
-      manifest: manifest,
-      errors: seedResults.errors.length > 0 ? seedResults.errors : undefined
-    });
+      res.json({
+        success: true,
+        timestamp: new Date().toISOString(),
+        filesScanned: manifest.totalFiles,
+        filesSeeded: seedResults.seeded,
+        filesFailed: seedResults.failed,
+        folders: manifest.folders,
+        manifest: manifest,
+        source: 'filesystem',
+        errors: seedResults.errors.length > 0 ? seedResults.errors : undefined
+      });
+    }
 
   } catch (error) {
-    console.error('[AUTO-SYNC] ❌ Auto-sync failed:', error);
+    console.error('[AUTO-SYNC] ❌ Sync failed:', error);
     res.status(500).json({
       success: false,
       error: error.message,
