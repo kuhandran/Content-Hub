@@ -37,6 +37,19 @@ app.use(fileUpload());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
+
+// Debug middleware - log all POST requests
+app.use((req, res, next) => {
+  if (req.method === 'POST') {
+    console.log(`\n[DEBUG] POST ${req.path}`);
+    console.log(`[DEBUG] Content-Type: ${req.headers['content-type']}`);
+    console.log(`[DEBUG] Content-Length: ${req.headers['content-length']}`);
+    console.log(`[DEBUG] req.body:`, JSON.stringify(req.body));
+    console.log(`[DEBUG] req.query:`, JSON.stringify(req.query));
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Set view engine
@@ -93,22 +106,26 @@ app.post('/login', async (req, res) => {
   const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
   console.log(`\n[LOGIN_FORM] 🔐 LOGIN REQUEST RECEIVED`);
+  console.log(`[LOGIN_FORM] ├─ Full req.body:`, JSON.stringify(req.body));
   console.log(`[LOGIN_FORM] ├─ Username: ${username}`);
-  console.log(`[LOGIN_FORM] ├─ Password submitted: YES`);
+  console.log(`[LOGIN_FORM] ├─ Username type: ${typeof username}`);
+  console.log(`[LOGIN_FORM] ├─ Password submitted: ${password ? 'YES' : 'NO'}`);
   console.log(`[LOGIN_FORM] ├─ Password length: ${password ? password.length : 0}`);
   console.log(`[LOGIN_FORM] ├─ Password bytes (hex): ${password ? Buffer.from(password).toString('hex') : 'N/A'}`);
   
   // Verify credentials
-  if (username !== AUTH_USER) {
+  if (!username || username !== AUTH_USER) {
     console.log(`[LOGIN_FORM] ❌ INVALID USERNAME`);
     console.log(`[LOGIN_FORM] ├─ Expected: "${AUTH_USER}"`);
-    console.log(`[LOGIN_FORM] └─ Got: "${username}"\n`);
+    console.log(`[LOGIN_FORM] ├─ Got: "${username}"`);
+    console.log(`[LOGIN_FORM] └─ Type: ${typeof username}\n`);
     return res.render('login', { error: 'Invalid username or password' });
   }
 
   // Detailed password comparison
   console.log(`[LOGIN_FORM] 🔍 PASSWORD COMPARISON`);
   console.log(`[LOGIN_FORM] ├─ Submitted: "${password}"`);
+  console.log(`[LOGIN_FORM] ├─ Submitted type: ${typeof password}`);
   console.log(`[LOGIN_FORM] ├─ Submitted length: ${password ? password.length : 0}`);
   console.log(`[LOGIN_FORM] ├─ Submitted hex: ${password ? Buffer.from(password).toString('hex') : 'N/A'}`);
   console.log(`[LOGIN_FORM] ├─ Expected: "${AUTH_PASS}"`);
@@ -122,15 +139,18 @@ app.post('/login', async (req, res) => {
     console.log(`[LOGIN_FORM] ├─ After trim: ${trimmed ? '✅ YES' : '❌ NO'}`);
     console.log(`[LOGIN_FORM] ├─ Case insensitive: ${caseInsensitive ? '✅ YES' : '❌ NO'}`);
     console.log(`[LOGIN_FORM] └─ Character analysis:`);
-    for (let i = 0; i < Math.max(password.length, AUTH_PASS.length); i++) {
+    const maxLen = Math.max(password.length, AUTH_PASS.length);
+    for (let i = 0; i < maxLen; i++) {
       const submitted = password[i] || '';
       const expected = AUTH_PASS[i] || '';
       const match = submitted === expected ? '✅' : '❌';
-      console.log(`[LOGIN_FORM]    [${i}] Submitted: '${submitted}' (${submitted.charCodeAt(0) || 'N/A'}) vs Expected: '${expected}' (${expected.charCodeAt(0) || 'N/A'}) ${match}`);
+      const submittedCode = submitted.charCodeAt(0) || 'N/A';
+      const expectedCode = expected.charCodeAt(0) || 'N/A';
+      console.log(`[LOGIN_FORM]    [${i}] '${submitted}' (${submittedCode}) vs '${expected}' (${expectedCode}) ${match}`);
     }
   }
 
-  if (password !== AUTH_PASS) {
+  if (!password || password !== AUTH_PASS) {
     console.log(`[LOGIN_FORM] ❌ PASSWORD MISMATCH\n`);
     return res.render('login', { error: 'Invalid username or password' });
   }

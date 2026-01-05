@@ -221,7 +221,7 @@
     }
   </style>
 </head>
-<body x-data="loginApp()" x-cloak>
+<body x-cloak>
   
   <div class="login-container animate-fade-in">
     <!-- Login Card -->
@@ -253,7 +253,7 @@
       <% } %>
 
       <!-- Login Form -->
-      <form action="/login" method="POST" id="loginForm">
+      <form action="/login" method="POST" id="loginForm" onsubmit="handleLoginSubmit(event)">
         
         <!-- Username Field -->
         <div class="form-group">
@@ -266,7 +266,6 @@
             class="form-input"
             placeholder="Enter username"
             autocomplete="username"
-            :disabled="loading"
           >
         </div>
 
@@ -275,26 +274,25 @@
           <label for="password" class="form-label">Password</label>
           <div class="password-wrapper">
             <input 
-              :type="showPassword ? 'text' : 'password'" 
-              id="password" 
+              id="passwordInput"
+              type="password"
               name="password" 
               required
               class="form-input has-toggle"
               placeholder="Enter password"
               autocomplete="current-password"
-              :disabled="loading"
             >
             <button 
               type="button"
-              @click="showPassword = !showPassword"
               class="password-toggle"
               tabindex="-1"
+              onclick="togglePasswordVisibility()"
             >
-              <svg x-show="!showPassword" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg id="eyeIcon" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
               </svg>
-              <svg x-show="showPassword" style="width: 20px; height: 20px; display: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg id="eyeOffIcon" style="width: 20px; height: 20px; display: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
               </svg>
             </button>
@@ -304,14 +302,14 @@
         <!-- Login Button -->
         <button 
           type="submit"
-          :disabled="loading"
+          id="submitBtn"
           class="submit-btn"
         >
-          <svg x-show="loading" class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="display: none;">
+          <svg id="spinner" class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="display: none;">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span x-text="loading ? 'Logging in...' : 'Login to Content Hub'">Login to Content Hub</span>
+          <span id="submitText">Login to Content Hub</span>
         </button>
       </form>
 
@@ -333,39 +331,54 @@
   </div>
 
   <script>
-    function loginApp() {
-      return {
-        showPassword: false,
-        loading: false,
-        
-        init() {
-          // Auto-focus username field
-          this.$nextTick(() => {
-            document.getElementById('username')?.focus();
-          });
-          
-          // Handle form submission
-          const form = document.getElementById('loginForm');
-          if (form) {
-            form.addEventListener('submit', (event) => {
-              const username = document.getElementById('username')?.value || '';
-              const password = document.getElementById('password')?.value || '';
-              
-              // Validate
-              if (!username || !password) {
-                event.preventDefault();
-                console.log('[LOGIN] Validation failed - missing username or password');
-                return;
-              }
-              
-              // Show loading state
-              console.log('[LOGIN] Form submitted with username:', username);
-              this.loading = true;
-            });
-          }
-        }
+    function togglePasswordVisibility() {
+      const input = document.getElementById('passwordInput');
+      const eyeIcon = document.getElementById('eyeIcon');
+      const eyeOffIcon = document.getElementById('eyeOffIcon');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        eyeIcon.style.display = 'none';
+        eyeOffIcon.style.display = 'block';
+      } else {
+        input.type = 'password';
+        eyeIcon.style.display = 'block';
+        eyeOffIcon.style.display = 'none';
       }
     }
+
+    function handleLoginSubmit(event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('passwordInput').value;
+      const submitBtn = document.getElementById('submitBtn');
+      const submitText = document.getElementById('submitText');
+      const spinner = document.getElementById('spinner');
+      
+      console.log('[LOGIN] Form submitted');
+      console.log('[LOGIN] Username:', username);
+      console.log('[LOGIN] Password length:', password.length);
+      
+      if (!username || !password) {
+        console.log('[LOGIN] Validation failed');
+        return;
+      }
+      
+      // Show loading state
+      submitBtn.disabled = true;
+      spinner.style.display = 'block';
+      submitText.textContent = 'Logging in...';
+      
+      // Submit the form
+      console.log('[LOGIN] Submitting form with data');
+      event.target.submit();
+    }
+
+    // Auto-focus username on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('username').focus();
+    });
   </script>
 
 </body>
