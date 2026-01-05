@@ -3,6 +3,7 @@
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
 const jwt = require('jsonwebtoken');
@@ -115,34 +116,70 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Serve static files from Redis (for Vercel production)
+// Serve static files from Redis (for Vercel production) with filesystem fallback
 app.get('/files/:filename', async (req, res) => {
+  const filename = req.params.filename;
+  
+  // Try Redis first if available
+  if (process.env.REDIS_URL) {
+    try {
+      const { createClient } = require('redis');
+      const redis = createClient({ url: process.env.REDIS_URL });
+      await redis.connect();
+
+      const key = `cms:file:files/${filename}`;
+      const content = await redis.get(key);
+      await redis.quit();
+
+      if (content) {
+        // Determine content type
+        if (filename.endsWith('.svg')) {
+          res.type('image/svg+xml');
+        } else if (filename.endsWith('.json')) {
+          res.type('application/json');
+        } else if (filename.endsWith('.html')) {
+          res.type('text/html');
+        }
+        return res.send(content);
+      }
+    } catch (error) {
+      console.warn('[FILES] Redis error, falling back to filesystem:', error.message);
+    }
+  }
+
+  // Fallback to filesystem
   try {
-    const { createClient } = require('redis');
-    const redis = createClient({ url: process.env.REDIS_URL });
-    await redis.connect();
+    const filePath = path.join(__dirname, '../../public/files', filename);
+    const normalizedPath = path.normalize(filePath);
+    const publicDir = path.normalize(path.join(__dirname, '../../public/files'));
+    
+    // Security: ensure the file is within public/files directory
+    if (!normalizedPath.startsWith(publicDir)) {
+      return res.status(403).send('Access denied');
+    }
 
-    const key = `cms:file:files/${req.params.filename}`;
-    const content = await redis.get(key);
-    await redis.quit();
-
-    if (!content) {
+    if (!fs.existsSync(filePath)) {
       return res.status(404).send('File not found');
     }
 
     // Determine content type
-    const filename = req.params.filename;
     if (filename.endsWith('.svg')) {
       res.type('image/svg+xml');
     } else if (filename.endsWith('.json')) {
       res.type('application/json');
     } else if (filename.endsWith('.html')) {
       res.type('text/html');
+    } else if (filename.endsWith('.png')) {
+      res.type('image/png');
+    } else if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
+      res.type('image/jpeg');
+    } else if (filename.endsWith('.webp')) {
+      res.type('image/webp');
     }
 
-    res.send(content);
+    res.sendFile(filePath);
   } catch (error) {
-    console.error('[FILES] Error serving file:', error);
+    console.error('[FILES] Error serving file from filesystem:', error);
     res.status(500).send('Error loading file');
   }
 });
