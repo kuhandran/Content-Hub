@@ -53,70 +53,8 @@ app.use(fileUpload({ limits: { fileSize: 50 * 1024 * 1024 } }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../../public')));
 
-// Set view engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '../src/views'));
-
-// Import routes
-const authRoutes = require('../src/routes/auth');
-const fileRoutes = require('../src/routes/files-redis');
-const configRoutes = require('../src/routes/config');
-const scannerRoutes = require('../src/routes/scanner');
-const collectionsRoutes = require('../src/routes/collections');
-const configReadRoutes = require('../src/routes/config-read');
-const imageReadRoutes = require('../src/routes/image-read');
-const resumeReadRoutes = require('../src/routes/resume-read');
-const filesStorageReadRoutes = require('../src/routes/files-storage-read');
-const adminRoutes = require('../src/routes/admin');
-const { router: adminSeedRoutes } = require('../src/routes/admin-seed');
-const autoSyncRoutes = require('../src/routes/auto-sync');
-
-// Use routes
-app.use('/api/auth', authRoutes);
-app.use('/api/files', fileRoutes);
-app.use('/api/config', configRoutes);
-app.use('/api/config-file', configReadRoutes);  // Read individual config files
-app.use('/api/image', imageReadRoutes);  // Read images
-app.use('/api/resume', resumeReadRoutes);  // Read resumes
-app.use('/api/storage-files', filesStorageReadRoutes);  // Read storage files
-app.use('/api/scanner', scannerRoutes);
-app.use('/api/collections', collectionsRoutes);
-app.use('/api/auto-sync', autoSyncRoutes);  // Auto-sync endpoint
-app.use('/api/admin', adminSeedRoutes);  // Seed files endpoint (must be before admin)
-app.use('/api/admin', adminRoutes);
-
-// Import middleware
-const authMiddleware = require('../src/middleware/authMiddleware');
-
-// Dashboard route
-app.get('/dashboard', authMiddleware, (req, res) => {
-  res.render('dashboard', { user: req.user });
-});
-
-// Sync Manager route
-app.get('/sync-manager', (req, res) => {
-  res.sendFile(path.join(__dirname, '../src/views/sync-manager.html'));
-});
-
-// Login page
-app.get('/login', (req, res) => {
-  res.render('login');
-});
-
-// Health check
-app.get('/health', (req, res) => {
-  logger.info('HEALTH', 'Health check endpoint called');
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
-    version: '1.0.0'
-  });
-});
-
-// Serve static files from Redis (for Vercel production) with filesystem fallback
+// Serve static files from Redis (for Vercel production) with filesystem fallback - MUST BE BEFORE express.static
 app.get('/files/:filename', async (req, res) => {
   const filename = req.params.filename;
   console.log(`[FILES] Request for: ${filename}`);
@@ -191,6 +129,73 @@ app.get('/files/:filename', async (req, res) => {
     res.status(500).send('Error loading file');
   }
 });
+
+// Now serve static files from public directory
+app.use(express.static(path.join(__dirname, '../../public')));
+
+// Set view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, '../src/views'));
+
+// Import routes
+const authRoutes = require('../src/routes/auth');
+const fileRoutes = require('../src/routes/files-redis');
+const configRoutes = require('../src/routes/config');
+const scannerRoutes = require('../src/routes/scanner');
+const collectionsRoutes = require('../src/routes/collections');
+const configReadRoutes = require('../src/routes/config-read');
+const imageReadRoutes = require('../src/routes/image-read');
+const resumeReadRoutes = require('../src/routes/resume-read');
+const filesStorageReadRoutes = require('../src/routes/files-storage-read');
+const adminRoutes = require('../src/routes/admin');
+const { router: adminSeedRoutes } = require('../src/routes/admin-seed');
+const autoSyncRoutes = require('../src/routes/auto-sync');
+
+// Use routes
+app.use('/api/auth', authRoutes);
+app.use('/api/files', fileRoutes);
+app.use('/api/config', configRoutes);
+app.use('/api/config-file', configReadRoutes);  // Read individual config files
+app.use('/api/image', imageReadRoutes);  // Read images
+app.use('/api/resume', resumeReadRoutes);  // Read resumes
+app.use('/api/storage-files', filesStorageReadRoutes);  // Read storage files
+app.use('/api/scanner', scannerRoutes);
+app.use('/api/collections', collectionsRoutes);
+app.use('/api/auto-sync', autoSyncRoutes);  // Auto-sync endpoint
+app.use('/api/admin', adminSeedRoutes);  // Seed files endpoint (must be before admin)
+app.use('/api/admin', adminRoutes);
+
+// Import middleware
+const authMiddleware = require('../src/middleware/authMiddleware');
+
+// Dashboard route
+app.get('/dashboard', authMiddleware, (req, res) => {
+  res.render('dashboard', { user: req.user });
+});
+
+// Sync Manager route
+app.get('/sync-manager', (req, res) => {
+  res.sendFile(path.join(__dirname, '../src/views/sync-manager.html'));
+});
+
+// Login page
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
+// Health check
+app.get('/health', (req, res) => {
+  logger.info('HEALTH', 'Health check endpoint called');
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    version: '1.0.0'
+  });
+});
+
+// Serve static files from Redis (for Vercel production) with filesystem fallback
+// REMOVED - Moved to earlier in the file, before express.static middleware
 
 // 404 handler
 app.use((req, res) => {
