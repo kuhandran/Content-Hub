@@ -196,6 +196,11 @@ app.get('/', (req, res) => {
   }
 });
 
+// Sync Manager page
+app.get('/sync-manager', require('./middleware/authMiddleware'), (req, res) => {
+  res.sendFile(__dirname + '/views/sync-manager.html');
+});
+
 // API health check
 app.get('/api/health', require('./middleware/authMiddleware'), (req, res) => {
   res.json({ status: 'online', user: req.user, timestamp: new Date() });

@@ -174,7 +174,7 @@ app.get('/dashboard', authMiddleware, (req, res) => {
 });
 
 // Sync Manager route
-app.get('/sync-manager', (req, res) => {
+app.get('/sync-manager', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, '../src/views/sync-manager.html'));
 });
 
