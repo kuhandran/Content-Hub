@@ -24,7 +24,7 @@
         
         /* Sidebar Navigation */
         .sidebar {
-            width: 320px;
+            width: 240px;
             background: white;
             border-right: 1px solid #e9ecef;
             display: flex;
@@ -36,38 +36,38 @@
         }
         
         .sidebar-header {
-            padding: 32px 28px;
+            padding: 20px 16px;
             border-bottom: 1px solid #e9ecef;
         }
         
         .sidebar-header h1 {
-            font-size: 22px;
+            font-size: 16px;
             color: #1e293b;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             font-weight: 600;
         }
         
         .sidebar-header p {
-            font-size: 14px;
+            font-size: 12px;
             color: #64748b;
         }
         
         .nav-menu {
             flex: 1;
-            padding: 20px 0;
+            padding: 12px 0;
             overflow-y: auto;
         }
         
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 14px;
-            padding: 16px 28px;
+            gap: 12px;
+            padding: 12px 16px;
             color: #64748b;
             cursor: pointer;
             transition: all 0.2s;
             border-left: 3px solid transparent;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 500;
         }
         
@@ -83,16 +83,16 @@
         }
         
         .nav-item .icon {
-            font-size: 22px;
-            width: 26px;
+            font-size: 18px;
+            width: 20px;
             text-align: center;
         }
         
         /* Main Content */
         .main-content {
-            margin-left: 320px;
+            margin-left: 240px;
             flex: 1;
-            padding: 32px;
+            padding: 20px;
             overflow-y: auto;
         }
         
@@ -100,13 +100,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
         
         .content-header h2 {
-            font-size: 30px;
+            font-size: 20px;
             color: #1e293b;
             font-weight: 600;
+            margin: 0;
         }
         
         .content-section {
@@ -119,90 +120,92 @@
         
         .card {
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         
         .card-header {
-            background: white;
+            background: #f8f9fa;
             border-bottom: 1px solid #e9ecef;
-            padding: 20px 24px;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
         .card-header h3 {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             color: #1e293b;
+            margin: 0;
         }
         
         .card-body {
-            padding: 24px;
+            padding: 18px 20px;
         }
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
         }
         
         .stat-card {
             background: white;
             border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 8px;
+            padding: 14px 16px;
             transition: all 0.2s;
         }
         
         .stat-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.12);
             border-color: #667eea;
         }
         
         .stat-card h3 {
-            font-size: 13px;
+            font-size: 12px;
             color: #64748b;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+            margin-top: 0;
             font-weight: 500;
         }
         
         .stat-card .count {
-            font-size: 32px;
+            font-size: 26px;
             font-weight: 700;
             color: #1e293b;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
         
         .stat-card .label {
-            font-size: 12px;
+            font-size: 11px;
             color: #94a3b8;
         }
         
         .action-buttons {
             display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
+            gap: 10px;
+            margin-bottom: 18px;
             flex-wrap: wrap;
         }
         
         .btn {
-            padding: 14px 24px;
+            padding: 10px 16px;
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
+            border-radius: 6px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 6px;
         }
         
         .btn-primary {
@@ -233,12 +236,22 @@
         }
         
         .btn-icon {
-            font-size: 18px;
+            font-size: 14px;
+        }
+        
+        input[type="file"], input[type="text"], select, textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-bottom: 10px;
+            font-family: inherit;
         }
         
         .progress-section {
             display: none;
-            margin-bottom: 24px;
+            margin-bottom: 18px;
         }
         
         .progress-section.active {
@@ -247,9 +260,9 @@
         
         .progress-bar-container {
             background: #e9ecef;
-            border-radius: 8px;
-            height: 8px;
-            margin-bottom: 16px;
+            border-radius: 6px;
+            height: 6px;
+            margin-bottom: 12px;
             overflow: hidden;
         }
         
@@ -261,22 +274,22 @@
         }
         
         .progress-text {
-            font-size: 14px;
+            font-size: 12px;
             color: #64748b;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             font-weight: 500;
         }
         
         .file-categories {
             display: grid;
-            gap: 12px;
+            gap: 10px;
         }
         
         .category-card {
             background: white;
             border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 16px;
+            border-radius: 8px;
+            padding: 12px 14px;
             transition: all 0.2s;
         }
         
@@ -288,7 +301,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             cursor: pointer;
             user-select: none;
         }
@@ -296,13 +309,14 @@
         .category-title {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         .category-header h3 {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             color: #1e293b;
+            margin: 0;
         }
         
         .category-count {
@@ -339,8 +353,8 @@
         
         .file-list {
             display: none;
-            margin-top: 12px;
-            max-height: 300px;
+            margin-top: 10px;
+            max-height: 250px;
             overflow-y: auto;
         }
         
@@ -352,7 +366,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 12px;
+            padding: 8px 10px;
             background: #f8fafc;
             border-radius: 6px;
             margin-bottom: 6px;
