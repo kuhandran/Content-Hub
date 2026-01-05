@@ -66,7 +66,7 @@ app.get('/files/:filename', async (req, res) => {
       const redis = createClient({ url: process.env.REDIS_URL });
       await redis.connect();
 
-      const key = `cms:file:files/${filename}`;
+      const key = `cms:files:${filename}`;
       const content = await redis.get(key);
       await redis.quit();
 
