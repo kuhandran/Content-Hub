@@ -119,6 +119,7 @@ app.get('/health', (req, res) => {
 // Serve static files from Redis (for Vercel production) with filesystem fallback
 app.get('/files/:filename', async (req, res) => {
   const filename = req.params.filename;
+  console.log(`[FILES] Request for: ${filename}`);
   
   // Try Redis first if available
   if (process.env.REDIS_URL) {
@@ -132,6 +133,7 @@ app.get('/files/:filename', async (req, res) => {
       await redis.quit();
 
       if (content) {
+        console.log(`[FILES] ✅ Found in Redis: ${filename}`);
         // Determine content type
         if (filename.endsWith('.svg')) {
           res.type('image/svg+xml');
@@ -143,7 +145,7 @@ app.get('/files/:filename', async (req, res) => {
         return res.send(content);
       }
     } catch (error) {
-      console.warn('[FILES] Redis error, falling back to filesystem:', error.message);
+      console.warn(`[FILES] Redis error for ${filename}:`, error.message);
     }
   }
 
@@ -153,15 +155,21 @@ app.get('/files/:filename', async (req, res) => {
     const normalizedPath = path.normalize(filePath);
     const publicDir = path.normalize(path.join(__dirname, '../../public/files'));
     
+    console.log(`[FILES] Checking filesystem:`, filePath);
+    
     // Security: ensure the file is within public/files directory
     if (!normalizedPath.startsWith(publicDir)) {
+      console.log(`[FILES] ❌ Access denied - path traversal attempt: ${filePath}`);
       return res.status(403).send('Access denied');
     }
 
     if (!fs.existsSync(filePath)) {
+      console.log(`[FILES] ❌ File not found: ${filePath}`);
       return res.status(404).send('File not found');
     }
 
+    console.log(`[FILES] ✅ Serving from filesystem: ${filename}`);
+    
     // Determine content type
     if (filename.endsWith('.svg')) {
       res.type('image/svg+xml');
@@ -179,7 +187,7 @@ app.get('/files/:filename', async (req, res) => {
 
     res.sendFile(filePath);
   } catch (error) {
-    console.error('[FILES] Error serving file from filesystem:', error);
+    console.error(`[FILES] Error serving ${filename}:`, error);
     res.status(500).send('Error loading file');
   }
 });
