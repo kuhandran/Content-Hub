@@ -1,21 +1,54 @@
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
+build/
+dist/
+out/
+.next/
+
+# Misc
 .DS_Store
-*.log
+*.pem
+
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.env.local
-.env.*.local
-.vercel
-dist/
-logs/
+lerna-debug.log*
 
-# TinaCMS
+# Environment variables - NEVER commit these
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel
+.vercel
+.vercel-deploy-timestamp
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TinaCMS (legacy - not used)
 .tina
 admin/
 *.tina.*
-.next/
-out/
-build/
-.next/
-.env
