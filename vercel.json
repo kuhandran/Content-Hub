@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "npm install",
-  "buildCommand": "npm install && node scripts/generate-manifest.js",
+  "buildCommand": "npm install && node scripts/seed-redis-build.js",
   "functions": {
     "api/**/*.js": {
       "memory": 1024,
