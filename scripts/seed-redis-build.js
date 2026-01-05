@@ -8,10 +8,29 @@ const path = require('path');
 const { createClient } = require('redis');
 
 async function seedRedis() {
+  console.log('[SEED] 🚀 Build seed script started');
+  console.log('[SEED] Environment check:', {
+    hasRedisUrl: !!process.env.REDIS_URL,
+    nodeEnv: process.env.NODE_ENV,
+    vercel: process.env.VERCEL
+  });
+
   const redisUrl = process.env.REDIS_URL;
 
   if (!redisUrl) {
-    console.log('[SEED] ⚠️  No REDIS_URL found, skipping seed');
+    console.log('[SEED] ⚠️  No REDIS_URL found, skipping Redis seed');
+    console.log('[SEED] ℹ️  To enable seeding, add REDIS_URL to Vercel environment variables');
+    
+    // Still check if files exist
+    const publicDir = path.join(__dirname, '../public');
+    console.log('[SEED] Checking public directory:', publicDir);
+    console.log('[SEED] Public dir exists:', fs.existsSync(publicDir));
+    
+    if (fs.existsSync(publicDir)) {
+      const contents = fs.readdirSync(publicDir);
+      console.log('[SEED] Public folder contents:', contents);
+    }
+    
     return;
   }
 
