@@ -47,6 +47,28 @@ router.use((req, res, next) => {
   next();
 });
 
+// GET /api/collections - List available collections
+router.get('/', async (req, res) => {
+  try {
+    const languages = ['en', 'ar-AE', 'de', 'es', 'fr', 'hi', 'id', 'my', 'si', 'ta', 'th'];
+    const categories = ['config', 'data'];
+    
+    res.json({
+      message: 'Collections API - Available endpoints',
+      languages,
+      categories,
+      examples: [
+        '/api/collections/en/data/contentLabels.json',
+        '/api/collections/fr/data/experience.json',
+        '/api/collections/ar-AE/config/pageLayout.json'
+      ],
+      usage: 'GET /api/collections/{locale}/{category}/{file}'
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // GET /api/collections/* - Read any collection file
 router.get('/*', async (req, res) => {
   try {

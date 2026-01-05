@@ -111,6 +111,38 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Serve static files from Redis (for Vercel production)
+app.get('/files/:filename', async (req, res) => {
+  try {
+    const { createClient } = require('redis');
+    const redis = createClient({ url: process.env.REDIS_URL });
+    await redis.connect();
+
+    const key = `cms:file:files/${req.params.filename}`;
+    const content = await redis.get(key);
+    await redis.quit();
+
+    if (!content) {
+      return res.status(404).send('File not found');
+    }
+
+    // Determine content type
+    const filename = req.params.filename;
+    if (filename.endsWith('.svg')) {
+      res.type('image/svg+xml');
+    } else if (filename.endsWith('.json')) {
+      res.type('application/json');
+    } else if (filename.endsWith('.html')) {
+      res.type('text/html');
+    }
+
+    res.send(content);
+  } catch (error) {
+    console.error('[FILES] Error serving file:', error);
+    res.status(500).send('Error loading file');
+  }
+});
+
 // 404 handler
 app.use((req, res) => {
   logger.warn('NOT_FOUND', `404 for ${req.method} ${req.path}`, { 
