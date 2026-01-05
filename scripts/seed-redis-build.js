@@ -38,13 +38,20 @@ async function seedRedis() {
   
   let redis;
   try {
-    redis = createClient({
-      url: redisUrl,
-      socket: {
+    // Detect if URL uses TLS (rediss://) or not (redis://)
+    const useTLS = redisUrl.startsWith('rediss://');
+    
+    const clientOptions = { url: redisUrl };
+    
+    // Only add TLS config if URL uses rediss://
+    if (useTLS) {
+      clientOptions.socket = {
         tls: true,
         rejectUnauthorized: false
-      }
-    });
+      };
+    }
+    
+    redis = createClient(clientOptions);
 
     redis.on('error', (err) => console.error('[SEED] Redis error:', err));
     await redis.connect();
