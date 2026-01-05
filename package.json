@@ -1,8 +1,12 @@
 {
-  "name": "portfolio-cms",
+  "name": "content-hub",
   "version": "1.0.0",
-  "description": "Express-based CMS with smart caching, Vercel-compatible",
+  "description": "Real-time content management hub with Redis storage and zero-downtime sync",
   "main": "api/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kuhandran/Content-Hub.git"
+  },
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
@@ -12,12 +16,14 @@
   },
   "keywords": [
     "cms",
+    "content-hub",
     "express",
-    "cache",
-    "hot-reload"
+    "redis",
+    "real-time",
+    "zero-downtime"
   ],
   "author": "kuhandran",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@vercel/kv": "^3.0.0",
     "archiver": "^7.0.1",
