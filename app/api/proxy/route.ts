@@ -6,20 +6,12 @@ export const dynamic = 'force-dynamic'
 
 // Get the correct public directory path for both local and Vercel
 function getPublicDir() {
-  // Try multiple approaches
-  const paths = [
-    join(process.cwd(), 'public'), // Local dev
-    join(process.cwd(), '.vercel', 'output', 'public'), // Vercel build output
-    join('/vercel/path0', 'public'), // Vercel function path
-    join(__dirname, '../../../../public'), // Go up from .next/server/app/api/proxy
-  ]
+  // In Vercel, the public folder is at the root of the function
+  // The working directory in Vercel is /var/task which is the project root
+  const cwdPath = join(process.cwd(), 'public')
   
-  // In Vercel, use relative path from current directory
-  if (process.env.VERCEL) {
-    return join(process.cwd(), 'public')
-  }
-  
-  return paths[0] // Default to first path
+  // Try without 'public' suffix in case it's already in root  
+  return cwdPath
 }
 
 const PUBLIC_DIR = getPublicDir()
@@ -103,15 +95,50 @@ export async function GET(request: NextRequest) {
         },
       })
     } catch (fsError) {
-      console.error('[PROXY] File not found:', { filePath, error: String(fsError) })
-      return NextResponse.json(
-        {
-          error: 'File not found',
-          path: `${lang}/${folder}/${file}`,
-          debug: String(fsError),
-        },
-        { status: 404 }
-      )
+      // Try alternative path without "public" prefix (for Vercel deployment)
+      try {
+        const altPath = join(process.cwd(), 'collections', lang, folder, file)
+        console.log('[PROXY] Trying alternative path:', altPath)
+        const content = await readFile(altPath)
+        
+        // Determine content type
+        const ext = file.split('.').pop()?.toLowerCase() || ''
+        const contentTypeMap: { [key: string]: string } = {
+          json: 'application/json',
+          js: 'application/javascript',
+          css: 'text/css',
+          png: 'image/png',
+          jpg: 'image/jpeg',
+          jpeg: 'image/jpeg',
+          gif: 'image/gif',
+          svg: 'image/svg+xml',
+          webp: 'image/webp',
+          pdf: 'application/pdf',
+          txt: 'text/plain',
+        }
+        const contentType = contentTypeMap[ext] || 'application/octet-stream'
+        
+        return new NextResponse(content, {
+          status: 200,
+          headers: {
+            'Content-Type': contentType,
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Cache-Control': 'public, max-age=3600',
+          },
+        })
+      } catch (altError) {
+        console.error('[PROXY] File not found (both paths):', { filePath, error: String(fsError), altError: String(altError) })
+        return NextResponse.json(
+          {
+            error: 'File not found',
+            path: `${lang}/${folder}/${file}`,
+            debug: `Primary: ${String(fsError)} | Alt: ${String(altError)}`,
+          },
+          { status: 404 }
+        )
+      }
     }
   } catch (error) {
     console.error('[API] Error:', error)
