@@ -1,9 +1,40 @@
-import { readFile, readdir } from 'fs/promises'
+import { readFile, readdir, access } from 'fs/promises'
 import { join } from 'path'
 import { redis } from './redis-client'
 
-// Use __dirname for serverless compatibility
-const PUBLIC_DIR = join(__dirname, '..', 'public')
+// Resolve PUBLIC_DIR - works in both local and Vercel environments
+function getPublicDir() {
+  // In local development: process.cwd() works
+  // In Vercel: use __dirname relative path
+  const localPath = join(process.cwd(), 'public')
+  const vercelPath = join(__dirname, '..', 'public')
+  
+  // Try to detect which path exists or use Vercel-specific path
+  // In Vercel serverless, the actual path structure is different
+  // Files are in the deployment directory
+  try {
+    if (process.env.VERCEL) {
+      // Vercel deployment - use a path relative to the project root
+      return join(process.cwd(), 'public')
+    }
+  } catch (e) {
+    // Ignore
+  }
+  
+  return localPath
+}
+
+const PUBLIC_DIR = getPublicDir()
+
+// Check if public directory is accessible
+async function isPublicDirAccessible(): Promise<boolean> {
+  try {
+    await access(PUBLIC_DIR)
+    return true
+  } catch {
+    return false
+  }
+}
 
 // Global log capture
 let syncLogs: string[] = []
@@ -220,6 +251,22 @@ export async function performSync(): Promise<SyncResult> {
   const errors: string[] = []
 
   try {
+    // Check if public directory exists first
+    const publicDirExists = await isPublicDirAccessible()
+    if (!publicDirExists) {
+      captureLog(`[SYNC] ⚠ Public directory not accessible at: ${PUBLIC_DIR}`, true)
+      captureLog('[SYNC] Sync skipped (running in environment without public files)', true)
+      return {
+        timestamp: new Date().toISOString(),
+        configs: 0,
+        collections: 0,
+        images: 0,
+        files: 0,
+        errors: ['Public directory not accessible'],
+        logs: syncLogs,
+      }
+    }
+
     const configCount = await syncRootConfig()
     const [collectionCount, collectionErrors] = await syncCollections()
     const [imageCount, imageErrors] = await syncImages()

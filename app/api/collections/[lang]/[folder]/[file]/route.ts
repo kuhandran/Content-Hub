@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/redis-client'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
 
 /**
  * GET /api/collections/[lang]/[folder]/[file].json
@@ -49,16 +51,30 @@ export async function GET(
     let data = await redis.get(redisKey)
 
     if (!data) {
-      // If not in Redis, return error with helpful message
-      return NextResponse.json(
-        {
-          error: 'File not found',
-          details: `Could not find ${fileName}.json in ${lang}/${folder}`,
-          redisKey,
-          suggestion: 'Make sure to run sync first to populate Redis',
-        },
-        { status: 404 }
-      )
+      // If not in Redis, try to read from filesystem
+      try {
+        const filePath = join(process.cwd(), 'public', 'collections', lang, folder, `${fileName}.json`)
+        const content = await readFile(filePath, 'utf-8')
+        data = JSON.parse(content)
+        
+        // Cache in Redis for future requests
+        try {
+          await redis.set(redisKey, data)
+        } catch (e) {
+          // Ignore Redis cache errors
+          console.warn('[API] Warning: Could not cache to Redis:', e)
+        }
+      } catch (fsError) {
+        // File not found in filesystem either
+        return NextResponse.json(
+          {
+            error: 'File not found',
+            details: `Could not find ${fileName}.json in ${lang}/${folder}`,
+            redisKey,
+          },
+          { status: 404 }
+        )
+      }
     }
 
     // Return the data with CORS headers
