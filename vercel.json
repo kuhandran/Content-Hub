@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "npm install",
+  "installCommand": "npm ci && npm install --save-dev typescript @types/react @types/node",
   "buildCommand": "npm run build",
   "headers": [
     {
