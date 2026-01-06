@@ -3,7 +3,20 @@
   "framework": "nextjs",
   "installCommand": "npm ci",
   "buildCommand": "npm run build",
+  "rewrites": [
+    {
+      "source": "/collections/:lang/:folder/:file",
+      "destination": "/collections/:lang/:folder/:file"
+    }
+  ],
   "headers": [
+    {
+      "source": "/collections/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    },
     {
       "source": "/api/(.*)",
       "headers": [
