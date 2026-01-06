@@ -6,6 +6,12 @@ import { join } from 'path'
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
 
+// Generate static params for all supported languages
+export async function generateStaticParams() {
+  const languages = ['ar-AE', 'de', 'en', 'es', 'fr', 'hi', 'id', 'my', 'si', 'ta', 'th']
+  return languages.map(lang => ({ lang }))
+}
+
 /**
  * GET /api/collections/[lang]
  * 
