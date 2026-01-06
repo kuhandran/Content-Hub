@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/redis-client'
+import { readdir } from 'fs/promises'
+import { join } from 'path'
 
 /**
  * GET /api/collections/[lang]
@@ -29,7 +31,46 @@ export async function GET(
 
     // Get all files for this language
     const pattern = `cms:file:collections/${lang}/*/*`
-    const keys = await redis.keys(pattern)
+    let keys = await redis.keys(pattern)
+
+    // Fallback: read from filesystem if Redis is empty
+    if (!keys || keys.length === 0) {
+      try {
+        const langPath = join(process.cwd(), 'public', 'collections', lang)
+        const configDir = join(langPath, 'config')
+        const dataDir = join(langPath, 'data')
+        
+        const configFiles = await readdir(configDir).catch(() => [])
+        const dataFiles = await readdir(dataDir).catch(() => [])
+        
+        const config = configFiles.filter(f => f.endsWith('.json')).map(f => f.replace('.json', ''))
+        const data = dataFiles.filter(f => f.endsWith('.json')).map(f => f.replace('.json', ''))
+        
+        return NextResponse.json(
+          {
+            language: lang,
+            total_files: config.length + data.length,
+            config: {
+              count: config.length,
+              files: config.sort(),
+            },
+            data: {
+              count: data.length,
+              files: data.sort(),
+            },
+          },
+          {
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+              'Cache-Control': 'public, max-age=3600',
+            },
+          }
+        )
+      } catch (fsError) {
+        console.warn('[API] Filesystem fallback failed:', fsError)
+        keys = []
+      }
+    }
 
     if (!keys || keys.length === 0) {
       return NextResponse.json(
