@@ -65,9 +65,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    let filePath = ''
     try {
       // Read from filesystem
-      const filePath = join(PUBLIC_DIR, 'collections', lang, folder, file)
+      filePath = join(PUBLIC_DIR, 'collections', lang, folder, file)
       
       console.log('[PROXY] Request:', { lang, folder, file, filePath, PUBLIC_DIR, cwd: process.cwd() })
 
