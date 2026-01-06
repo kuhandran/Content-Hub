@@ -4,6 +4,20 @@ import { join } from 'path'
 
 export const dynamic = 'force-dynamic'
 
+// Get the correct public directory path for both local and Vercel
+function getPublicDir() {
+  // In local development
+  if (process.cwd().includes('Content-Hub')) {
+    return join(process.cwd(), 'public')
+  }
+  
+  // In Vercel serverless - __dirname points to .next/server/app/api/proxy
+  // We need to go up to project root
+  return join(__dirname, '../../..', 'public')
+}
+
+const PUBLIC_DIR = getPublicDir()
+
 /**
  * GET /api/proxy
  * 
@@ -47,14 +61,7 @@ export async function GET(request: NextRequest) {
 
     try {
       // Read from filesystem
-      const filePath = join(
-        process.cwd(),
-        'public',
-        'collections',
-        lang,
-        folder,
-        file
-      )
+      const filePath = join(PUBLIC_DIR, 'collections', lang, folder, file)
 
       const content = await readFile(filePath)
 
