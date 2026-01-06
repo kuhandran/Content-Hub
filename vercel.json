@@ -1,46 +1,38 @@
 {
   "version": 2,
-  "installCommand": "npm install",
-  "buildCommand": "npm install && node scripts/seed-redis-build.js",
-  "functions": {
-    "api/**/*.js": {
-      "memory": 1024,
-      "maxDuration": 30,
-      "includeFiles": "public/**"
-    }
+  "buildCommand": "npm run build",
+  "env": {
+    "REDIS_URL": "@redis_url"
   },
   "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "https://www.kuhandranchatbot.info" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS, PATCH" },
         { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With" },
-        { "key": "Access-Control-Allow-Credentials", "value": "true" },
-        { "key": "Access-Control-Max-Age", "value": "3600" }
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    },
+    {
+      "source": "/admin/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
       ]
     },
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "https://www.kuhandranchatbot.info" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
       ]
     }
   ],
-  "rewrites": [
-    {
-      "source": "/sync-manager",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/files/:filename",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/api/:path*",
-      "destination": "/api/index.js"
+  "regions": ["iad1"],
+  "functions": {
+    "app/**/*.ts": {
+      "memory": 512,
+      "maxDuration": 30
     }
-  ]
+  }
 }
