@@ -3,6 +3,9 @@ import { redis } from '@/lib/redis-client'
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/collections/[lang]/[folder]/[file].json
  * 
