@@ -2,7 +2,8 @@ import { readFile, readdir } from 'fs/promises'
 import { join } from 'path'
 import { redis } from './redis-client'
 
-const PUBLIC_DIR = join(process.cwd(), 'public')
+// Use __dirname for serverless compatibility
+const PUBLIC_DIR = join(__dirname, '..', 'public')
 
 // Global log capture
 let syncLogs: string[] = []
