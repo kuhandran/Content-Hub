@@ -1,9 +1,6 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "env": {
-    "REDIS_URL": "@redis_url"
-  },
   "headers": [
     {
       "source": "/api/(.*)",
