@@ -6,14 +6,20 @@ export const dynamic = 'force-dynamic'
 
 // Get the correct public directory path for both local and Vercel
 function getPublicDir() {
-  // In local development
-  if (process.cwd().includes('Content-Hub')) {
+  // Try multiple approaches
+  const paths = [
+    join(process.cwd(), 'public'), // Local dev
+    join(process.cwd(), '.vercel', 'output', 'public'), // Vercel build output
+    join('/vercel/path0', 'public'), // Vercel function path
+    join(__dirname, '../../../../public'), // Go up from .next/server/app/api/proxy
+  ]
+  
+  // In Vercel, use relative path from current directory
+  if (process.env.VERCEL) {
     return join(process.cwd(), 'public')
   }
   
-  // In Vercel serverless - __dirname points to .next/server/app/api/proxy
-  // We need to go up to project root
-  return join(__dirname, '../../..', 'public')
+  return paths[0] // Default to first path
 }
 
 const PUBLIC_DIR = getPublicDir()
@@ -62,6 +68,8 @@ export async function GET(request: NextRequest) {
     try {
       // Read from filesystem
       const filePath = join(PUBLIC_DIR, 'collections', lang, folder, file)
+      
+      console.log('[PROXY] Request:', { lang, folder, file, filePath, PUBLIC_DIR, cwd: process.cwd() })
 
       const content = await readFile(filePath)
 
@@ -94,11 +102,12 @@ export async function GET(request: NextRequest) {
         },
       })
     } catch (fsError) {
-      console.error('[API] File not found:', fsError)
+      console.error('[PROXY] File not found:', { filePath, error: String(fsError) })
       return NextResponse.json(
         {
           error: 'File not found',
           path: `${lang}/${folder}/${file}`,
+          debug: String(fsError),
         },
         { status: 404 }
       )
