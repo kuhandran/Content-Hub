@@ -25,11 +25,5 @@
       ]
     }
   ],
-  "regions": ["iad1"],
-  "functions": {
-    "app/**/*.ts": {
-      "memory": 512,
-      "maxDuration": 30
-    }
-  }
+  "regions": ["iad1"]
 }
