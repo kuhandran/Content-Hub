@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/redis-client'
-import { fileExistsInManifest } from '@/lib/collections-manifest'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
@@ -46,72 +45,28 @@ export async function GET(
     // Remove .json extension if it was included
     const fileName = file.endsWith('.json') ? file.slice(0, -5) : file
 
-    // Try to get from Redis first
-    let content = await redis.getFile(lang, folder as 'config' | 'data', fileName)
+    // Get from Redis
+    const content = await redis.getFile(lang, folder as 'config' | 'data', fileName)
+
+    if (!content) {
+      return NextResponse.json(
+        {
+          error: 'File not found',
+          details: `Could not find ${fileName}.json in ${lang}/${folder}`,
+          lang,
+          folder,
+          file: fileName,
+        },
+        { status: 404 }
+      )
+    }
+
+    // Parse from Redis
     let data
-
-    if (content) {
-      // Parse from Redis
-      try {
-        data = JSON.parse(content)
-      } catch {
-        data = content
-      }
-    } else {
-      // Check if file exists in manifest
-      const exists = fileExistsInManifest(lang, folder as 'config' | 'data', fileName)
-      
-      if (!exists) {
-        return NextResponse.json(
-          {
-            error: 'File not found',
-            details: `Could not find ${fileName}.json in ${lang}/${folder}`,
-            lang,
-            folder,
-            file: fileName,
-          },
-          { status: 404 }
-        )
-      }
-
-      // For English collections, load from in-memory data
-      if (lang === 'en') {
-        // Import and return specific file data
-        if (fileName === 'contentLabels') {
-          const contentLabelsData = await import('@/public/collections/en/data/contentLabels.json')
-          data = contentLabelsData.default || contentLabelsData
-        } else {
-          // Try to dynamically import other files
-          try {
-            const filePath = `@/public/collections/en/${folder}/${fileName}.json`
-            const imported = await import(filePath)
-            data = imported.default || imported
-          } catch (error) {
-            return NextResponse.json(
-              {
-                error: 'File not accessible',
-                details: `Could not load ${fileName}.json`,
-                lang,
-                folder,
-                file: fileName,
-              },
-              { status: 500 }
-            )
-          }
-        }
-      } else {
-        // For other languages, return 404 if not in Redis
-        return NextResponse.json(
-          {
-            error: 'Language not available',
-            details: `${lang} language data not available in Redis cache`,
-            lang,
-            folder,
-            file: fileName,
-          },
-          { status: 404 }
-        )
-      }
+    try {
+      data = JSON.parse(content)
+    } catch {
+      data = content
     }
 
     // Return the data with CORS headers
