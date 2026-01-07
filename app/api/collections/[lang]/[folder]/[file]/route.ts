@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/redis-client'
-import { getCollectionFile } from '@/lib/collection-data'
+import { fileExistsInManifest } from '@/lib/collections-manifest'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
  * GET /api/collections/[lang]/[folder]/[file].json
  * 
  * Fetch collection data by language, folder, and file name
- * Uses lazy-loaded collection data with Redis cache fallback
+ * Reads from public/collections with Redis cache fallback
  * 
  * @param lang - Language code (en, es, fr, de, hi, ta, ar-AE, my, id, si, th, zh, pt)
  * @param folder - Folder type (config or data)
@@ -59,14 +59,42 @@ export async function GET(
         data = content
       }
     } else {
-      // Use lazy-loaded collection data
-      data = await getCollectionFile(lang, folder as 'config' | 'data', fileName)
-
-      if (!data) {
+      // Check if file exists in manifest
+      const exists = fileExistsInManifest(lang, folder as 'config' | 'data', fileName)
+      
+      if (!exists) {
         return NextResponse.json(
           {
             error: 'File not found',
             details: `Could not find ${fileName}.json in ${lang}/${folder}`,
+            lang,
+            folder,
+            file: fileName,
+          },
+          { status: 404 }
+        )
+      }
+
+      // Try to fetch from public folder via HTTP
+      try {
+        const baseUrl = request.headers.get('x-forwarded-proto') === 'https' 
+          ? 'https://' + (request.headers.get('x-forwarded-host') || 'localhost:3000')
+          : 'http://localhost:3000'
+        
+        const fileUrl = `${baseUrl}/collections/${lang}/${folder}/${fileName}.json`
+        const response = await fetch(fileUrl)
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch: ${response.status}`)
+        }
+
+        data = await response.json()
+      } catch (fetchError) {
+        console.error(`Failed to fetch collection file ${lang}/${folder}/${fileName}:`, fetchError)
+        return NextResponse.json(
+          {
+            error: 'File not found',
+            details: `Could not read ${fileName}.json from ${lang}/${folder}`,
             lang,
             folder,
             file: fileName,
