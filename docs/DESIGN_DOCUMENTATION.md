@@ -39,7 +39,7 @@
 ## 🔌 External API Integration
 
 ### Configuration
-**External API Base**: `https://static-api-opal.vercel.app/api/collections`
+**External API Base**: `https://static.kuhandranchatbot.info/api/collections`
 
 ### Endpoint Structure
 ```

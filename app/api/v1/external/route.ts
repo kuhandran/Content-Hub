@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const EXTERNAL_API_BASE = 'https://static-api-opal.vercel.app/api/collections'
+const EXTERNAL_API_BASE = 'https://static.kuhandranchatbot.info/api/collections'
 
 /**
  * GET /api/v1/external?lang=en&folder=data&file=projects
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Build URL: https://static-api-opal.vercel.app/api/collections/en/data/projects.json
+    // Build URL: https://static.kuhandranchatbot.info/api/collections/en/data/projects.json
     const url = `${EXTERNAL_API_BASE}/${lang}/${folder}/${file}.json`
 
     console.log(`[EXTERNAL-API] Fetching: ${url}`)

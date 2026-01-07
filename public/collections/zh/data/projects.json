@@ -2,7 +2,7 @@
   {
     "title": "FWD Insurance React Native App",
     "description": "Enterprise insurance platform with DMS, OWB, and UnderWrite Me modules for streamlined operations and enhanced user experience.",
-    "image": "https://static-api-opal.vercel.app/api/image/Project1.webp",
+    "image": "https://static.kuhandranchatbot.info/api/image/Project1.webp",
     "techStack": [
       "React Native",
       "RESTful APIs",
@@ -16,7 +16,7 @@
   {
     "title": "Maybank Digital Banking Platform",
     "description": "Modern single-page application for digital banking services with optimized performance and seamless user experience.",
-    "image": "https://static-api-opal.vercel.app/api/image/Project2.webp",
+    "image": "https://static.kuhandranchatbot.info/api/image/Project2.webp",
     "techStack": [
       "React.js",
       "Redux",
@@ -30,7 +30,7 @@
   {
     "title": "Banking API Integration",
     "description": "RESTful API development for insurance product integration, enabling seamless renewals and purchases through banking partners.",
-    "image": "https://static-api-opal.vercel.app/api/image/Project3.webp",
+    "image": "https://static.kuhandranchatbot.info/api/image/Project3.webp",
     "techStack": [
       "Spring Boot",
       "RESTful APIs",
@@ -43,7 +43,7 @@
   {
     "title": "Power BI Analytics Dashboard",
     "description": "Comprehensive data visualization solution providing actionable business insights and real-time analytics for decision-making.",
-    "image": "https://static-api-opal.vercel.app/api/image/Project4.webp",
+    "image": "https://static.kuhandranchatbot.info/api/image/Project4.webp",
     "techStack": [
       "Power BI",
       "Data Visualization",
@@ -56,7 +56,7 @@
   {
     "title": "Cross-Border Team Portal",
     "description": "Project management and collaboration platform for distributed teams with real-time updates and performance tracking.",
-    "image": "https://static-api-opal.vercel.app/api/image/Project5.webp",
+    "image": "https://static.kuhandranchatbot.info/api/image/Project5.webp",
     "techStack": [
       "React",
       "Node.js",
@@ -68,7 +68,7 @@
   {
     "title": "Cybersecurity Compliance Tool",
     "description": "Security vulnerability assessment and compliance monitoring system for Bank Negara standards.",
-    "image": "https://static-api-opal.vercel.app/api/image/Project6.webp",
+    "image": "https://static.kuhandranchatbot.info/api/image/Project6.webp",
     "techStack": [
       "Java",
       "Spring Security",

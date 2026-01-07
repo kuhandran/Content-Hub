@@ -6,9 +6,9 @@
       "subtitle": "Enterprise Insurance Platform Transformation",
       "description": "Enterprise insurance platform with DMS, OWB, and UnderWrite Me modules for streamlined operations and enhanced user experience.",
       "longDescription": "FWD Insurance required a comprehensive mobile solution to modernize their agent-facing operations. The platform integrates document management, policy operations, and underwriting capabilities into a single unified application.",
-      "image": "https://static-api-opal.vercel.app/api/image/Project1.webp",
+      "image": "https://static.kuhandranchatbot.info/api/image/Project1.webp",
       "client": "FWD Insurance",
-      "clientLogo": "https://static-api-opal.vercel.app/api/image/fwd-logo.png",
+      "clientLogo": "https://static.kuhandranchatbot.info/api/image/fwd-logo.png",
       "location": "Kuala Lumpur, Malaysia",
       "duration": "12 months",
       "team": {
@@ -105,9 +105,9 @@
       },
       "media": {
         "screenshots": [
-          "https://static-api-opal.vercel.app/api/image/fwd-app-1.png",
-          "https://static-api-opal.vercel.app/api/image/fwd-app-2.png",
-          "https://static-api-opal.vercel.app/api/image/fwd-app-3.png"
+          "https://static.kuhandranchatbot.info/api/image/fwd-app-1.png",
+          "https://static.kuhandranchatbot.info/api/image/fwd-app-2.png",
+          "https://static.kuhandranchatbot.info/api/image/fwd-app-3.png"
         ],
         "video": null
       }
@@ -118,9 +118,9 @@
       "subtitle": "Customer-Centric Banking Experience",
       "description": "Modern single-page application for digital banking services with optimized performance and seamless user experience.",
       "longDescription": "Maybank's digital banking platform serves millions of customers daily, requiring exceptional performance, reliability, and user experience. The redesign focused on modernizing the codebase while maintaining backward compatibility.",
-      "image": "https://static-api-opal.vercel.app/api/image/Project2.webp",
+      "image": "https://static.kuhandranchatbot.info/api/image/Project2.webp",
       "client": "Maybank Malaysia",
-      "clientLogo": "https://static-api-opal.vercel.app/api/image/maybank-logo.png",
+      "clientLogo": "https://static.kuhandranchatbot.info/api/image/maybank-logo.png",
       "location": "Kuala Lumpur, Malaysia",
       "duration": "8 months",
       "team": {
@@ -218,8 +218,8 @@
       },
       "media": {
         "screenshots": [
-          "https://static-api-opal.vercel.app/api/image/maybank-web-1.png",
-          "https://static-api-opal.vercel.app/api/image/maybank-web-2.png"
+          "https://static.kuhandranchatbot.info/api/image/maybank-web-1.png",
+          "https://static.kuhandranchatbot.info/api/image/maybank-web-2.png"
         ],
         "video": null
       }
@@ -230,9 +230,9 @@
       "subtitle": "Seamless Insurance-Banking Partnership",
       "description": "RESTful API development for insurance product integration, enabling seamless renewals and purchases through banking partners.",
       "longDescription": "A critical infrastructure project enabling insurance products to be integrated into multiple banking platforms, creating new revenue streams and improving customer convenience.",
-      "image": "https://static-api-opal.vercel.app/api/image/Project3.webp",
+      "image": "https://static.kuhandranchatbot.info/api/image/Project3.webp",
       "client": "Multiple Banking Partners",
-      "clientLogo": "https://static-api-opal.vercel.app/api/image/banking-api-logo.png",
+      "clientLogo": "https://static.kuhandranchatbot.info/api/image/banking-api-logo.png",
       "location": "Kuala Lumpur, Malaysia",
       "duration": "6 months",
       "team": {
@@ -338,9 +338,9 @@
       "subtitle": "Data-Driven Business Intelligence",
       "description": "Comprehensive data visualization solution providing actionable business insights and real-time analytics for decision-making.",
       "longDescription": "Transformed raw data into actionable business intelligence through sophisticated data visualization and analytics, enabling executives to make data-driven decisions faster.",
-      "image": "https://static-api-opal.vercel.app/api/image/Project4.webp",
+      "image": "https://static.kuhandranchatbot.info/api/image/Project4.webp",
       "client": "Enterprise Client",
-      "clientLogo": "https://static-api-opal.vercel.app/api/image/enterprise-logo.png",
+      "clientLogo": "https://static.kuhandranchatbot.info/api/image/enterprise-logo.png",
       "location": "Kuala Lumpur, Malaysia",
       "duration": "4 months",
       "team": {
@@ -437,9 +437,9 @@
       },
       "media": {
         "screenshots": [
-          "https://static-api-opal.vercel.app/api/image/powerbi-1.png",
-          "https://static-api-opal.vercel.app/api/image/powerbi-2.png",
-          "https://static-api-opal.vercel.app/api/image/powerbi-3.png"
+          "https://static.kuhandranchatbot.info/api/image/powerbi-1.png",
+          "https://static.kuhandranchatbot.info/api/image/powerbi-2.png",
+          "https://static.kuhandranchatbot.info/api/image/powerbi-3.png"
         ],
         "video": null
       }

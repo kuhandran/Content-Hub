@@ -19,7 +19,7 @@
   ],
   "screenshots": [
     {
-      "src": "https://static.kuhandranchatbot.info/image/profile.webp",
+      "src": "https://static.kuhandranchatbot.infoimage/profile.webp",
       "sizes": "400x400",
       "type": "image/webp",
       "form_factor": "narrow"
@@ -28,7 +28,7 @@
   "categories": ["technology", "business", "productivity"],
   "screenshots_wide": [
     {
-      "src": "https://static.kuhandranchatbot.info/image/profile.webp",
+      "src": "https://static.kuhandranchatbot.infoimage/profile.webp",
       "sizes": "1280x720",
       "type": "image/webp",
       "form_factor": "wide"

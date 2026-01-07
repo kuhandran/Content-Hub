@@ -1,8 +1,8 @@
 {
   "urls": {
     "resume": {
-      "download": "https://static-api-opal.vercel.app/resume/resume.pdf",
-      "view": "https://static-api-opal.vercel.app/resume/resume.pdf"
+      "download": "https://static.kuhandranchatbot.info/resume/resume.pdf",
+      "view": "https://static.kuhandranchatbot.info/resume/resume.pdf"
     },
     "social": {
       "linkedin": "https://linkedin.com/in/kuhandran-samudrapandiyan",
@@ -105,7 +105,7 @@
     "cta": {
       "resume": "Descargar Currículum",
       "linkedin": "Ver LinkedIn",
-      "resumeUrl": "https://static-api-opal.vercel.app/resume/resume.pdf",
+      "resumeUrl": "https://static.kuhandranchatbot.info/resume/resume.pdf",
       "linkedinUrl": "https://linkedin.com/in/kuhandran-samudrapandiyan"
     }
   },

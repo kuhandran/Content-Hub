@@ -11,7 +11,7 @@
       "Applied agile methodologies to optimize workflows and adapt to project demands"
     ],
     "techStack": ["React Native", "Agile", "Project Management", "Cross-functional Teams"],
-    "logo": "https://static-api-opal.vercel.app/image/fwd-logo.png"
+    "logo": "https://static.kuhandranchatbot.info/image/fwd-logo.png"
   },
   {
     "title": "Senior Software Engineer",
@@ -25,7 +25,7 @@
       "Designed and implemented RESTful APIs, improving application functionalities"
     ],
     "techStack": ["React.js", "Redux", "RESTful APIs", "React Hooks", "Git"],
-    "logo": "https://static-api-opal.vercel.app/image/maybank-logo.png"
+    "logo": "https://static.kuhandranchatbot.info/image/maybank-logo.png"
   },
   {
     "title": "Software Engineer",
@@ -39,7 +39,7 @@
       "Collaborated remotely using Agile methodologies with global teams"
     ],
     "techStack": ["React", "Redux", "Axios", "SPA Architecture", "Agile"],
-    "logo": "https://static-api-opal.vercel.app/image/maybank-logo.png"
+    "logo": "https://static.kuhandranchatbot.info/image/maybank-logo.png"
   },
   {
     "title": "UI/UX Developer",
@@ -53,7 +53,7 @@
       "Enhanced project modularity through component-based architecture"
     ],
     "techStack": ["React", "Redux", "UI/UX Design", "Component Architecture"],
-    "logo": "https://static-api-opal.vercel.app/image/maybank-logo.png"
+    "logo": "https://static.kuhandranchatbot.info/image/maybank-logo.png"
   },
   {
     "title": "Junior Developer",
@@ -67,6 +67,6 @@
       "Supported API integration for insurance renewal and purchases"
     ],
     "techStack": ["Java", "API Integration", "Security", "SDLC"],
-    "logo": "https://static-api-opal.vercel.app/image/maybank-logo.png"
+    "logo": "https://static.kuhandranchatbot.info/image/maybank-logo.png"
   }
 ]

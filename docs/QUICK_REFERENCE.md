@@ -127,7 +127,7 @@ mkdir -p public/collections/en/data
 fetch('/api/v1/pages/en')
 
 // Via external API
-fetch('https://static-api-opal.vercel.app/api/collections/en/data/projects.json')
+fetch('https://static.kuhandranchatbot.info/api/collections/en/data/projects.json')
 ```
 
 ---
@@ -308,7 +308,7 @@ REDIS_URL=redis://...
 
 # Optional
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
-EXTERNAL_API_URL=https://static-api-opal.vercel.app
+EXTERNAL_API_URL=https://static.kuhandranchatbot.info
 ```
 
 ---

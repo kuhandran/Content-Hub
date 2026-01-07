@@ -6,14 +6,14 @@ This guide explains how to integrate your external content API with the Content 
 ## External API Endpoint
 Your content is now available at:
 ```
-https://static-api-opal.vercel.app/api/collections/{language}/data/{contentType}.json
+https://static.kuhandranchatbot.info/api/collections/{language}/data/{contentType}.json
 ```
 
 ### Example URLs
-- Projects: `https://static-api-opal.vercel.app/api/collections/en/data/projects.json`
-- Skills: `https://static-api-opal.vercel.app/api/collections/en/data/skills.json`
-- Experience: `https://static-api-opal.vercel.app/api/collections/en/data/experience.json`
-- Education: `https://static-api-opal.vercel.app/api/collections/en/data/education.json`
+- Projects: `https://static.kuhandranchatbot.info/api/collections/en/data/projects.json`
+- Skills: `https://static.kuhandranchatbot.info/api/collections/en/data/skills.json`
+- Experience: `https://static.kuhandranchatbot.info/api/collections/en/data/experience.json`
+- Education: `https://static.kuhandranchatbot.info/api/collections/en/data/education.json`
 
 ## Supported Languages
 - `en` - English
@@ -97,7 +97,7 @@ console.log(data.data.items);    // Data files
 ```javascript
 // Get a specific content file
 const response = await fetch(
-  'https://static-api-opal.vercel.app/api/collections/en/data/projects.json'
+  'https://static.kuhandranchatbot.info/api/collections/en/data/projects.json'
 );
 const projects = await response.json();
 ```
@@ -116,7 +116,7 @@ export function useContent(language: string, contentType: string) {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `https://static-api-opal.vercel.app/api/collections/${language}/data/${contentType}.json`
+          `https://static.kuhandranchatbot.info/api/collections/${language}/data/${contentType}.json`
         );
         if (!response.ok) throw new Error('Failed to fetch');
         const result = await response.json();
@@ -145,7 +145,7 @@ import { cache } from 'react';
 
 export const getContent = cache(async (language: string, contentType: string) => {
   const response = await fetch(
-    `https://static-api-opal.vercel.app/api/collections/${language}/data/${contentType}.json`,
+    `https://static.kuhandranchatbot.info/api/collections/${language}/data/${contentType}.json`,
     { next: { revalidate: 3600 } } // Cache for 1 hour
   );
   
@@ -200,7 +200,7 @@ REDIS_URL=redis://localhost:6379
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 
 # External Content API
-EXTERNAL_API_URL=https://static-api-opal.vercel.app
+EXTERNAL_API_URL=https://static.kuhandranchatbot.info
 ```
 
 ## Error Handling

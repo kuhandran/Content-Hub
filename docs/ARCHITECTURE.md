@@ -145,7 +145,7 @@ sync:last-result                        → Last sync metadata
 
 #### External API
 ```
-https://static-api-opal.vercel.app/api/collections/{lang}/data/{type}.json
+https://static.kuhandranchatbot.info/api/collections/{lang}/data/{type}.json
 ```
 
 Provides:
