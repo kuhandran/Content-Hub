@@ -1,0 +1,13 @@
+{
+  "placeholder": "Type your message...",
+  "sessionExpiry": "Session will expire in",
+  "sendButton": "Send message",
+  "quickActions": [
+    "Tell me about your projects",
+    "What are your skills?",
+    "Professional experience",
+    "How to contact you?"
+  ],
+  "initialMessage": "Hi! I'm Kuhandran's AI assistant. How can I help you today?",
+  "ariaLabel": "Send message"
+}

@@ -6,9 +6,16 @@
       "nativeName": "English",
       "flag": "🇬🇧",
       "region": "Global",
-      "variants": ["en-GB", "en-US", "en-CA", "en-AU", "en-NZ"],
+      "variants": [
+        "en-GB",
+        "en-US",
+        "en-CA",
+        "en-AU",
+        "en-NZ"
+      ],
       "status": "completed",
-      "lastUpdated": "2025-01-02"
+      "lastUpdated": "2025-01-02",
+      "translationModel": null
     },
     {
       "code": "ar-AE",
@@ -17,7 +24,8 @@
       "flag": "🇦🇪",
       "region": "Middle East",
       "status": "completed",
-      "lastUpdated": "2025-01-02"
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-ar"
     },
     {
       "code": "es",
@@ -26,7 +34,8 @@
       "flag": "🇪🇸",
       "region": "Europe",
       "status": "completed",
-      "lastUpdated": "2025-01-02"
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-es"
     },
     {
       "code": "fr",
@@ -35,7 +44,8 @@
       "flag": "🇫🇷",
       "region": "Europe",
       "status": "completed",
-      "lastUpdated": "2025-01-02"
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-fr"
     },
     {
       "code": "de",
@@ -44,7 +54,8 @@
       "flag": "🇩🇪",
       "region": "Europe",
       "status": "pending",
-      "lastUpdated": null
+      "lastUpdated": null,
+      "translationModel": "Helsinki-NLP/opus-mt-en-de"
     },
     {
       "code": "hi",
@@ -53,7 +64,8 @@
       "flag": "🇮🇳",
       "region": "South Asia",
       "status": "completed",
-      "lastUpdated": "2025-01-02"
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-hi"
     },
     {
       "code": "id",
@@ -62,7 +74,8 @@
       "flag": "🇮🇩",
       "region": "Southeast Asia",
       "status": "completed",
-      "lastUpdated": "2025-01-02"
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-id"
     },
     {
       "code": "my",
@@ -71,7 +84,8 @@
       "flag": "🇲🇾",
       "region": "Southeast Asia",
       "status": "completed",
-      "lastUpdated": "2025-01-02"
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-my"
     },
     {
       "code": "si",
@@ -80,7 +94,8 @@
       "flag": "🇱🇰",
       "region": "South Asia",
       "status": "completed",
-      "lastUpdated": "2025-01-02"
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-si"
     },
     {
       "code": "ta",
@@ -89,7 +104,8 @@
       "flag": "🇮🇳",
       "region": "South Asia",
       "status": "completed",
-      "lastUpdated": "2025-01-02"
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-ta"
     },
     {
       "code": "th",
@@ -98,7 +114,28 @@
       "flag": "🇹🇭",
       "region": "Southeast Asia",
       "status": "completed",
-      "lastUpdated": "2025-01-02"
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-th"
+    },
+    {
+      "code": "zh",
+      "name": "Chinese",
+      "nativeName": "中文",
+      "flag": "🇨🇳",
+      "region": "East Asia",
+      "status": "pending",
+      "lastUpdated": null,
+      "translationModel": "Helsinki-NLP/opus-mt-en-zh"
+    },
+    {
+      "code": "pt",
+      "name": "Portuguese",
+      "nativeName": "Português",
+      "flag": "🇵🇹",
+      "region": "Europe",
+      "status": "pending",
+      "lastUpdated": null,
+      "translationModel": "Helsinki-NLP/opus-mt-tc-big-en-pt"
     }
   ],
   "defaultLanguage": "en",

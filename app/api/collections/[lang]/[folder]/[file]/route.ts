@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/redis-client'
-import { readFile } from 'fs/promises'
-import { join } from 'path'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
@@ -9,7 +7,7 @@ export const dynamic = 'force-dynamic'
 /**
  * GET /api/collections/[lang]/[folder]/[file].json
  * 
- * Fetch collection data by language, folder, and file name
+ * Fetch collection data by language, folder, and file name from Redis
  * 
  * @param lang - Language code (en, es, fr, de, hi, ta, ar-AE, my, id, si, th)
  * @param folder - Folder type (config or data)
@@ -47,37 +45,28 @@ export async function GET(
     // Remove .json extension if it was included
     const fileName = file.endsWith('.json') ? file.slice(0, -5) : file
 
-    // Build Redis key - matches sync service pattern
-    const redisKey = `cms:file:collections/${lang}/${folder}/${fileName}.json`
+    // Get from Redis
+    const content = await redis.getFile(lang, folder, fileName)
 
-    // Try to get from Redis first
-    let data = await redis.get(redisKey)
+    if (!content) {
+      return NextResponse.json(
+        {
+          error: 'File not found',
+          details: `Could not find ${fileName}.json in ${lang}/${folder}`,
+          lang,
+          folder,
+          file: fileName,
+        },
+        { status: 404 }
+      )
+    }
 
-    if (!data) {
-      // If not in Redis, try to read from filesystem
-      try {
-        const filePath = join(process.cwd(), 'public', 'collections', lang, folder, `${fileName}.json`)
-        const content = await readFile(filePath, 'utf-8')
-        data = JSON.parse(content)
-        
-        // Cache in Redis for future requests
-        try {
-          await redis.set(redisKey, data)
-        } catch (e) {
-          // Ignore Redis cache errors
-          console.warn('[API] Warning: Could not cache to Redis:', e)
-        }
-      } catch (fsError) {
-        // File not found in filesystem either
-        return NextResponse.json(
-          {
-            error: 'File not found',
-            details: `Could not find ${fileName}.json in ${lang}/${folder}`,
-            redisKey,
-          },
-          { status: 404 }
-        )
-      }
+    // Try to parse as JSON, otherwise return as string
+    let data
+    try {
+      data = JSON.parse(content)
+    } catch {
+      data = content
     }
 
     // Return the data with CORS headers

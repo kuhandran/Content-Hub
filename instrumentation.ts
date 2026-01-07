@@ -6,18 +6,25 @@
 let syncCompleted = false
 
 export async function register() {
-  if (process.env.NEXT_RUNTIME === 'nodejs' && !syncCompleted) {
+  if (false && process.env.NEXT_RUNTIME === 'nodejs' && !syncCompleted) {
     syncCompleted = true // Prevent multiple syncs
     
     // Dynamic import to avoid issues during build
-    const { performSync } = await import('@/lib/sync-service')
+    const { syncPublicToRedis, isRedisSeeded } = await import('@/lib/sync-service')
     
     try {
       console.log('[SYNC] ═══════════════════════════════════')
       console.log('[SYNC] STARTUP SYNC INITIATED')
       console.log('[SYNC] ═══════════════════════════════════')
       
-      const result = await performSync()
+      // Check if already seeded
+      const seeded = await isRedisSeeded()
+      if (seeded) {
+        console.log('[SYNC] ✓ Redis already seeded, skipping sync')
+      } else {
+        const count = await syncPublicToRedis()
+        console.log(`[SYNC] ✓ Synced ${count} files from /public/collections`)
+      }
       
       console.log('[SYNC] ═══════════════════════════════════')
       console.log('[SYNC] STARTUP COMPLETE')
