@@ -20,40 +20,6 @@ async function isPublicDirAccessible(): Promise<boolean> {
 }
 
 /**
- * Load collections from manifest file (created during build)
- */
-async function loadFromManifest() {
-  try {
-    const manifestPath = join(process.cwd(), '.collections-manifest.json')
-    const manifestContent = await readFile(manifestPath, 'utf-8')
-    const manifest = JSON.parse(manifestContent)
-    
-    let totalFiles = 0
-    
-    for (const lang of Object.keys(manifest)) {
-      await redis.createLanguage(lang)
-      
-      for (const folder of Object.keys(manifest[lang])) {
-        for (const filename of Object.keys(manifest[lang][folder])) {
-          const content = JSON.stringify(manifest[lang][folder][filename])
-          await redis.uploadFile(lang, folder, filename, content)
-          totalFiles++
-        }
-      }
-      
-      const folderCount = Object.keys(manifest[lang]).length
-      const fileCount = Object.values(manifest[lang]).reduce((sum: number, folder: any) => sum + Object.keys(folder).length, 0)
-      console.log(`[SYNC]   ✓ ${lang} (${folderCount} folders, ${fileCount} files)`)
-    }
-    
-    return totalFiles
-  } catch (error) {
-    console.warn('[SYNC] ⚠ Could not load from manifest:', error)
-    return 0
-  }
-}
-
-/**
  * Sync Service - Loads data from public/collections into Redis
  * On Vercel: Uses .collections-manifest.json (created during build)
  * Locally: Reads directly from /public/collections
@@ -63,15 +29,42 @@ export async function syncPublicToRedis() {
   try {
     console.log('[SYNC] Starting sync from /public/collections to Redis...')
     
-    // Try manifest first (for Vercel production)
-    const manifestPath = join(process.cwd(), '.collections-manifest.json')
-    const manifestExists = await access(manifestPath).then(() => true).catch(() => false)
+    // Try manifest files in order of likelihood
+    const possibleManifestPaths = [
+      join(process.cwd(), 'public', '.collections-manifest.json'),  // In /public
+      join(process.cwd(), '.collections-manifest.json'),             // In root
+    ]
     
-    if (manifestExists) {
-      console.log('[SYNC] Loading from .collections-manifest.json...')
-      const totalFiles = await loadFromManifest()
-      console.log(`[SYNC] ✓ Synced ${totalFiles} files from manifest to Redis`)
-      return totalFiles
+    for (const manifestPath of possibleManifestPaths) {
+      try {
+        const manifestContent = await readFile(manifestPath, 'utf-8')
+        const manifest = JSON.parse(manifestContent)
+        
+        console.log('[SYNC] Loading from manifest...')
+        let totalFiles = 0
+        
+        for (const lang of Object.keys(manifest)) {
+          await redis.createLanguage(lang)
+          
+          for (const folder of Object.keys(manifest[lang])) {
+            for (const filename of Object.keys(manifest[lang][folder])) {
+              const content = JSON.stringify(manifest[lang][folder][filename])
+              await redis.uploadFile(lang, folder, filename, content)
+              totalFiles++
+            }
+          }
+          
+          const folderCount = Object.keys(manifest[lang]).length
+          const fileCount = Object.values(manifest[lang]).reduce((sum: number, folder: any) => sum + Object.keys(folder).length, 0)
+          console.log(`[SYNC]   ✓ ${lang} (${folderCount} folders, ${fileCount} files)`)
+        }
+        
+        console.log(`[SYNC] ✓ Synced ${totalFiles} files from manifest to Redis`)
+        return totalFiles
+      } catch (err) {
+        // Continue to next path
+        continue
+      }
     }
     
     // Fallback to filesystem (for local development)

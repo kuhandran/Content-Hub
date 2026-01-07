@@ -56,6 +56,11 @@ async function buildCollectionsManifest() {
 
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify(manifest, null, 2));
     console.log(`[BUILD] ✓ Created .collections-manifest.json with ${Object.keys(manifest).length} languages`);
+    
+    // Also copy to public folder so it's definitely available
+    const publicManifestPath = path.join(PUBLIC_DIR, '.collections-manifest.json');
+    fs.copyFileSync(OUTPUT_FILE, publicManifestPath);
+    console.log(`[BUILD] ✓ Copied manifest to /public/.collections-manifest.json`);
   } catch (error) {
     console.error('[BUILD] ✗ Error building manifest:', error.message);
     process.exit(1);
