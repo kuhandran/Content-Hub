@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
  * GET /api/collections/[lang]/[folder]/[file].json
  * 
  * Fetch collection data by language, folder, and file name
- * Reads from public/collections with Redis cache fallback
+ * Uses pre-loaded in-memory data with Redis cache fallback
  * 
  * @param lang - Language code (en, es, fr, de, hi, ta, ar-AE, my, id, si, th, zh, pt)
  * @param folder - Folder type (config or data)
@@ -17,8 +17,7 @@ export const dynamic = 'force-dynamic'
  * 
  * @example
  * GET /api/collections/en/data/projects.json
- * GET /api/collections/es/data/skills.json
- * GET /api/collections/fr/config/apiConfig.json
+ * GET /api/collections/en/data/contentLabels.json
  */
 export async function GET(
   request: NextRequest,
@@ -75,26 +74,37 @@ export async function GET(
         )
       }
 
-      // Try to fetch from public folder via HTTP
-      try {
-        const baseUrl = request.headers.get('x-forwarded-proto') === 'https' 
-          ? 'https://' + (request.headers.get('x-forwarded-host') || 'localhost:3000')
-          : 'http://localhost:3000'
-        
-        const fileUrl = `${baseUrl}/collections/${lang}/${folder}/${fileName}.json`
-        const response = await fetch(fileUrl)
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch: ${response.status}`)
+      // For English collections, load from in-memory data
+      if (lang === 'en') {
+        // Import and return specific file data
+        if (fileName === 'contentLabels') {
+          const contentLabelsData = await import('@/public/collections/en/data/contentLabels.json')
+          data = contentLabelsData.default || contentLabelsData
+        } else {
+          // Try to dynamically import other files
+          try {
+            const filePath = `@/public/collections/en/${folder}/${fileName}.json`
+            const imported = await import(filePath)
+            data = imported.default || imported
+          } catch (error) {
+            return NextResponse.json(
+              {
+                error: 'File not accessible',
+                details: `Could not load ${fileName}.json`,
+                lang,
+                folder,
+                file: fileName,
+              },
+              { status: 500 }
+            )
+          }
         }
-
-        data = await response.json()
-      } catch (fetchError) {
-        console.error(`Failed to fetch collection file ${lang}/${folder}/${fileName}:`, fetchError)
+      } else {
+        // For other languages, return 404 if not in Redis
         return NextResponse.json(
           {
-            error: 'File not found',
-            details: `Could not read ${fileName}.json from ${lang}/${folder}`,
+            error: 'Language not available',
+            details: `${lang} language data not available in Redis cache`,
             lang,
             folder,
             file: fileName,
