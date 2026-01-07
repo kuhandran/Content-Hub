@@ -50,5 +50,4 @@ Thumbs.db
 
 # TinaCMS (legacy - not used)
 .tina
-admin/
 *.tina.*
