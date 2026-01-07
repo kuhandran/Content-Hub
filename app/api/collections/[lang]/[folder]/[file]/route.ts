@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
  * GET /api/collections/[lang]/[folder]/[file].json
  * 
  * Fetch collection data by language, folder, and file name
- * Uses pre-loaded collection data with Redis cache fallback
+ * Uses lazy-loaded collection data with Redis cache fallback
  * 
  * @param lang - Language code (en, es, fr, de, hi, ta, ar-AE, my, id, si, th, zh, pt)
  * @param folder - Folder type (config or data)
@@ -59,8 +59,8 @@ export async function GET(
         data = content
       }
     } else {
-      // Use pre-loaded collection data
-      data = getCollectionFile(lang, folder as 'config' | 'data', fileName)
+      // Use lazy-loaded collection data
+      data = await getCollectionFile(lang, folder as 'config' | 'data', fileName)
 
       if (!data) {
         return NextResponse.json(
