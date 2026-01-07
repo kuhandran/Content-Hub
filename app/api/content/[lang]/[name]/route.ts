@@ -99,53 +99,15 @@ export async function GET(
       }
     }
 
-    // For English, load from build-time imports
-    if (lang === 'en') {
-      try {
-        let imported
-        
-        if (isDataFile) {
-          // Data files from public/collections/en/data/
-          imported = await import(`@/public/collections/en/data/${name}.json`)
-        } else {
-          // Config files from public/config/
-          imported = await import(`@/public/config/${name}.json`)
-        }
-
-        data = imported.default || imported
-
-        return NextResponse.json(data, {
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Cache-Control': 'public, max-age=86400',
-            'X-Cache-Source': 'build',
-          },
-        })
-      } catch (error) {
-        console.error(`[API] Failed to load ${name}:`, error)
-        return NextResponse.json(
-          { 
-            error: 'Failed to load content',
-            file: name,
-            lang: 'en',
-            details: String(error)
-          },
-          { status: 500 }
-        )
-      }
-    } else {
-      // Language not available (not in Redis cache and not English)
-      return NextResponse.json(
-        { 
-          error: 'Language not available',
-          message: `Content for language "${lang}" is not available. Please sync content or use "en" for English.`,
-          lang,
-          file: name,
-          hint: 'Use /api/admin/sync to sync content for other languages'
-        },
-        { status: 404 }
-      )
-    }
+    // If not in Redis, return 404
+    return NextResponse.json(
+      { 
+        error: 'Content not found',
+        file: name,
+        lang,
+      },
+      { status: 404 }
+    )
   } catch (error) {
     console.error('[API] Error fetching content:', error)
     return NextResponse.json(
