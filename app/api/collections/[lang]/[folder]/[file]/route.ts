@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/redis-client'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
@@ -8,6 +10,7 @@ export const dynamic = 'force-dynamic'
  * GET /api/collections/[lang]/[folder]/[file].json
  * 
  * Fetch collection data by language, folder, and file name from Redis
+ * Falls back to filesystem if not in Redis
  * 
  * @param lang - Language code (en, es, fr, de, hi, ta, ar-AE, my, id, si, th)
  * @param folder - Folder type (config or data)
@@ -45,20 +48,26 @@ export async function GET(
     // Remove .json extension if it was included
     const fileName = file.endsWith('.json') ? file.slice(0, -5) : file
 
-    // Get from Redis
-    const content = await redis.getFile(lang, folder, fileName)
+    // Try to get from Redis first
+    let content = await redis.getFile(lang, folder, fileName)
 
+    // Fallback to filesystem if not in Redis
     if (!content) {
-      return NextResponse.json(
-        {
-          error: 'File not found',
-          details: `Could not find ${fileName}.json in ${lang}/${folder}`,
-          lang,
-          folder,
-          file: fileName,
-        },
-        { status: 404 }
-      )
+      try {
+        const filePath = join(process.cwd(), 'public/collections', lang, folder, `${fileName}.json`)
+        content = readFileSync(filePath, 'utf-8')
+      } catch (error) {
+        return NextResponse.json(
+          {
+            error: 'File not found',
+            details: `Could not find ${fileName}.json in ${lang}/${folder}`,
+            lang,
+            folder,
+            file: fileName,
+          },
+          { status: 404 }
+        )
+      }
     }
 
     // Try to parse as JSON, otherwise return as string
