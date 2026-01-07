@@ -1,6 +1,7 @@
 import { readFile, readdir, access } from 'fs/promises'
 import { join } from 'path'
 import { redis } from './redis-client'
+import { collectionsManifest } from './collections-manifest'
 
 // Resolve PUBLIC_DIR - works in both local and Vercel environments
 function getPublicDir() {
@@ -20,51 +21,47 @@ async function isPublicDirAccessible(): Promise<boolean> {
 }
 
 /**
- * Sync Service - Loads data from public/collections into Redis
- * On Vercel: Uses .collections-manifest.json (created during build)
+ * Sync Service - Loads data from collections manifest into Redis
+ * On Vercel: Uses embedded TypeScript manifest (lib/collections-manifest.ts)
  * Locally: Reads directly from /public/collections
  */
 
 export async function syncPublicToRedis() {
   try {
-    console.log('[SYNC] Starting sync from /public/collections to Redis...')
+    console.log('[SYNC] Starting sync to Redis...')
     
-    // Try manifest files in order of likelihood
-    const possibleManifestPaths = [
-      join(process.cwd(), 'public', '.collections-manifest.json'),  // In /public
-      join(process.cwd(), '.collections-manifest.json'),             // In root
-    ]
-    
-    for (const manifestPath of possibleManifestPaths) {
-      try {
-        const manifestContent = await readFile(manifestPath, 'utf-8')
-        const manifest = JSON.parse(manifestContent)
+    // First try to use embedded manifest (always available on Vercel)
+    try {
+      console.log('[SYNC] Loading from embedded TypeScript manifest...')
+      let totalFiles = 0
+      const manifest = collectionsManifest as Record<string, Record<string, Record<string, any>>>
+      
+      for (const lang of Object.keys(manifest)) {
+        await redis.createLanguage(lang)
         
-        console.log('[SYNC] Loading from manifest...')
-        let totalFiles = 0
-        
-        for (const lang of Object.keys(manifest)) {
-          await redis.createLanguage(lang)
+        const langData = manifest[lang]
+        for (const folder of Object.keys(langData)) {
+          const folderData = langData[folder]
           
-          for (const folder of Object.keys(manifest[lang])) {
-            for (const filename of Object.keys(manifest[lang][folder])) {
-              const content = JSON.stringify(manifest[lang][folder][filename])
-              await redis.uploadFile(lang, folder, filename, content)
-              totalFiles++
-            }
+          for (const filename of Object.keys(folderData)) {
+            const content = JSON.stringify(folderData[filename])
+            await redis.uploadFile(lang, folder as 'config' | 'data', filename, content)
+            totalFiles++
           }
-          
-          const folderCount = Object.keys(manifest[lang]).length
-          const fileCount = Object.values(manifest[lang]).reduce((sum: number, folder: any) => sum + Object.keys(folder).length, 0)
-          console.log(`[SYNC]   ✓ ${lang} (${folderCount} folders, ${fileCount} files)`)
         }
         
-        console.log(`[SYNC] ✓ Synced ${totalFiles} files from manifest to Redis`)
-        return totalFiles
-      } catch (err) {
-        // Continue to next path
-        continue
+        const folderCount = Object.keys(langData).length
+        const fileCount = Object.values(langData).reduce(
+          (sum: number, folder: any) => sum + Object.keys(folder).length,
+          0
+        )
+        console.log(`[SYNC]   ✓ ${lang} (${folderCount} folders, ${fileCount} files)`)
       }
+      
+      console.log(`[SYNC] ✓ Synced ${totalFiles} files from manifest to Redis`)
+      return totalFiles
+    } catch (manifestError) {
+      console.warn('[SYNC] ⚠ Failed to use embedded manifest:', manifestError)
     }
     
     // Fallback to filesystem (for local development)
@@ -106,7 +103,7 @@ export async function syncPublicToRedis() {
             const filename = file.replace('.json', '')
             
             // Upload to Redis
-            await redis.uploadFile(lang, folder, filename, content)
+            await redis.uploadFile(lang, folder as 'config' | 'data', filename, content)
             totalFiles++
           }
           

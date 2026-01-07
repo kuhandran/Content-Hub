@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Build Collections Script
- * Runs during build to embed /public/collections into a JSON file
- * This allows Vercel serverless functions to access the data
+ * Runs during build to:
+ * 1. Create .collections-manifest.json with all collection data
+ * 2. Generate lib/collections-manifest.ts for Vercel deployment
  */
 
 const fs = require('fs');
@@ -10,7 +11,8 @@ const path = require('path');
 
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 const COLLECTIONS_DIR = path.join(PUBLIC_DIR, 'collections');
-const OUTPUT_FILE = path.join(process.cwd(), '.collections-manifest.json');
+const JSON_OUTPUT = path.join(process.cwd(), '.collections-manifest.json');
+const TS_OUTPUT = path.join(process.cwd(), 'lib', 'collections-manifest.ts');
 
 async function buildCollectionsManifest() {
   try {
@@ -54,13 +56,28 @@ async function buildCollectionsManifest() {
       }
     }
 
-    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(manifest, null, 2));
+    // Write JSON manifest
+    fs.writeFileSync(JSON_OUTPUT, JSON.stringify(manifest, null, 2));
     console.log(`[BUILD] ✓ Created .collections-manifest.json with ${Object.keys(manifest).length} languages`);
     
-    // Also copy to public folder so it's definitely available
+    // Copy to public folder
     const publicManifestPath = path.join(PUBLIC_DIR, '.collections-manifest.json');
-    fs.copyFileSync(OUTPUT_FILE, publicManifestPath);
+    fs.copyFileSync(JSON_OUTPUT, publicManifestPath);
     console.log(`[BUILD] ✓ Copied manifest to /public/.collections-manifest.json`);
+    
+    // Generate TypeScript manifest for Vercel deployment
+    const tsCode = `// Auto-generated collections manifest
+// This file is generated during build to embed collection data for Vercel deployment
+// DO NOT EDIT - This file will be overwritten on next build
+
+export const collectionsManifest = ${JSON.stringify(manifest, null, 2)};
+
+export type CollectionsManifestType = typeof collectionsManifest;
+`;
+    
+    fs.writeFileSync(TS_OUTPUT, tsCode);
+    console.log(`[BUILD] ✓ Created lib/collections-manifest.ts`);
+    
   } catch (error) {
     console.error('[BUILD] ✗ Error building manifest:', error.message);
     process.exit(1);
