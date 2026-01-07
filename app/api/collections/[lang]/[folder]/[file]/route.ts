@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/redis-client'
-import { readFileSync } from 'fs'
-import { join } from 'path'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
@@ -9,10 +7,10 @@ export const dynamic = 'force-dynamic'
 /**
  * GET /api/collections/[lang]/[folder]/[file].json
  * 
- * Fetch collection data by language, folder, and file name from Redis
- * Falls back to filesystem if not in Redis
+ * Fetch collection data by language, folder, and file name
+ * Supports both Redis cache and direct file access
  * 
- * @param lang - Language code (en, es, fr, de, hi, ta, ar-AE, my, id, si, th)
+ * @param lang - Language code (en, es, fr, de, hi, ta, ar-AE, my, id, si, th, zh, pt)
  * @param folder - Folder type (config or data)
  * @param file - File name without extension
  * 
@@ -51,12 +49,23 @@ export async function GET(
     // Try to get from Redis first
     let content = await redis.getFile(lang, folder, fileName)
 
-    // Fallback to filesystem if not in Redis
+    // Fallback to dynamic import if not in Redis
     if (!content) {
       try {
-        const filePath = join(process.cwd(), 'public/collections', lang, folder, `${fileName}.json`)
-        content = readFileSync(filePath, 'utf-8')
-      } catch (error) {
+        // Use dynamic import to load the JSON file
+        const filePath = `@/public/collections/${lang}/${folder}/${fileName}.json`
+        const imported = await import(filePath)
+        const data = imported.default || imported
+        
+        return NextResponse.json(data, {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Cache-Control': 'public, max-age=3600',
+          },
+        })
+      } catch (importError) {
         return NextResponse.json(
           {
             error: 'File not found',
@@ -70,7 +79,7 @@ export async function GET(
       }
     }
 
-    // Try to parse as JSON, otherwise return as string
+    // Try to parse as JSON from Redis, otherwise return as string
     let data
     try {
       data = JSON.parse(content)
