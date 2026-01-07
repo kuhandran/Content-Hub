@@ -1,19 +1,13 @@
 import { NextResponse } from 'next/server'
-import { readFileSync } from 'fs'
-import { join } from 'path'
+import languages from '@/lib/config/languages.json'
 
 /**
  * GET /api/v1/config
- * Returns configuration including available languages from languages.json
+ * Returns configuration including available languages
  */
 export async function GET() {
   try {
-    // Read languages from public/config/languages.json
-    const languagesPath = join(process.cwd(), 'public/config/languages.json')
-    const languagesData = readFileSync(languagesPath, 'utf-8')
-    const config = JSON.parse(languagesData)
-
-    return NextResponse.json(config)
+    return NextResponse.json(languages)
   } catch (error) {
     console.error('Error fetching config:', error)
     return NextResponse.json(

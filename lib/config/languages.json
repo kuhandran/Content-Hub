@@ -1,0 +1,106 @@
+[
+  {
+    "code": "en",
+    "name": "English",
+    "nativeName": "English",
+    "flag": "🇬🇧",
+    "translationModel": "none",
+    "status": "active"
+  },
+  {
+    "code": "ar-AE",
+    "name": "Arabic (UAE)",
+    "nativeName": "العربية",
+    "flag": "🇦🇪",
+    "translationModel": "Helsinki-NLP/opus-mt-en-ar",
+    "status": "active"
+  },
+  {
+    "code": "es",
+    "name": "Spanish",
+    "nativeName": "Español",
+    "flag": "🇪🇸",
+    "translationModel": "Helsinki-NLP/opus-mt-en-es",
+    "status": "active"
+  },
+  {
+    "code": "fr",
+    "name": "French",
+    "nativeName": "Français",
+    "flag": "🇫🇷",
+    "translationModel": "Helsinki-NLP/opus-mt-en-fr",
+    "status": "active"
+  },
+  {
+    "code": "de",
+    "name": "German",
+    "nativeName": "Deutsch",
+    "flag": "🇩🇪",
+    "translationModel": "Helsinki-NLP/opus-mt-en-de",
+    "status": "active"
+  },
+  {
+    "code": "hi",
+    "name": "Hindi",
+    "nativeName": "हिंदी",
+    "flag": "🇮🇳",
+    "translationModel": "Helsinki-NLP/opus-mt-en-hi",
+    "status": "active"
+  },
+  {
+    "code": "id",
+    "name": "Indonesian",
+    "nativeName": "Bahasa Indonesia",
+    "flag": "🇮🇩",
+    "translationModel": "Helsinki-NLP/opus-mt-en-id",
+    "status": "active"
+  },
+  {
+    "code": "my",
+    "name": "Malay",
+    "nativeName": "Bahasa Melayu",
+    "flag": "🇲🇾",
+    "translationModel": "Helsinki-NLP/opus-mt-en-my",
+    "status": "active"
+  },
+  {
+    "code": "si",
+    "name": "Sinhala",
+    "nativeName": "සිංහල",
+    "flag": "🇱🇰",
+    "translationModel": "Helsinki-NLP/opus-mt-en-si",
+    "status": "active"
+  },
+  {
+    "code": "ta",
+    "name": "Tamil",
+    "nativeName": "தமிழ்",
+    "flag": "🇮🇳",
+    "translationModel": "Helsinki-NLP/opus-mt-en-ta",
+    "status": "active"
+  },
+  {
+    "code": "th",
+    "name": "Thai",
+    "nativeName": "ไทย",
+    "flag": "🇹🇭",
+    "translationModel": "Helsinki-NLP/opus-mt-en-th",
+    "status": "active"
+  },
+  {
+    "code": "zh",
+    "name": "Chinese (Simplified)",
+    "nativeName": "中文 (简体)",
+    "flag": "🇨🇳",
+    "translationModel": "Helsinki-NLP/opus-mt-en-zh",
+    "status": "pending"
+  },
+  {
+    "code": "pt",
+    "name": "Portuguese",
+    "nativeName": "Português",
+    "flag": "🇵🇹",
+    "translationModel": "Helsinki-NLP/opus-mt-tc-big-en-pt",
+    "status": "pending"
+  }
+]

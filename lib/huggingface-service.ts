@@ -2,12 +2,11 @@
  * Hugging Face API Integration Service
  * Provides chat and translation capabilities
  * 
- * Language models are dynamically loaded from public/config/languages.json
+ * Language models are dynamically loaded from lib/config/languages.json
  * This allows adding new languages without code changes
  */
 
-import * as fs from 'fs'
-import * as path from 'path'
+import languagesData from '@/lib/config/languages.json'
 
 const HUGGINGFACE_API_URL = 'https://api-inference.huggingface.co/models'
 // Updated: Using the correct HF router endpoint with hf-inference path
@@ -47,17 +46,12 @@ export interface LanguageConfig {
  */
 function getConfiguredLanguages(): Record<string, any> {
   try {
-    const configPath = path.join(process.cwd(), 'public/config/languages.json')
-    const configData = fs.readFileSync(configPath, 'utf-8')
-    const config = JSON.parse(configData)
-    
     // Create lookup map: { code: languageObject }
     const langMap: Record<string, any> = {}
-    if (config.languages && Array.isArray(config.languages)) {
-      config.languages.forEach((lang: any) => {
-        langMap[lang.code] = lang
-      })
-    }
+    const languages = Array.isArray(languagesData) ? languagesData : (languagesData as any).languages || []
+    languages.forEach((lang: any) => {
+      langMap[lang.code] = lang
+    })
     return langMap
   } catch (error) {
     console.warn('Failed to load languages.json, using defaults:', error)

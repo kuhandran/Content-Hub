@@ -7,6 +7,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import { translateText, translateJsonContent, getConfiguredLanguages, hasTranslationSupport } from './huggingface-service'
+import languagesData from '@/lib/config/languages.json'
 
 export interface LanguageChecklistItem {
   id: string
@@ -28,7 +29,6 @@ export interface LanguageConfig {
 }
 
 const PUBLIC_DIR = path.join(process.cwd(), 'public/collections')
-const CONFIG_FILE = path.join(process.cwd(), 'public/config/languages.json')
 
 /**
  * Get all configured languages from languages.json
@@ -418,6 +418,8 @@ async function translateJsonFile(jsonData: any, targetLanguage: string): Promise
 
 /**
  * Update languages.json configuration
+ * Note: In serverless environments (Vercel), the config is bundled at build time
+ * This function logs the needed configuration but doesn't persist it
  */
 async function updateLanguagesConfig(
   code: string,
@@ -425,23 +427,22 @@ async function updateLanguagesConfig(
   nativeName: string
 ): Promise<void> {
   try {
-    const configContent = await fs.readFile(CONFIG_FILE, 'utf-8')
-    const config = JSON.parse(configContent)
-
-    // Add new language if not exists
-    if (!config.languages.find((l: any) => l.code === code)) {
-      config.languages.push({
-        code,
-        name,
-        nativeName,
-        enabled: true,
-        addedAt: new Date().toISOString(),
-      })
-
-      await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2))
-    }
+    // In serverless environments, we can't write files at runtime
+    // The languages.json should be updated locally and redeployed
+    console.log(`Language configuration would be added to languages.json:`, {
+      code,
+      name,
+      nativeName,
+      translationModel: `Helsinki-NLP/opus-mt-en-${code}`,
+      status: 'active',
+      addedAt: new Date().toISOString(),
+    })
+    
+    // In development/local environments, we could update the file here
+    // For now, this is handled via the /api/admin/create-language endpoint
+    // which creates the language structure and guides users to update languages.json
   } catch (error) {
-    console.error('Error updating languages config:', error)
-    throw error
+    console.error('Error logging language configuration:', error)
+    // Don't throw in production - config bundling is expected
   }
 }
