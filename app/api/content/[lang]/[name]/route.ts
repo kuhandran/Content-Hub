@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/redis-client'
+import { contentManifest } from '@/lib/content-manifest'
 
 /**
  * GET /api/content/[lang]/[name]
@@ -47,20 +48,17 @@ export async function GET(
 
     let data
 
-    // Determine if it's a data or config file
-    const dataFiles = ['achievements', 'caseStudies', 'caseStudiesTranslations', 'chatConfig', 'defaultContentLabels', 'education', 'errorMessages', 'experience', 'projects', 'skills', 'contentLabels']
-    const configFiles = ['languages', 'pageLayout', 'apiRouting', 'urlConfig', 'apiConfig']
-    
-    const isDataFile = dataFiles.includes(name)
-    const isConfigFile = configFiles.includes(name)
+    // Use manifest to determine file type
+    const isDataFile = contentManifest.isDataFile(name)
+    const isConfigFile = contentManifest.isConfigFile(name)
 
     if (!isDataFile && !isConfigFile) {
       return NextResponse.json(
         { 
           error: 'File not found',
           message: `"${name}" is not a valid config or data file`,
-          availableDataFiles: dataFiles,
-          availableConfigFiles: configFiles
+          availableDataFiles: contentManifest.dataFiles,
+          availableConfigFiles: contentManifest.configFiles
         },
         { status: 404 }
       )
