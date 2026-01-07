@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/redis-client'
+import { getCollectionFile } from '@/lib/collection-data'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
@@ -8,7 +9,7 @@ export const dynamic = 'force-dynamic'
  * GET /api/collections/[lang]/[folder]/[file].json
  * 
  * Fetch collection data by language, folder, and file name
- * Supports both Redis cache and direct file access
+ * Uses pre-loaded collection data with Redis cache fallback
  * 
  * @param lang - Language code (en, es, fr, de, hi, ta, ar-AE, my, id, si, th, zh, pt)
  * @param folder - Folder type (config or data)
@@ -47,25 +48,21 @@ export async function GET(
     const fileName = file.endsWith('.json') ? file.slice(0, -5) : file
 
     // Try to get from Redis first
-    let content = await redis.getFile(lang, folder, fileName)
+    let content = await redis.getFile(lang, folder as 'config' | 'data', fileName)
+    let data
 
-    // Fallback to dynamic import if not in Redis
-    if (!content) {
+    if (content) {
+      // Parse from Redis
       try {
-        // Use dynamic import to load the JSON file
-        const filePath = `@/public/collections/${lang}/${folder}/${fileName}.json`
-        const imported = await import(filePath)
-        const data = imported.default || imported
-        
-        return NextResponse.json(data, {
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-            'Cache-Control': 'public, max-age=3600',
-          },
-        })
-      } catch (importError) {
+        data = JSON.parse(content)
+      } catch {
+        data = content
+      }
+    } else {
+      // Use pre-loaded collection data
+      data = getCollectionFile(lang, folder as 'config' | 'data', fileName)
+
+      if (!data) {
         return NextResponse.json(
           {
             error: 'File not found',
@@ -77,14 +74,6 @@ export async function GET(
           { status: 404 }
         )
       }
-    }
-
-    // Try to parse as JSON from Redis, otherwise return as string
-    let data
-    try {
-      data = JSON.parse(content)
-    } catch {
-      data = content
     }
 
     // Return the data with CORS headers
