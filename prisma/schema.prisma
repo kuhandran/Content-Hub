@@ -6,7 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgres"
+  provider  = "postgres"
+  url       = env("DATABASE_URL")
+  directUrl = env("POSTGRES_URL")
 }
 
 // Chat message model for storing conversation history
