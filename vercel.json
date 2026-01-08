@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "node scripts/setup-database.js && next build",
+  "buildCommand": "node scripts/setup-database.js && npx next build",
   "installCommand": "npm ci",
   "regions": ["iad1"]
 }
