@@ -2,7 +2,7 @@
   "version": 2,
   "framework": "nextjs",
   "installCommand": "npm ci --workspaces",
-  "buildCommand": "npm run setup-db && npm run build --workspaces",
+  "buildCommand": "npm run build --workspaces",
   "regions": ["iad1"],
   "env": {
     "BACKEND_PORT": "3001",
