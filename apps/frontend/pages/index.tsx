@@ -3,14 +3,11 @@
  * Home page
  */
 
-import axios from 'axios';
 import { useState, useEffect } from 'react';
 
 interface ApiStatus {
   status: string;
-  database?: Record<string, number>;
-  public_files?: number;
-  timestamp?: string;
+  message?: string;
 }
 
 export default function Home() {
@@ -25,12 +22,24 @@ export default function Home() {
   const fetchApiStatus = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/admin/operations');
-      setApiStatus(response.data);
+      const response = await fetch('/api');
+      
+      if (!response.ok) {
+        throw new Error(`API returned ${response.status}`);
+      }
+      
+      const data: ApiStatus = await response.json();
+      setApiStatus(data);
       setError(null);
     } catch (err) {
-      setError('Failed to connect to API');
-      console.error(err);
+      let errorMessage = 'Failed to connect to API';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
+      if (typeof err === 'object' && err !== null) {
+        console.error('API Error:', err);
+      }
     } finally {
       setLoading(false);
     }
@@ -72,34 +81,16 @@ export default function Home() {
                 <li>✅ Next.js API Routes</li>
                 <li>✅ Database: Supabase PostgreSQL</li>
                 <li className="pt-2 text-sm font-mono bg-gray-100 p-2 rounded">
-                  {apiStatus?.database && Object.keys(apiStatus.database).length > 0
-                    ? `${Object.keys(apiStatus.database).length} tables`
-                    : 'Checking...'}
+                  {apiStatus?.message || 'Connected'}
                 </li>
               </ul>
             )}
           </div>
         </div>
 
-        {/* API Status */}
-        {apiStatus && (
-          <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">📊 Database Status</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {apiStatus.database &&
-                Object.entries(apiStatus.database).map(([table, count]) => (
-                  <div key={table} className="bg-indigo-50 rounded p-4">
-                    <p className="text-sm text-gray-600 capitalize">{table}</p>
-                    <p className="text-2xl font-bold text-indigo-600">{count}</p>
-                  </div>
-                ))}
-            </div>
-          </div>
-        )}
-
         {/* Operations */}
         <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">🔧 Quick Operations</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">🔧 Quick Actions</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <button
               onClick={fetchApiStatus}
@@ -108,7 +99,7 @@ export default function Home() {
               Refresh Status
             </button>
             <a
-              href="/api/admin/operations"
+              href="/api"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-center"
@@ -116,10 +107,12 @@ export default function Home() {
               View API
             </a>
             <a
-              href="/admin"
+              href="/api/admin/operations"
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded text-center"
             >
-              Admin Dashboard
+              Admin Operations
             </a>
           </div>
         </div>
@@ -132,12 +125,10 @@ export default function Home() {
 ├── apps/
 │   ├── frontend/          (Port 3000 - React UI)
 │   │   ├── pages/
-│   │   ├── components/
-│   │   └── public/
+│   │   └── next.config.js
 │   └── backend/           (Port 3001 - API Routes)
 │       ├── pages/api/
-│       ├── scripts/
-│       └── lib/
+│       └── next.config.js
 ├── package.json           (Workspaces)
 └── vercel.json           (Unified config)`}
           </pre>

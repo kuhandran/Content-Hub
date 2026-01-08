@@ -1,16 +1,17 @@
 /**
- * app/api/admin/sync/route.js
+ * app/api/admin/sync/route.js (MODULAR VERSION)
  * 
- * Bidirectional sync endpoint
+ * Enhanced Bidirectional Sync Endpoint
  * 
  * Modes:
  * - scan: Detect changes in /public folder (new, modified, deleted files)
  * - pull: Apply changes from /public to database
  * - push: Apply changes from database to /public (future)
+ * - status: Get sync status and manifest
  * 
  * Example:
- * POST /api/admin/sync
- * { "mode": "scan" }
+ * POST /api/admin/sync { "mode": "scan" }
+ * GET /api/admin/sync
  * 
  * Response:
  * {

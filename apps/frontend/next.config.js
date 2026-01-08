@@ -18,12 +18,6 @@ const nextConfig = {
   images: {
     domains: ['localhost', 'vercel.app', 'static.kuhandranchatbot.info'],
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
 };
 
 module.exports = nextConfig;
