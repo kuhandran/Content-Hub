@@ -2,7 +2,7 @@
   "version": 2,
   "framework": "nextjs",
   "buildCommand": "npm run frontend:build && ln -sf apps/frontend/.next .next || cp -r apps/frontend/.next .next",
-  "installCommand": "npm ci --workspaces"
+  "installCommand": "npm ci --workspaces --include=dev"
 }
 
 
