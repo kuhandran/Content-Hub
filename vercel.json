@@ -2,13 +2,8 @@
   "version": 2,
   "framework": "nextjs",
   "buildCommand": "npm run frontend:build",
-  "installCommand": "npm ci --workspaces",
-  "projectSettings": {
-    "sourceFilesOutsideRootDirectory": true
-  },
-  "env": {
-    "NEXT_PUBLIC_API_URL": "http://localhost:3001"
-  }
+  "installCommand": "npm ci --workspaces"
 }
+
 
 
