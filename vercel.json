@@ -8,17 +8,5 @@
     "BACKEND_PORT": "3001",
     "FRONTEND_PORT": "3000",
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "apps/backend/pages/api/**": {
-      "memory": 1024,
-      "maxDuration": 60
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "http://localhost:3001/api/:path*"
-    }
-  ]
+  }
 }

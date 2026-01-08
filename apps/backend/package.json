@@ -1,0 +1,18 @@
+{
+  "name": "content-hub-backend",
+  "version": "1.0.0",
+  "description": "Content Hub Backend API",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "setup-db": "node scripts/setup-database.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0",
+    "dotenv": "^16.3.1",
+    "next": "^15.5.9",
+    "pg": "^8.16.3"
+  }
+}
