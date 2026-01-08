@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # Backend API Server
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - BACKEND_PORT=3001
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - POSTGRES_URL=${POSTGRES_URL}
+    volumes:
+      - ./apps/backend:/app/backend
+      - ./public:/app/public
+      - backend_node_modules:/app/backend/node_modules
+    command: npm run backend:dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/admin/operations"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Frontend UI Server
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - FRONTEND_PORT=3000
+      - NEXT_PUBLIC_API_URL=http://backend:3001
+    volumes:
+      - ./apps/frontend:/app/frontend
+      - frontend_node_modules:/app/frontend/node_modules
+    command: npm run frontend:dev
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  backend_node_modules:
+  frontend_node_modules:
+
+networks:
+  default:
+    name: content-hub-network
