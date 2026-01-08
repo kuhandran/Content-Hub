@@ -1,6 +1,4 @@
 {
-  "version": 2,
-  "framework": "nextjs",
-  "buildCommand": "npm run frontend:build",
-  "installCommand": "npm ci --workspaces"
+  "version": 2
 }
+
