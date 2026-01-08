@@ -9,7 +9,10 @@
   },
   "scripts": {
     "setup-db": "node scripts/setup-database.js",
-    "test": "node -e \"console.log('Tests placeholder')\""
+    "test": "node -e \"console.log('Tests placeholder')\"",
+    "build": "next build",
+    "dev": "next dev",
+    "start": "next start"
   },
   "keywords": [
     "cms",
@@ -24,6 +27,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.38.0",
     "dotenv": "^17.2.3",
+    "next": "^15.0.0",
     "pg": "^8.16.3",
     "redis": "^4.6.0"
   },
