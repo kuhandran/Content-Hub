@@ -1,6 +1,6 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "installCommand": "npm ci --workspaces --prefix=../.."
+  "buildCommand": "npm run build --workspace=apps/frontend",
+  "installCommand": "npm ci --workspaces"
 }
