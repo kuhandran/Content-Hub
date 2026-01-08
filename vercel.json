@@ -1,6 +1,5 @@
 {
   "version": 2,
   "buildCommand": "npm run frontend:build",
-  "installCommand": "npm ci --workspaces",
-  "outputDirectory": "apps/frontend/.next"
+  "installCommand": "npm ci --workspaces"
 }
