@@ -1,44 +1,11 @@
 {
   "version": 2,
-  "framework": "nextjs",
+  "buildCommand": "npm run setup-db",
   "installCommand": "npm ci",
-  "buildCommand": "npm run build",
-  "rewrites": [
-    {
-      "source": "/collections/:lang/:folder/:file",
-      "destination": "/collections/:lang/:folder/:file"
+  "functions": {
+    "app/api/**": {
+      "maxDuration": 60
     }
-  ],
-  "headers": [
-    {
-      "source": "/collections/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Cache-Control", "value": "public, max-age=3600" }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS, PATCH" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With" },
-        { "key": "Cache-Control", "value": "public, max-age=3600" }
-      ]
-    },
-    {
-      "source": "/admin/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" }
-      ]
-    }
-  ],
+  },
   "regions": ["iad1"]
 }
