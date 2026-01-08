@@ -1,11 +1,6 @@
 {
   "version": 2,
-  "framework": "nextjs",
   "buildCommand": "npm run frontend:build",
   "installCommand": "npm ci --workspaces",
-  "outputDirectory": "apps/frontend/.next",
-  "rootDirectory": "apps/frontend",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://content-hub-api.vercel.app"
-  }
+  "outputDirectory": "apps/frontend/.next"
 }
