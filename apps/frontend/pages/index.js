@@ -17,14 +17,11 @@ export default function Home() {
   const fetchApiStatus = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api');
-      
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setApiStatus(data);
+      // API is not available in this frontend-only deployment
+      setApiStatus({ 
+        status: 'info', 
+        message: 'Frontend deployed successfully - Backend API separate deployment'
+      });
       setError(null);
     } catch (err) {
       let errorMessage = 'Failed to connect to API';
