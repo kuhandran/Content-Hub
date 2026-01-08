@@ -1,5 +1,5 @@
 /**
- * apps/frontend/pages/_document.tsx
+ * apps/frontend/pages/_document.jsx
  * Root document component for Next.js
  */
 

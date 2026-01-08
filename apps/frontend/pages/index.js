@@ -1,19 +1,14 @@
 /**
- * apps/frontend/pages/index.tsx
+ * apps/frontend/pages/index.jsx
  * Home page
  */
 
 import { useState, useEffect } from 'react';
 
-interface ApiStatus {
-  status: string;
-  message?: string;
-}
-
 export default function Home() {
-  const [apiStatus, setApiStatus] = useState<ApiStatus | null>(null);
+  const [apiStatus, setApiStatus] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchApiStatus();
@@ -28,7 +23,7 @@ export default function Home() {
         throw new Error(`API returned ${response.status}`);
       }
       
-      const data: ApiStatus = await response.json();
+      const data = await response.json();
       setApiStatus(data);
       setError(null);
     } catch (err) {
