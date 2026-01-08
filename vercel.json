@@ -1,8 +1,10 @@
 {
   "version": 2,
+  "framework": "nextjs",
   "buildCommand": "npm run frontend:build && cp -r apps/frontend/.next .next",
   "installCommand": "npm ci --workspaces"
 }
+
 
 
 
