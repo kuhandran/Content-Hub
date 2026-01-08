@@ -1,36 +1,40 @@
 {
-  "name": "content-hub",
+  "name": "content-hub-monorepo",
   "version": "2.0.0",
-  "description": "Next.js Content Management Hub with Redis KV storage",
-  "main": "app/api/index.ts",
+  "description": "Content Hub - Monorepo with Backend API and Frontend",
+  "private": true,
+  "workspaces": [
+    "apps/backend",
+    "apps/frontend"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/kuhandran/Content-Hub.git"
   },
   "scripts": {
-    "setup-db": "node scripts/setup-database.js",
-    "test": "node -e \"console.log('Tests placeholder')\"",
-    "build": "next build",
-    "dev": "next dev",
-    "start": "next start"
+    "install": "npm ci --workspaces",
+    "dev": "npm run dev --workspaces",
+    "build": "npm run build --workspaces",
+    "start": "npm start --workspaces",
+    "backend:dev": "npm run dev --workspace=apps/backend",
+    "backend:build": "npm run build --workspace=apps/backend",
+    "backend:start": "npm start --workspace=apps/backend",
+    "frontend:dev": "npm run dev --workspace=apps/frontend",
+    "frontend:build": "npm run build --workspace=apps/frontend",
+    "frontend:start": "npm start --workspace=apps/frontend",
+    "setup-db": "npm run setup-db --workspace=apps/backend",
+    "test": "npm test --workspaces"
   },
   "keywords": [
     "cms",
     "content-hub",
     "next.js",
     "react",
-    "redis",
-    "app-router"
+    "api",
+    "monorepo"
   ],
   "author": "kuhandran",
   "license": "MIT",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.38.0",
-    "dotenv": "^17.2.3",
-    "next": "^15.0.0",
-    "pg": "^8.16.3",
-    "redis": "^4.6.0"
-  },
   "engines": {
     "node": ">=18.x",
     "npm": ">=9.x"
