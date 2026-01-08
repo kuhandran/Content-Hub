@@ -1,12 +1,11 @@
 {
   "version": 2,
   "framework": "nextjs",
+  "buildCommand": "npm run frontend:build",
   "installCommand": "npm ci --workspaces",
-  "buildCommand": "npm run build --workspaces",
-  "regions": ["iad1"],
+  "outputDirectory": "apps/frontend/.next",
+  "rootDirectory": "apps/frontend",
   "env": {
-    "BACKEND_PORT": "3001",
-    "FRONTEND_PORT": "3000",
-    "NODE_ENV": "production"
+    "NEXT_PUBLIC_API_URL": "https://content-hub-api.vercel.app"
   }
 }
