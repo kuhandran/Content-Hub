@@ -12,7 +12,6 @@
     "url": "https://github.com/kuhandran/Content-Hub.git"
   },
   "scripts": {
-    "install": "npm ci --workspaces",
     "dev": "npm run dev --workspaces",
     "build": "npm run build --workspaces",
     "start": "npm start --workspaces",
