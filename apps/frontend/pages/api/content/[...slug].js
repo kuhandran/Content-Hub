@@ -1,6 +1,6 @@
-import sql from '../../../../lib/db';
-import { logRequest, logResponse, logError, logDatabase } from '../../../../lib/logger';
-import { getExtension, getContentTypeByExt } from '../../../../lib/url-utils';
+import sql from '../../../lib/db';
+import { logRequest, logResponse, logError, logDatabase } from '../../../lib/logger';
+import { getExtension, getContentTypeByExt } from '../../../lib/url-utils';
 
 export default async function handler(req, res) {
   logRequest(req, { endpoint: '/api/content/[...slug]' });
