@@ -163,6 +163,7 @@ async function handleCreateDB(res) {
       id SERIAL PRIMARY KEY,
       filename TEXT NOT NULL,
       filecontent TEXT,
+      is_base64 BOOLEAN DEFAULT false,
       created_at TIMESTAMP DEFAULT NOW()
     )` },
     { name: 'js', schema: `CREATE TABLE IF NOT EXISTS js (
@@ -175,6 +176,7 @@ async function handleCreateDB(res) {
       id SERIAL PRIMARY KEY,
       filename TEXT NOT NULL,
       filecontent TEXT,
+      is_base64 BOOLEAN DEFAULT false,
       created_at TIMESTAMP DEFAULT NOW()
     )` },
   ];

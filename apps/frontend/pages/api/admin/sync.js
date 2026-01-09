@@ -208,12 +208,7 @@ async function syncFolder(res, folderName, tableName) {
 
     const files = fs.readdirSync(folderPath).filter(f => {
       const stat = fs.statSync(path.join(folderPath, f));
-      if (!stat.isFile()) return false;
-      
-      // Skip binary files - only sync text-based files
-      const textExtensions = ['.json', '.html', '.xml', '.js', '.svg', '.txt', '.css', '.md'];
-      const fileExt = path.extname(f).toLowerCase();
-      return textExtensions.includes(fileExt);
+      return stat.isFile();
     });
 
     if (files.length === 0) {
@@ -248,14 +243,42 @@ async function syncFolder(res, folderName, tableName) {
       for (const file of batch) {
         try {
           const filePath = path.join(folderPath, file);
-          const filecontent = fs.readFileSync(filePath, 'utf8');
+          const fileExt = path.extname(file).toLowerCase();
+          
+          // Check if file is binary
+          const binaryExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.pdf', '.zip', '.exe', '.bin'];
+          const isBinary = binaryExtensions.includes(fileExt);
+          
+          let filecontent;
+          let isBase64 = false;
+          
+          if (isBinary) {
+            // Read binary file and convert to base64
+            const buffer = fs.readFileSync(filePath);
+            filecontent = buffer.toString('base64');
+            isBase64 = true;
+          } else {
+            // Read text file as-is
+            filecontent = fs.readFileSync(filePath, 'utf8');
+            isBase64 = false;
+          }
 
           syncState.currentFile++;
 
-          await sql`
-            INSERT INTO ${sql(tableName)} (filename, filecontent)
-            VALUES (${file}, ${filecontent})
-          `;
+          // Check if table has is_base64 column (image and resume do)
+          const hasBase64Column = ['image', 'resume'].includes(tableName);
+          
+          if (hasBase64Column) {
+            await sql`
+              INSERT INTO ${sql(tableName)} (filename, filecontent, is_base64)
+              VALUES (${file}, ${filecontent}, ${isBase64})
+            `;
+          } else {
+            await sql`
+              INSERT INTO ${sql(tableName)} (filename, filecontent)
+              VALUES (${file}, ${filecontent})
+            `;
+          }
 
           totalInserted++;
           console.log(`[SYNC] ${folderName}: ${syncState.currentFile}/${syncState.totalFiles}`);
