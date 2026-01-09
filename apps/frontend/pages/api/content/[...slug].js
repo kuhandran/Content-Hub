@@ -71,12 +71,22 @@ export default async function handler(req, res) {
     }
 
     logDatabase('SELECT', table, { name });
-    const rows = await sql`
-      SELECT filename, filecontent, ${table === 'image' || table === 'resume' ? sql`is_base64` : sql``}
-      FROM ${sql(table)}
-      WHERE filename LIKE ${name + '.%'}
-      LIMIT 1
-    `;
+    let rows;
+    if (table === 'image' || table === 'resume') {
+      rows = await sql`
+        SELECT filename, filecontent, is_base64
+        FROM ${sql(table)}
+        WHERE filename LIKE ${name + '.%'}
+        LIMIT 1
+      `;
+    } else {
+      rows = await sql`
+        SELECT filename, filecontent
+        FROM ${sql(table)}
+        WHERE filename LIKE ${name + '.%'}
+        LIMIT 1
+      `;
+    }
 
     if (!rows || rows.length === 0) {
       const errorResponse = { status: 'error', message: 'Not found' };
