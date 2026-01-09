@@ -15,36 +15,19 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { createClient } = require('@supabase/supabase-js');
 const { NextResponse } = require('next/server');
-
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
+const dbop = require('../../../../lib/dbop');
+const { mapFileToTable, getFileExtension, ALLOWED_EXTENSIONS, IGNORED_DIRS, getPublicDir } = require('../../../../lib/sync-config');
 
 // Utility functions
 function calculateHash(content) {
   return crypto.createHash('sha256').update(content).digest('hex');
 }
 
-function getFileExtension(filename) {
-  return path.extname(filename).toLowerCase().slice(1) || 'unknown';
-}
-
-function determineFileType(filePath) {
-  if (filePath.includes('/collections/')) return { table: 'collections', fileType: 'json' };
-  if (filePath.includes('/files/')) return { table: 'static_files', fileType: getFileExtension(filePath) };
-  if (filePath.includes('/config/')) return { table: 'config_files', fileType: getFileExtension(filePath) };
-  if (filePath.includes('/data/')) return { table: 'data_files', fileType: getFileExtension(filePath) };
-  if (filePath.includes('/image/')) return { table: 'images', fileType: getFileExtension(filePath) };
-  if (filePath.includes('/js/')) return { table: 'javascript_files', fileType: 'js' };
-  if (filePath.includes('/resume/')) return { table: 'resumes', fileType: getFileExtension(filePath) };
-  return { table: 'unknown', fileType: getFileExtension(filePath) };
-}
+// file type mapping and extension helpers now centralized in lib/sync-config
 
 // OPERATION 1: Create Database Tables
-async function createDB() {
+async function createDB(supabase) {
   console.log('📊 Creating database tables...');
   
   const schema = `
@@ -75,8 +58,184 @@ async function createDB() {
   return { status: 'success', operation: 'createdb', tables: 8, statements_executed: created };
 }
 
+// Postgres-native implementations
+async function createDBPg(sqlClient) {
+  console.log('📊 Creating database tables (Postgres)...');
+  const statements = [
+    `CREATE TABLE IF NOT EXISTS collections (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), lang VARCHAR(10), type VARCHAR(20), filename VARCHAR(255), file_content JSONB, file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now(), UNIQUE(lang, type, filename))`,
+    `CREATE TABLE IF NOT EXISTS static_files (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), filename VARCHAR(255) UNIQUE, file_type VARCHAR(50), file_content TEXT, file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS config_files (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), filename VARCHAR(255) UNIQUE, file_type VARCHAR(50), file_content JSONB, file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS data_files (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), filename VARCHAR(255) UNIQUE, file_type VARCHAR(50), file_content JSONB, file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS images (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), filename VARCHAR(255) UNIQUE, file_path VARCHAR(512), mime_type VARCHAR(50), file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS resumes (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), filename VARCHAR(255) UNIQUE, file_type VARCHAR(50), file_path VARCHAR(512), file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS javascript_files (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), filename VARCHAR(255) UNIQUE, file_path VARCHAR(512), file_content TEXT, file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS sync_manifest (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), file_path VARCHAR(512) UNIQUE, file_hash VARCHAR(64), table_name VARCHAR(50), last_synced TIMESTAMP DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS idx_collections_lang ON collections(lang)`,
+    `CREATE INDEX IF NOT EXISTS idx_sync_manifest_path ON sync_manifest(file_path)`
+  ];
+  let created = 0;
+  for (const stmt of statements) {
+    try {
+      await sqlClient.unsafe(stmt);
+      created++;
+    } catch (err) {
+      console.warn('⚠️', err.message);
+    }
+  }
+  return { status: 'success', operation: 'createdb', statements_executed: created };
+}
+
+async function deleteDBPg(sqlClient) {
+  console.log('🗑️  Deleting all data (Postgres)...');
+  const tables = ['sync_manifest', 'collections', 'static_files', 'config_files', 'data_files', 'images', 'resumes', 'javascript_files'];
+  let cleared = 0;
+  for (const table of tables) {
+    try {
+      await sqlClient.unsafe(`DELETE FROM ${table}`);
+      cleared++;
+    } catch (err) {
+      console.warn('⚠️ ', table, err.message);
+    }
+  }
+  return { status: 'success', operation: 'deletedb', tables_cleared: cleared };
+}
+
+async function getStatusPg(sqlClient) {
+  const tables = ['collections', 'static_files', 'config_files', 'data_files', 'images', 'resumes', 'javascript_files', 'sync_manifest'];
+  const stats = {};
+  for (const t of tables) {
+    try {
+      const rows = await sqlClient`SELECT COUNT(*)::int AS count FROM ${sqlClient(t)}`;
+      stats[t] = rows?.[0]?.count || 0;
+    } catch (err) {
+      stats[t] = 0;
+    }
+  }
+  const publicFiles = scanPublicFolder();
+  return { status: 'success', operation: 'status', database: stats, public_folder_files: publicFiles.length, timestamp: new Date().toISOString() };
+}
+
+async function syncPublicPg(sqlClient) {
+  console.log('🔄 Syncing /public (Postgres)...');
+  const files = scanPublicFolder();
+  const changes = { new: 0, modified: 0, deleted: 0 };
+  try {
+    const manifest = await sqlClient`SELECT file_path, file_hash, table_name FROM sync_manifest`;
+    const manifestMap = new Map((manifest || []).map(m => [m.file_path, m]));
+    for (const file of files) {
+      const entry = manifestMap.get(file.relativePath);
+      if (!entry) changes.new++; else if (entry.file_hash !== file.hash) changes.modified++;
+    }
+    for (const [filePath] of manifestMap) {
+      if (!files.find(f => f.relativePath === filePath)) changes.deleted++;
+    }
+  } catch (err) {
+    return { status: 'error', operation: 'syncopublic', error: err.message };
+  }
+  return { status: 'success', operation: 'syncopublic', files_scanned: files.length, changes };
+}
+
+async function pumpDataPg(sqlClient) {
+  console.log('📥 Pumping data (Postgres)...');
+  const files = scanPublicFolder();
+  let loaded = 0;
+  for (const file of files) {
+    const filename = path.basename(file.relativePath, path.extname(file.relativePath));
+    const ext = getFileExtension(file.relativePath);
+    const now = new Date().toISOString();
+    // sync_manifest upsert
+    try {
+      await sqlClient`
+        INSERT INTO sync_manifest (file_path, file_hash, table_name, last_synced)
+        VALUES (${file.relativePath}, ${file.hash}, ${file.table}, ${now})
+        ON CONFLICT (file_path) DO UPDATE SET file_hash = EXCLUDED.file_hash, table_name = EXCLUDED.table_name, last_synced = EXCLUDED.last_synced
+      `;
+    } catch {}
+    try {
+      switch (file.table) {
+        case 'collections': {
+          const parts = file.relativePath.split(path.sep);
+          const langIdx = parts.findIndex(p => p === 'collections');
+          if (langIdx !== -1 && langIdx + 2 < parts.length) {
+            const lang = parts[langIdx + 1];
+            const type = parts[langIdx + 2];
+            const content = JSON.parse(file.content);
+            await sqlClient`
+              INSERT INTO collections (lang, type, filename, file_content, file_hash, synced_at)
+              VALUES (${lang}, ${type}, ${filename}, ${sqlClient.json(content)}, ${file.hash}, ${now})
+              ON CONFLICT (lang, type, filename)
+              DO UPDATE SET file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            loaded++;
+          }
+          break;
+        }
+        case 'static_files': {
+          await sqlClient`
+            INSERT INTO static_files (filename, file_type, file_content, file_hash, synced_at)
+            VALUES (${filename}, ${ext}, ${file.content}, ${file.hash}, ${now})
+            ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+          `;
+          loaded++;
+          break;
+        }
+        case 'config_files': {
+          const content = JSON.parse(file.content);
+          await sqlClient`
+            INSERT INTO config_files (filename, file_type, file_content, file_hash, synced_at)
+            VALUES (${filename}, ${ext}, ${sqlClient.json(content)}, ${file.hash}, ${now})
+            ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+          `;
+          loaded++;
+          break;
+        }
+        case 'data_files': {
+          const content = JSON.parse(file.content);
+          await sqlClient`
+            INSERT INTO data_files (filename, file_type, file_content, file_hash, synced_at)
+            VALUES (${filename}, ${ext}, ${sqlClient.json(content)}, ${file.hash}, ${now})
+            ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+          `;
+          loaded++;
+          break;
+        }
+        case 'images': {
+          await sqlClient`
+            INSERT INTO images (filename, file_path, mime_type, file_hash, synced_at)
+            VALUES (${filename}, ${file.relativePath}, ${`image/${ext}`}, ${file.hash}, ${now})
+            ON CONFLICT (filename) DO UPDATE SET file_path = EXCLUDED.file_path, mime_type = EXCLUDED.mime_type, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+          `;
+          loaded++;
+          break;
+        }
+        case 'resumes': {
+          await sqlClient`
+            INSERT INTO resumes (filename, file_type, file_path, file_hash, synced_at)
+            VALUES (${filename}, ${ext}, ${file.relativePath}, ${file.hash}, ${now})
+            ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_path = EXCLUDED.file_path, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+          `;
+          loaded++;
+          break;
+        }
+        case 'javascript_files': {
+          await sqlClient`
+            INSERT INTO javascript_files (filename, file_path, file_content, file_hash, synced_at)
+            VALUES (${filename}, ${file.relativePath}, ${file.content}, ${file.hash}, ${now})
+            ON CONFLICT (filename) DO UPDATE SET file_path = EXCLUDED.file_path, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+          `;
+          loaded++;
+          break;
+        }
+      }
+    } catch (err) {
+      console.error('❌', file.table, err.message);
+    }
+  }
+  return { status: 'success', operation: 'pumpdata', files_scanned: files.length, tables_loaded: loaded };
+}
+
 // OPERATION 2: Delete Database (Clear all data)
-async function deleteDB() {
+async function deleteDB(supabase) {
   console.log('🗑️  Deleting all data...');
   
   const tables = ['sync_manifest', 'collections', 'static_files', 'config_files', 'data_files', 'images', 'resumes', 'javascript_files'];
@@ -96,7 +255,7 @@ async function deleteDB() {
 
 // OPERATION 3: Scan /public folder
 function scanPublicFolder() {
-  const publicPath = path.join(process.cwd(), 'public');
+  const publicPath = getPublicDir();
   const files = [];
 
   function walkDir(dirPath) {
@@ -108,13 +267,13 @@ function scanPublicFolder() {
       const relativePath = path.relative(publicPath, fullPath);
 
       if (entry.isDirectory()) {
-        if (!['.next', 'node_modules', '.git'].includes(entry.name)) walkDir(fullPath);
+        if (!IGNORED_DIRS.includes(entry.name)) walkDir(fullPath);
       } else {
-        if (['.json', '.js', '.xml', '.html', '.txt', '.pdf', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.docx'].includes(path.extname(fullPath))) {
+        if (ALLOWED_EXTENSIONS.includes(path.extname(fullPath).toLowerCase())) {
           try {
             const content = fs.readFileSync(fullPath, 'utf-8');
             const hash = calculateHash(content);
-            const { table, fileType } = determineFileType(fullPath);
+            const { table, fileType } = mapFileToTable(fullPath);
 
             if (table !== 'unknown') {
               files.push({ path: fullPath, relativePath, content, hash, table, fileType });
@@ -132,7 +291,7 @@ function scanPublicFolder() {
 }
 
 // OPERATION 4: Pump Data
-async function pumpData() {
+async function pumpData(supabase) {
   console.log('📥 Pumping data...');
   
   const files = scanPublicFolder();
@@ -212,7 +371,7 @@ async function pumpData() {
 }
 
 // OPERATION 5: Sync Public
-async function syncPublic() {
+async function syncPublic(supabase) {
   console.log('🔄 Syncing /public...');
   
   const files = scanPublicFolder();
@@ -244,7 +403,7 @@ async function syncPublic() {
 }
 
 // OPERATION 6: System Status
-async function getStatus() {
+async function getStatus(supabase) {
   try {
     const tables = ['collections', 'static_files', 'config_files', 'data_files', 'images', 'resumes', 'javascript_files', 'sync_manifest'];
     const stats = {};
@@ -269,9 +428,17 @@ async function getStatus() {
 }
 
 // Main handler
-async function POST(request) {
+export async function POST(request) {
   console.log('[ADMIN OPERATIONS] POST request received');
   try {
+    const vercelId = request.headers?.get?.('x-vercel-id');
+    const region = process.env.VERCEL_REGION || 'unknown-region';
+    const env = process.env.VERCEL_ENV || (process.env.NODE_ENV || 'development');
+    console.log('[ADMIN OPERATIONS] Env', { vercelId, region, env });
+    const { mode, sql, supabase } = dbop.db();
+    const useSql = mode === 'postgres';
+    console.log('[ADMIN OPERATIONS] DB mode', { mode });
+
     const body = await request.json();
     const { operation, batch } = body;
     console.log('[ADMIN OPERATIONS] Operation:', operation, 'Batch:', batch);
@@ -283,11 +450,19 @@ async function POST(request) {
         let result;
         try {
           switch (op.toLowerCase()) {
-            case 'createdb': result = await createDB(); break;
-            case 'deletedb': result = await deleteDB(); break;
-            case 'pumpdata': result = await pumpData(); break;
-            case 'syncopublic': result = await syncPublic(); break;
-            case 'status': result = await getStatus(); break;
+            case 'createdb': result = await dbop.createdb(); break;
+            case 'deletedb': result = await dbop.deletedb(); break;
+            case 'pumpdata': result = useSql ? await pumpDataPg(sql) : await pumpData(supabase); break;
+            case 'syncopublic': result = useSql ? await syncPublicPg(sql) : await syncPublic(supabase); break;
+            case 'status': {
+              const stats = {};
+              for (const t of dbop.TABLES) {
+                stats[t] = await dbop.count(t);
+              }
+              const publicFiles = scanPublicFolder();
+              result = { status: 'success', operation: 'status', database: stats, public_folder_files: publicFiles.length, timestamp: new Date().toISOString() };
+              break;
+            }
             default: result = { status: 'error', operation: op, error: 'Unknown operation' };
           }
           console.log('[ADMIN OPERATIONS] Batch operation result:', result);
@@ -311,11 +486,19 @@ async function POST(request) {
     let result;
     try {
       switch (operation?.toLowerCase()) {
-        case 'createdb': result = await createDB(); break;
-        case 'deletedb': result = await deleteDB(); break;
-        case 'pumpdata': result = await pumpData(); break;
-        case 'syncopublic': result = await syncPublic(); break;
-        case 'status': result = await getStatus(); break;
+        case 'createdb': result = await dbop.createdb(); break;
+        case 'deletedb': result = await dbop.deletedb(); break;
+        case 'pumpdata': result = useSql ? await pumpDataPg(sql) : await pumpData(supabase); break;
+        case 'syncopublic': result = useSql ? await syncPublicPg(sql) : await syncPublic(supabase); break;
+        case 'status': {
+          const stats = {};
+          for (const t of dbop.TABLES) {
+            stats[t] = await dbop.count(t);
+          }
+          const publicFiles = scanPublicFolder();
+          result = { status: 'success', operation: 'status', database: stats, public_folder_files: publicFiles.length, timestamp: new Date().toISOString() };
+          break;
+        }
         default: throw new Error('Unknown operation. Use: createdb, deletedb, pumpdata, syncopublic, status');
       }
       console.log('[ADMIN OPERATIONS] Operation result:', result);
@@ -339,7 +522,7 @@ async function POST(request) {
   }
 }
 
-async function GET() {
+export async function GET() {
   return NextResponse.json({
     status: 'success',
     message: 'Admin Operations API',
@@ -357,4 +540,3 @@ async function GET() {
   });
 }
 
-module.exports = { POST, GET };

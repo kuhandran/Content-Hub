@@ -30,57 +30,20 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { NextResponse } = require('next/server');
-const { createClient } = require('@supabase/supabase-js');
-
-function getSupabaseClient() {
-  const url = process.env.SUPABASE_URL || '';
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-  if (!url || !key) {
-    throw new Error('Supabase configuration missing: set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
-  }
-  return createClient(url, key);
-}
+const { getSupabase } = require('../../../../lib/supabase');
+const { mapFileToTable, getFileExtension, ALLOWED_EXTENSIONS, IGNORED_DIRS, getPublicDir } = require('../../../../lib/sync-config');
+const sql = require('../../../../lib/postgres');
 
 // Utility functions
 function calculateHash(content) {
   return crypto.createHash('sha256').update(content).digest('hex');
 }
 
-function getFileExtension(filename) {
-  return path.extname(filename).toLowerCase().slice(1) || 'unknown';
-}
-
-function determineFileType(filePath) {
-  if (filePath.includes('/collections/')) {
-    return { table: 'collections', fileType: 'json' };
-  }
-  if (filePath.includes('/files/')) {
-    const ext = getFileExtension(filePath);
-    return { table: 'static_files', fileType: ext };
-  }
-  if (filePath.includes('/config/')) {
-    const ext = getFileExtension(filePath);
-    return { table: 'config_files', fileType: ext };
-  }
-  if (filePath.includes('/data/')) {
-    const ext = getFileExtension(filePath);
-    return { table: 'data_files', fileType: ext };
-  }
-  if (filePath.includes('/image/')) {
-    return { table: 'images', fileType: getFileExtension(filePath) };
-  }
-  if (filePath.includes('/js/')) {
-    return { table: 'javascript_files', fileType: 'js' };
-  }
-  if (filePath.includes('/resume/')) {
-    return { table: 'resumes', fileType: getFileExtension(filePath) };
-  }
-  return { table: 'unknown', fileType: getFileExtension(filePath) };
-}
+// file type mapping and extension helpers now provided by lib/sync-config
 
 // Scan /public folder
 function scanPublicFolder() {
-  const publicPath = path.join(process.cwd(), 'public');
+  const publicPath = getPublicDir();
   const fileMap = new Map();
 
   function walkDir(dirPath) {
@@ -93,15 +56,15 @@ function scanPublicFolder() {
       const relativePath = path.relative(publicPath, fullPath);
 
       if (entry.isDirectory()) {
-        if (!['.next', 'node_modules', '.git'].includes(entry.name)) {
+        if (!IGNORED_DIRS.includes(entry.name)) {
           walkDir(fullPath);
         }
       } else {
-        if (['.json', '.js', '.xml', '.html', '.txt', '.pdf', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.docx'].includes(path.extname(fullPath))) {
+        if (ALLOWED_EXTENSIONS.includes(path.extname(fullPath).toLowerCase())) {
           try {
             const content = fs.readFileSync(fullPath, 'utf-8');
             const hash = calculateHash(content);
-            const { table, fileType } = determineFileType(fullPath);
+            const { table, fileType } = mapFileToTable(fullPath);
 
             if (table !== 'unknown') {
               fileMap.set(relativePath, { hash, content, table, fileType });
@@ -206,10 +169,49 @@ async function scanForChanges(supabase) {
   }
 }
 
+// Scan mode using Postgres client
+async function scanForChangesPg(sqlClient) {
+  const currentFiles = scanPublicFolder();
+  const changes = [];
+  let newFiles = 0;
+  let modifiedFiles = 0;
+  let deletedFiles = 0;
+
+  try {
+    const manifestRows = await sqlClient`SELECT file_path, file_hash, table_name FROM sync_manifest`;
+    const manifestMap = new Map((manifestRows || []).map(m => [m.file_path, m]));
+
+    for (const [relativePath, fileData] of currentFiles) {
+      const manifestEntry = manifestMap.get(relativePath);
+      if (!manifestEntry) {
+        changes.push({ path: path.join('public', relativePath), relativePath, status: 'new', table: fileData.table, hash: fileData.hash, fileType: fileData.fileType });
+        newFiles++;
+      } else if (manifestEntry.file_hash !== fileData.hash) {
+        changes.push({ path: path.join('public', relativePath), relativePath, status: 'modified', table: fileData.table, hash: fileData.hash, fileType: fileData.fileType });
+        modifiedFiles++;
+      }
+    }
+
+    for (const [filePath, manifestEntry] of manifestMap) {
+      if (!currentFiles.has(filePath)) {
+        changes.push({ path: path.join('public', filePath), relativePath: filePath, status: 'deleted', table: manifestEntry.table_name, hash: manifestEntry.file_hash, fileType: getFileExtension(filePath) });
+        deletedFiles++;
+      }
+    }
+
+    return {
+      changes,
+      stats: { files_scanned: currentFiles.size, new_files: newFiles, modified_files: modifiedFiles, deleted_files: deletedFiles },
+    };
+  } catch (error) {
+    throw new Error(`Scan failed (pg): ${error.message}`);
+  }
+}
+
 // Pull mode: Apply changes from /public to database
 async function pullChangesToDatabase(supabase, changes) {
   let appliedCount = 0;
-  const publicPath = path.join(process.cwd(), 'public');
+  const publicPath = getPublicDir();
 
   for (const change of changes) {
     try {
@@ -308,6 +310,103 @@ async function pullChangesToDatabase(supabase, changes) {
   return { status: 'completed', applied: appliedCount };
 }
 
+// Pull mode using Postgres client
+async function pullChangesToDatabasePg(sqlClient, changes) {
+  let appliedCount = 0;
+  const publicPath = getPublicDir();
+
+  for (const change of changes) {
+    try {
+      const fullPath = path.join(publicPath, change.relativePath);
+      const now = new Date().toISOString();
+      const filename = path.basename(fullPath, path.extname(fullPath));
+
+      if (change.status === 'deleted') {
+        await sqlClient.unsafe(`DELETE FROM ${change.table} WHERE file_path = ${sqlClient.parameters([change.relativePath])}`);
+        appliedCount++;
+      } else if (change.status === 'new' || change.status === 'modified') {
+        const content = fs.readFileSync(fullPath, 'utf-8');
+        switch (change.table) {
+          case 'collections': {
+            const parts = change.relativePath.split(path.sep);
+            const langIndex = parts.findIndex(p => p === 'collections');
+            const lang = parts[langIndex + 1];
+            const type = parts[langIndex + 2];
+            const fileContent = JSON.parse(content);
+            await sqlClient`
+              INSERT INTO collections (lang, type, filename, file_content, file_hash, synced_at)
+              VALUES (${lang}, ${type}, ${filename}, ${sqlClient.json(fileContent)}, ${change.hash}, ${now})
+              ON CONFLICT (lang, type, filename) DO UPDATE SET file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+          case 'config_files': {
+            const fileContent = JSON.parse(content);
+            await sqlClient`
+              INSERT INTO config_files (filename, file_type, file_content, file_hash, synced_at)
+              VALUES (${filename}, ${change.fileType}, ${sqlClient.json(fileContent)}, ${change.hash}, ${now})
+              ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+          case 'data_files': {
+            const fileContent = JSON.parse(content);
+            await sqlClient`
+              INSERT INTO data_files (filename, file_type, file_content, file_hash, synced_at)
+              VALUES (${filename}, ${change.fileType}, ${sqlClient.json(fileContent)}, ${change.hash}, ${now})
+              ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+          case 'static_files': {
+            await sqlClient`
+              INSERT INTO static_files (filename, file_type, file_content, file_hash, synced_at)
+              VALUES (${filename}, ${change.fileType}, ${content}, ${change.hash}, ${now})
+              ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+          case 'images': {
+            await sqlClient`
+              INSERT INTO images (filename, file_path, mime_type, file_hash, synced_at)
+              VALUES (${filename}, ${change.relativePath}, ${`image/${getFileExtension(fullPath)}`}, ${change.hash}, ${now})
+              ON CONFLICT (filename) DO UPDATE SET file_path = EXCLUDED.file_path, mime_type = EXCLUDED.mime_type, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+          case 'resumes': {
+            await sqlClient`
+              INSERT INTO resumes (filename, file_type, file_path, file_hash, synced_at)
+              VALUES (${filename}, ${getFileExtension(fullPath)}, ${change.relativePath}, ${change.hash}, ${now})
+              ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_path = EXCLUDED.file_path, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+          case 'javascript_files': {
+            await sqlClient`
+              INSERT INTO javascript_files (filename, file_path, file_content, file_hash, synced_at)
+              VALUES (${filename}, ${change.relativePath}, ${content}, ${change.hash}, ${now})
+              ON CONFLICT (filename) DO UPDATE SET file_path = EXCLUDED.file_path, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+        }
+        // Update sync_manifest via upsert
+        await sqlClient`
+          INSERT INTO sync_manifest (file_path, file_hash, table_name, last_synced)
+          VALUES (${change.relativePath}, ${change.hash}, ${change.table}, ${now})
+          ON CONFLICT (file_path) DO UPDATE SET file_hash = EXCLUDED.file_hash, table_name = EXCLUDED.table_name, last_synced = EXCLUDED.last_synced
+        `;
+        appliedCount++;
+      }
+    } catch (error) {
+      console.error(`[SYNC][PG] Failed to apply ${change.relativePath}:`, error.message);
+    }
+  }
+
+  return { status: 'completed', applied: appliedCount };
+}
+
 // Main POST handler
 export async function POST(request) {
   try {
@@ -327,19 +426,23 @@ export async function POST(request) {
       time: new Date().toISOString(),
     });
 
-    // Initialize Supabase client
-    const supabase = getSupabaseClient();
-    console.log('[SYNC] Supabase client initialized', {
-      supabaseUrlConfigured: !!(process.env.SUPABASE_URL),
-      serviceKeyConfigured: !!(process.env.SUPABASE_SERVICE_ROLE_KEY),
-    });
+    const useSql = !!sql;
+    console.log('[SYNC] Client selection', { useSql });
+    let supabase;
+    if (!useSql) {
+      supabase = getSupabase();
+      console.log('[SYNC] Supabase client initialized', {
+        supabaseUrlConfigured: !!(process.env.SUPABASE_URL),
+        serviceKeyConfigured: !!(process.env.SUPABASE_SERVICE_ROLE_KEY),
+      });
+    }
 
     const timestamp = new Date().toISOString();
 
     if (mode === 'scan') {
       // Scan for changes without applying
       console.log('[SYNC] Scan starting');
-      const { changes, stats } = await scanForChanges(supabase);
+      const { changes, stats } = useSql ? await scanForChangesPg(sql) : await scanForChanges(supabase);
       console.log('[SYNC] Scan completed', { stats, changesCount: changes.length });
 
       return NextResponse.json({
@@ -352,8 +455,8 @@ export async function POST(request) {
     } else if (mode === 'pull') {
       // Pull changes from /public to database
       console.log('[SYNC] Pull starting');
-      const { changes, stats } = await scanForChanges(supabase);
-      const result = await pullChangesToDatabase(supabase, changes);
+      const { changes, stats } = useSql ? await scanForChangesPg(sql) : await scanForChanges(supabase);
+      const result = useSql ? await pullChangesToDatabasePg(sql, changes) : await pullChangesToDatabase(supabase, changes);
       console.log('[SYNC] Pull completed', { stats, applied: result.applied, changesCount: changes.length });
 
       return NextResponse.json({

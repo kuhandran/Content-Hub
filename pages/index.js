@@ -301,7 +301,7 @@ function TabButton({ label, active, onClick }) {
                   <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
                     <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Database</div>
                     <div className="flex flex-wrap gap-2">
-                      <ActionButton label="Migrate" onClick={() => handleOperation('migrate')} loading={operationLoading === 'migrate'} tone="amber" />
+                      <ActionButton label="Create Tables" onClick={() => handleOperation('createdb')} loading={operationLoading === 'createdb'} tone="amber" />
                       <ActionButton label="DB Status" onClick={() => handleOperation('status')} loading={operationLoading === 'status'} tone="indigo" />
                       <ActionButton label="Create DB" onClick={() => handleOperation('createdb')} disabled={allTablesExist} loading={operationLoading === 'createdb'} tone="emerald" />
                       <ActionButton label="Delete DB" onClick={() => handleOperation('deletedb')} disabled={!tablesExist} loading={operationLoading === 'deletedb'} tone="rose" />

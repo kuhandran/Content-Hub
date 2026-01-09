@@ -23,64 +23,26 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { createClient } = require('@supabase/supabase-js');
+const sql = require('../lib/postgres');
+const { ALLOWED_EXTENSIONS, IGNORED_DIRS, getPublicDir, getFileExtension, mapFileToTable } = require('../lib/sync-config');
+const { TABLES } = require('../lib/dbop');
 
-// Environment variables
-const SUPABASE_URL = process.env.SUPABASE_URL || '';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+// Ensure Postgres client is available
+if (!sql) {
+  console.error('❌ Missing or invalid DATABASE_URL. Configure DATABASE_URL for Postgres.');
   process.exit(1);
 }
-
-// Initialize Supabase client with service role key
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: {
-    persistSession: false,
-  },
-});
 
 // Utility functions
 function calculateHash(content) {
   return crypto.createHash('sha256').update(content).digest('hex');
 }
 
-function getFileExtension(filename) {
-  return path.extname(filename).toLowerCase().slice(1) || 'unknown';
-}
-
-function determineFileType(filePath) {
-  if (filePath.includes('/collections/')) {
-    return { table: 'collections', fileType: 'json' };
-  }
-  if (filePath.includes('/files/')) {
-    const ext = getFileExtension(filePath);
-    return { table: 'static_files', fileType: ext };
-  }
-  if (filePath.includes('/config/')) {
-    const ext = getFileExtension(filePath);
-    return { table: 'config_files', fileType: ext };
-  }
-  if (filePath.includes('/data/')) {
-    const ext = getFileExtension(filePath);
-    return { table: 'data_files', fileType: ext };
-  }
-  if (filePath.includes('/image/')) {
-    return { table: 'images', fileType: getFileExtension(filePath) };
-  }
-  if (filePath.includes('/js/')) {
-    return { table: 'javascript_files', fileType: 'js' };
-  }
-  if (filePath.includes('/resume/')) {
-    return { table: 'resumes', fileType: getFileExtension(filePath) };
-  }
-  return { table: 'unknown', fileType: getFileExtension(filePath) };
-}
+// file type mapping and helpers centralized in lib/sync-config
 
 // Scan /public folder recursively
 function scanPublicFolder() {
-  const publicPath = path.join(process.cwd(), 'public');
+  const publicPath = getPublicDir();
   const files = [];
 
   function walkDir(dirPath) {
@@ -97,16 +59,16 @@ function scanPublicFolder() {
 
       // Skip certain directories
       if (entry.isDirectory()) {
-        if (!['.next', 'node_modules', '.git'].includes(entry.name)) {
+        if (!IGNORED_DIRS.includes(entry.name)) {
           walkDir(fullPath);
         }
       } else {
         // Only process relevant files
-        if (['.json', '.js', '.xml', '.html', '.txt', '.pdf', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.docx'].includes(path.extname(fullPath))) {
+        if (ALLOWED_EXTENSIONS.includes(path.extname(fullPath).toLowerCase())) {
           try {
             const content = fs.readFileSync(fullPath, 'utf-8');
             const hash = calculateHash(content);
-            const { table, fileType } = determineFileType(fullPath);
+            const { table, fileType } = mapFileToTable(fullPath);
 
             if (table !== 'unknown') {
               files.push({
@@ -161,33 +123,20 @@ function parseCollectionFile(filePath, content) {
 
 // Drop all tables
 async function dropAllTables() {
-  console.log('\n🗑️  Dropping existing tables...');
-
-  const tables = [
-    'sync_manifest',
-    'collections',
-    'static_files',
-    'config_files',
-    'data_files',
-    'images',
-    'resumes',
-    'javascript_files'
-  ];
-
-  for (const table of tables) {
+  console.log('\n🗑️  Dropping existing tables (Postgres)...');
+  for (const table of TABLES) {
     try {
-      // Use RPC or direct delete - Supabase will handle dropping
-      await supabase.from(table).delete().neq('id', null);
-      console.log(`✅ Cleared ${table}`);
+      await sql.unsafe(`DROP TABLE IF EXISTS ${table} CASCADE`);
+      console.log(`✅ Dropped ${table}`);
     } catch (error) {
-      console.log(`ℹ️  Table ${table} may not exist yet (first run)`);
+      console.log(`ℹ️  Could not drop ${table}: ${error.message}`);
     }
   }
 }
 
 // Create all database tables using Supabase RPC
 async function createAllTables() {
-  console.log('\n📊 Creating database tables...');
+  console.log('\n📊 Creating database tables (Postgres)...');
 
   const schema = `
     CREATE TABLE IF NOT EXISTS collections (
@@ -294,17 +243,13 @@ async function createAllTables() {
   let created = 0;
 
   for (const statement of statements) {
-    if (!statement.trim()) continue;
-    
+    const stmt = statement.trim();
+    if (!stmt) continue;
     try {
-      // Use exec_sql RPC if available, otherwise just log
-      await supabase.rpc('exec_sql', { sql: statement.trim() });
+      await sql.unsafe(stmt);
       created++;
     } catch (error) {
-      // Tables might already exist, which is fine
-      if (!error.message.includes('exists')) {
-        console.warn(`⚠️  ${error.message}`);
-      }
+      console.warn(`⚠️  ${error.message}`);
     }
   }
 
@@ -313,7 +258,7 @@ async function createAllTables() {
 
 // Load data into tables
 async function loadDataIntoTables(files) {
-  console.log('\n📥 Loading data into tables...');
+  console.log('\n📥 Loading data into tables (Postgres)...');
 
   const collections = [];
   const staticFiles = [];
@@ -429,17 +374,77 @@ async function loadDataIntoTables(files) {
       console.log(`ℹ️  No data for ${table.name}`);
       continue;
     }
-
     try {
-      const { error } = await supabase
-        .from(table.name)
-        .insert(table.data);
-
-      if (error) {
-        console.error(`❌ Error inserting into ${table.name}:`, error.message);
-      } else {
-        console.log(`✅ Loaded ${table.data.length} records into ${table.name}`);
+      for (const row of table.data) {
+        const now = new Date().toISOString();
+        switch (table.name) {
+          case 'collections': {
+            await sql`
+              INSERT INTO collections (lang, type, filename, file_content, file_hash, synced_at)
+              VALUES (${row.lang}, ${row.type}, ${row.filename}, ${sql.json(row.file_content)}, ${row.file_hash || ''}, ${row.synced_at || now})
+              ON CONFLICT (lang, type, filename) DO UPDATE SET file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+          case 'static_files': {
+            await sql`
+              INSERT INTO static_files (filename, file_type, file_content, file_hash, synced_at)
+              VALUES (${row.filename}, ${row.file_type}, ${row.file_content}, ${row.file_hash || ''}, ${row.synced_at || now})
+              ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+          case 'config_files': {
+            await sql`
+              INSERT INTO config_files (filename, file_type, file_content, file_hash, synced_at)
+              VALUES (${row.filename}, ${row.file_type}, ${sql.json(row.file_content)}, ${row.file_hash || ''}, ${row.synced_at || now})
+              ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+          case 'data_files': {
+            await sql`
+              INSERT INTO data_files (filename, file_type, file_content, file_hash, synced_at)
+              VALUES (${row.filename}, ${row.file_type}, ${sql.json(row.file_content)}, ${row.file_hash || ''}, ${row.synced_at || now})
+              ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+          case 'images': {
+            await sql`
+              INSERT INTO images (filename, file_path, mime_type, file_hash, synced_at)
+              VALUES (${row.filename}, ${row.file_path}, ${row.mime_type || 'image/unknown'}, ${row.file_hash || ''}, ${row.synced_at || now})
+              ON CONFLICT (filename) DO UPDATE SET file_path = EXCLUDED.file_path, mime_type = EXCLUDED.mime_type, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+          case 'resumes': {
+            await sql`
+              INSERT INTO resumes (filename, file_type, file_path, description, version, file_hash, synced_at)
+              VALUES (${row.filename}, ${row.file_type}, ${row.file_path}, ${row.description || null}, ${row.version || '1.0'}, ${row.file_hash || ''}, ${row.synced_at || now})
+              ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_path = EXCLUDED.file_path, description = EXCLUDED.description, version = EXCLUDED.version, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+          case 'javascript_files': {
+            await sql`
+              INSERT INTO javascript_files (filename, file_path, file_content, file_hash, synced_at)
+              VALUES (${row.filename}, ${row.file_path}, ${row.file_content}, ${row.file_hash || ''}, ${row.synced_at || now})
+              ON CONFLICT (filename) DO UPDATE SET file_path = EXCLUDED.file_path, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+            `;
+            break;
+          }
+          case 'sync_manifest': {
+            await sql`
+              INSERT INTO sync_manifest (file_path, file_hash, table_name, last_synced)
+              VALUES (${row.file_path}, ${row.file_hash}, ${row.table_name}, ${row.last_synced || now})
+              ON CONFLICT (file_path) DO UPDATE SET file_hash = EXCLUDED.file_hash, table_name = EXCLUDED.table_name, last_synced = EXCLUDED.last_synced
+            `;
+            break;
+          }
+        }
       }
+      console.log(`✅ Loaded ${table.data.length} records into ${table.name}`);
     } catch (error) {
       console.error(`❌ Error inserting into ${table.name}:`, error.message);
     }

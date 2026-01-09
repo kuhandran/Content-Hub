@@ -10,36 +10,24 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { createClient } from '@supabase/supabase-js';
+import dbopModule from '../../../../lib/dbop';
+import supabaseModule from '../../../../lib/supabase';
+import syncConfigModule from '../../../../lib/sync-config';
+import sql from '../../../../lib/postgres';
 import { NextResponse } from 'next/server';
 import { logRequest, logResponse, logDatabase, logError } from '../../../../lib/logger';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
+const { getSupabase } = supabaseModule;
+const supabase = getSupabase();
+const { mapFileToTable, ALLOWED_EXTENSIONS, IGNORED_DIRS, getPublicDir } = syncConfigModule;
 
 function calculateHash(content) {
   return crypto.createHash('sha256').update(content).digest('hex');
 }
 
-function getFileExtension(filename) {
-  return path.extname(filename).toLowerCase().slice(1) || 'unknown';
-}
-
-function determineFileType(filePath) {
-  if (filePath.includes('/collections/')) return { table: 'collections', fileType: 'json' };
-  if (filePath.includes('/files/')) return { table: 'static_files', fileType: getFileExtension(filePath) };
-  if (filePath.includes('/config/')) return { table: 'config_files', fileType: getFileExtension(filePath) };
-  if (filePath.includes('/data/')) return { table: 'data_files', fileType: getFileExtension(filePath) };
-  if (filePath.includes('/image/')) return { table: 'images', fileType: getFileExtension(filePath) };
-  if (filePath.includes('/js/')) return { table: 'javascript_files', fileType: 'js' };
-  if (filePath.includes('/resume/')) return { table: 'resumes', fileType: getFileExtension(filePath) };
-  return { table: 'unknown', fileType: getFileExtension(filePath) };
-}
+// file type mapping centralized in lib/sync-config
 
 function scanPublicFolder() {
-  const publicPath = path.join(process.cwd(), 'public');
+  const publicPath = getPublicDir();
   const files = [];
 
   function walkDir(dirPath) {
@@ -51,13 +39,13 @@ function scanPublicFolder() {
       const relativePath = path.relative(publicPath, fullPath);
 
       if (entry.isDirectory()) {
-        if (!['.next', 'node_modules', '.git'].includes(entry.name)) walkDir(fullPath);
+        if (!IGNORED_DIRS.includes(entry.name)) walkDir(fullPath);
       } else {
-        if (['.json', '.js', '.xml', '.html', '.txt', '.pdf', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.docx'].includes(path.extname(fullPath))) {
+        if (ALLOWED_EXTENSIONS.includes(path.extname(fullPath).toLowerCase())) {
           try {
             const content = fs.readFileSync(fullPath, 'utf-8');
             const hash = calculateHash(content);
-            const { table, fileType } = determineFileType(fullPath);
+            const { table, fileType } = mapFileToTable(fullPath);
 
             if (table !== 'unknown') {
               files.push({ path: fullPath, relativePath, content, hash, table, fileType });
@@ -109,7 +97,7 @@ export async function POST(request) {
       }
     } else if (action === 'clear') {
       try {
-        const tables = ['sync_manifest', 'collections', 'static_files', 'config_files', 'data_files', 'images', 'resumes', 'javascript_files'];
+        const tables = dbopModule.TABLES;
         let cleared = 0;
 
         for (const t of tables) {
@@ -137,44 +125,97 @@ export async function POST(request) {
       }
     } else if (action === 'create' && table && payload) {
       try {
-        const { data, error } = await supabase.from(table).insert(payload).select();
-        if (error) throw error;
-        logDatabase('INSERT', table, { payload });
-        logResponse(200, data);
-        return NextResponse.json({ status: 'success', data });
+        if (!dbopModule.TABLES.includes(table)) {
+          return NextResponse.json({ status: 'error', error: 'Invalid table' }, { status: 400 });
+        }
+        const useSql = !!sql;
+        if (useSql) {
+          const keys = Object.keys(payload);
+          const values = keys.map(k => payload[k]);
+          const cols = keys.map(k => `"${k}"`).join(', ');
+          const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+          const query = `INSERT INTO ${table} (${cols}) VALUES (${placeholders}) RETURNING *`;
+          const rows = await sql.unsafe(query, values);
+          logDatabase('INSERT', table, { payload });
+          logResponse(200, rows);
+          return NextResponse.json({ status: 'success', data: rows });
+        } else {
+          const { data, error } = await supabase.from(table).insert(payload).select();
+          if (error) throw error;
+          logDatabase('INSERT', table, { payload });
+          logResponse(200, data);
+          return NextResponse.json({ status: 'success', data });
+        }
       } catch (err) {
         logError(err);
         return NextResponse.json({ status: 'error', error: err.message }, { status: 500 });
       }
     } else if (action === 'read' && table) {
       try {
-        const { data, error } = await supabase.from(table).select('*');
-        if (error) throw error;
-        logDatabase('SELECT', table);
-        logResponse(200, data);
-        return NextResponse.json({ status: 'success', data });
+        if (!dbopModule.TABLES.includes(table)) {
+          return NextResponse.json({ status: 'error', error: 'Invalid table' }, { status: 400 });
+        }
+        const useSql = !!sql;
+        if (useSql) {
+          const rows = await sql.unsafe(`SELECT * FROM ${table}`);
+          logDatabase('SELECT', table);
+          logResponse(200, rows);
+          return NextResponse.json({ status: 'success', data: rows });
+        } else {
+          const { data, error } = await supabase.from(table).select('*');
+          if (error) throw error;
+          logDatabase('SELECT', table);
+          logResponse(200, data);
+          return NextResponse.json({ status: 'success', data });
+        }
       } catch (err) {
         logError(err);
         return NextResponse.json({ status: 'error', error: err.message }, { status: 500 });
       }
     } else if (action === 'update' && table && id && payload) {
       try {
-        const { data, error } = await supabase.from(table).update(payload).eq('id', id).select();
-        if (error) throw error;
-        logDatabase('UPDATE', table, { id, payload });
-        logResponse(200, data);
-        return NextResponse.json({ status: 'success', data });
+        if (!dbopModule.TABLES.includes(table)) {
+          return NextResponse.json({ status: 'error', error: 'Invalid table' }, { status: 400 });
+        }
+        const useSql = !!sql;
+        if (useSql) {
+          const keys = Object.keys(payload);
+          const values = keys.map(k => payload[k]);
+          const setClause = keys.map((k, i) => `"${k}" = $${i + 1}`).join(', ');
+          const query = `UPDATE ${table} SET ${setClause} WHERE id = $${keys.length + 1} RETURNING *`;
+          const rows = await sql.unsafe(query, [...values, id]);
+          logDatabase('UPDATE', table, { id, payload });
+          logResponse(200, rows);
+          return NextResponse.json({ status: 'success', data: rows });
+        } else {
+          const { data, error } = await supabase.from(table).update(payload).eq('id', id).select();
+          if (error) throw error;
+          logDatabase('UPDATE', table, { id, payload });
+          logResponse(200, data);
+          return NextResponse.json({ status: 'success', data });
+        }
       } catch (err) {
         logError(err);
         return NextResponse.json({ status: 'error', error: err.message }, { status: 500 });
       }
     } else if (action === 'delete' && table && id) {
       try {
-        const { data, error } = await supabase.from(table).delete().eq('id', id).select();
-        if (error) throw error;
-        logDatabase('DELETE', table, { id });
-        logResponse(200, data);
-        return NextResponse.json({ status: 'success', data });
+        if (!dbopModule.TABLES.includes(table)) {
+          return NextResponse.json({ status: 'error', error: 'Invalid table' }, { status: 400 });
+        }
+        const useSql = !!sql;
+        if (useSql) {
+          const rows = await sql.unsafe(`DELETE FROM ${table} WHERE id = $1 RETURNING *`, [id]);
+          logDatabase('DELETE', table, { id });
+          logResponse(200, rows);
+          return NextResponse.json({ status: 'success', data: rows });
+        } else {
+          const { data, error } = await supabase.from(table).delete().eq('id', id).select();
+          if (error) throw error;
+          logDatabase('DELETE', table, { id });
+          logResponse(200, data);
+          return NextResponse.json({ status: 'success', data });
+        }
       } catch (err) {
         logError(err);
         return NextResponse.json({ status: 'error', error: err.message }, { status: 500 });
@@ -196,10 +237,9 @@ export async function GET() {
       byType[file.table] = (byType[file.table] || 0) + 1;
     }
     const stats = {};
-    const tables = ['collections', 'static_files', 'config_files', 'data_files', 'images', 'resumes', 'javascript_files', 'sync_manifest'];
+    const tables = dbopModule.TABLES;
     for (const t of tables) {
-      const { count } = await supabase.from(t).select('*', { count: 'exact', head: true });
-      stats[t] = count || 0;
+      stats[t] = await dbopModule.count(t);
     }
     return NextResponse.json({
       status: 'success',

@@ -5,12 +5,10 @@
  */
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
+import supabaseModule from '../../../../lib/supabase';
+import sql from '../../../../lib/postgres';
+const { getSupabase } = supabaseModule;
+const supabase = getSupabase();
 
 const TABLE_CONFIG = {
   collections: { type: 'json', conflict: 'lang,type,filename' },
@@ -73,17 +71,52 @@ export async function POST(request) {
       return NextResponse.json({ status: 'error', message: payloadErr.message }, { status: 500 });
     }
 
+    // Prefer Postgres via DATABASE_URL when available
+    const useSql = !!sql;
     try {
-      console.log('[ADMIN CONTENT] Upserting to Supabase...');
-      const { error: dbError } = await supabase
-        .from(table)
-        .upsert(payload, { onConflict: cfg.conflict, ignoreDuplicates: false });
-
-      if (dbError) {
-        console.log('[ADMIN CONTENT] Supabase upsert error:', dbError.message);
-        return NextResponse.json({ status: 'error', message: dbError.message }, { status: 500 });
+      if (useSql) {
+        console.log('[ADMIN CONTENT] Upserting to Postgres...');
+        if (table === 'collections') {
+          const parsed = cfg.type === 'json' ? (typeof content === 'string' ? JSON.parse(content) : content) : content;
+          const rows = await sql`
+            INSERT INTO collections (lang, type, filename, file_content, updated_at, synced_at)
+            VALUES (${lang}, ${type}, ${filename}, ${sql.json(parsed)}, ${now}, ${now})
+            ON CONFLICT (lang, type, filename)
+            DO UPDATE SET file_content = EXCLUDED.file_content, updated_at = EXCLUDED.updated_at, synced_at = EXCLUDED.synced_at
+            RETURNING *
+          `;
+          console.log('[ADMIN CONTENT] Postgres upsert OK', { affected: rows?.length || 0 });
+        } else if (cfg.type === 'json') {
+          const parsed = typeof content === 'string' ? JSON.parse(content) : content;
+          const rows = await sql`
+            INSERT INTO ${sql(table)} (filename, file_type, file_content, updated_at, synced_at)
+            VALUES (${filename}, ${'json'}, ${sql.json(parsed)}, ${now}, ${now})
+            ON CONFLICT (filename)
+            DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, updated_at = EXCLUDED.updated_at, synced_at = EXCLUDED.synced_at
+            RETURNING *
+          `;
+          console.log('[ADMIN CONTENT] Postgres upsert OK', { affected: rows?.length || 0 });
+        } else {
+          const rows = await sql`
+            INSERT INTO ${sql(table)} (filename, file_type, file_content, updated_at, synced_at)
+            VALUES (${filename}, ${'text'}, ${content || ''}, ${now}, ${now})
+            ON CONFLICT (filename)
+            DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, updated_at = EXCLUDED.updated_at, synced_at = EXCLUDED.synced_at
+            RETURNING *
+          `;
+          console.log('[ADMIN CONTENT] Postgres upsert OK', { affected: rows?.length || 0 });
+        }
+      } else {
+        console.log('[ADMIN CONTENT] Upserting to Supabase...');
+        const { error: dbError } = await supabase
+          .from(table)
+          .upsert(payload, { onConflict: cfg.conflict, ignoreDuplicates: false });
+        if (dbError) {
+          console.log('[ADMIN CONTENT] Supabase upsert error:', dbError.message);
+          return NextResponse.json({ status: 'error', message: dbError.message }, { status: 500 });
+        }
+        console.log('[ADMIN CONTENT] Upsert successful:', { table, filename, updated_at: now });
       }
-      console.log('[ADMIN CONTENT] Upsert successful:', { table, filename, updated_at: now });
     } catch (dbException) {
       console.log('[ADMIN CONTENT] DB Exception:', dbException.message);
       return NextResponse.json({ status: 'error', message: dbException.message }, { status: 500 });
