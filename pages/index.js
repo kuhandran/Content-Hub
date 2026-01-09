@@ -308,7 +308,8 @@ export default function Home() {
                 </div>
               )}
             </section>
-// TabButton component for sidebar
+
+// TabButton component for sidebar (move above Home)
 function TabButton({ label, active, onClick }) {
   return (
     <button
