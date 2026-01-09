@@ -193,7 +193,8 @@ async function insertRecord(tableName, record) {
 
 // Mappers convert JSON data to insert-ready records
 function projectMapper(data) {
-  return data.filter(p => p.title && p.description).map(p => ({
+  const records = Array.isArray(data) ? data : [];
+  return records.filter(p => p.title && p.description).map(p => ({
     title: p.title || null,
     description: p.description || null,
     image: p.image || null,
@@ -221,7 +222,8 @@ function skillsMapper(data) {
 }
 
 function experienceMapper(data) {
-  return data.filter(e => e.company && e.position).map(e => ({
+  const records = Array.isArray(data) ? data : [];
+  return records.filter(e => e.company && e.position).map(e => ({
     company: e.company || null,
     position: e.position || null,
     duration: e.duration || null,
@@ -232,7 +234,8 @@ function experienceMapper(data) {
 }
 
 function educationMapper(data) {
-  return data.filter(e => e.degree && e.institution).map(e => ({
+  const records = Array.isArray(data) ? data : [];
+  return records.filter(e => e.degree && e.institution).map(e => ({
     degree: e.degree || null,
     institution: e.institution || null,
     year: e.year || null,
@@ -241,10 +244,21 @@ function educationMapper(data) {
 }
 
 function achievementsMapper(data) {
-  return data.filter(a => a.title).map(a => ({
-    title: a.title || null,
+  let achievements = [];
+  
+  // Handle both array and object formats
+  if (Array.isArray(data)) {
+    achievements = data;
+  } else if (typeof data === 'object') {
+    // If it's an object with awards/certifications, flatten them
+    if (data.awards) achievements = achievements.concat(data.awards);
+    if (data.certifications) achievements = achievements.concat(data.certifications);
+  }
+  
+  return achievements.filter(a => a.name || a.title).map(a => ({
+    title: a.name || a.title || null,
     description: a.description || null,
-    date: a.date || null,
+    date: a.year || a.date || null,
     icon: a.icon || null,
   }));
 }
