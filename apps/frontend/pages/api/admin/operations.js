@@ -458,4 +458,3 @@ async function handleMigrate(res) {
   logResponse(200, response);
   return res.status(200).json(response);
 }
-}
