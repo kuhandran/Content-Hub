@@ -94,14 +94,8 @@ function addLog(log) {
     logs.shift();
   }
 
-  // Try to write to file (best effort)
-  try {
-    const logPath = getLogPath();
-    fs.appendFileSync(logPath, JSON.stringify(log) + '\n');
-  } catch (error) {
-    // Silently fail - logging infrastructure shouldn't break the app
-    console.error('Failed to write log to file:', error.message);
-  }
+  // Note: File writing disabled for Vercel (ephemeral filesystem)
+  // All logs are available via console.log (visible in Vercel dashboard) and in-memory storage
 }
 
 export function getLogs(filter = {}) {

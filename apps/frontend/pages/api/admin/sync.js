@@ -193,11 +193,11 @@ async function insertRecord(tableName, record) {
 
 // Mappers convert JSON data to insert-ready records
 function projectMapper(data) {
-  return data.map(p => ({
-    title: p.title,
-    description: p.description,
-    image: p.image,
-    tech_stack: JSON.stringify(p.techStack),
+  return data.filter(p => p.title && p.description).map(p => ({
+    title: p.title || null,
+    description: p.description || null,
+    image: p.image || null,
+    tech_stack: JSON.stringify(p.techStack || []),
     metrics: p.metrics || null,
     live_url: p.liveUrl || null,
     github_url: p.githubUrl || null,
@@ -208,20 +208,22 @@ function projectMapper(data) {
 function skillsMapper(data) {
   const records = [];
   for (const [category, skillData] of Object.entries(data)) {
-    records.push({
-      category,
-      name: skillData.name,
-      icon: skillData.icon || null,
-      skill_data: JSON.stringify(skillData.skills),
-    });
+    if (skillData && skillData.name) {
+      records.push({
+        category: category || null,
+        name: skillData.name || null,
+        icon: skillData.icon || null,
+        skill_data: JSON.stringify(skillData.skills || []),
+      });
+    }
   }
   return records;
 }
 
 function experienceMapper(data) {
-  return data.map(e => ({
-    company: e.company,
-    position: e.position,
+  return data.filter(e => e.company && e.position).map(e => ({
+    company: e.company || null,
+    position: e.position || null,
     duration: e.duration || null,
     location: e.location || null,
     description: e.description || null,
@@ -230,17 +232,17 @@ function experienceMapper(data) {
 }
 
 function educationMapper(data) {
-  return data.map(e => ({
-    degree: e.degree,
-    institution: e.institution,
+  return data.filter(e => e.degree && e.institution).map(e => ({
+    degree: e.degree || null,
+    institution: e.institution || null,
     year: e.year || null,
     description: e.description || null,
   }));
 }
 
 function achievementsMapper(data) {
-  return data.map(a => ({
-    title: a.title,
+  return data.filter(a => a.title).map(a => ({
+    title: a.title || null,
     description: a.description || null,
     date: a.date || null,
     icon: a.icon || null,
