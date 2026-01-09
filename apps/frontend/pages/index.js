@@ -15,6 +15,7 @@ export default function Home() {
   const [showLogs, setShowLogs] = useState(false);
   const [logs, setLogs] = useState([]);
   const [syncProgress, setSyncProgress] = useState(null);
+  const [urlsGenerated, setUrlsGenerated] = useState(null);
 
   useEffect(() => {
     fetchApiStatus();
@@ -139,6 +140,47 @@ export default function Home() {
     }
   };
 
+  const handleGenerateUrls = async () => {
+    try {
+      setOperationLoading('generate-urls');
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
+      const response = await fetch(`${apiBase}/admin/urls`);
+      const data = await response.json();
+      if (data.status === 'error') {
+        setOperationMessage({ type: 'error', text: data.message });
+      } else {
+        setUrlsGenerated(data.urls);
+        setOperationMessage({ type: 'success', text: 'URLs generated for all tables' });
+      }
+    } catch (err) {
+      setOperationMessage({ type: 'error', text: err.message });
+    } finally {
+      setOperationLoading(null);
+    }
+  };
+
+  const handleCacheAll = async () => {
+    try {
+      setOperationLoading('cache-all');
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
+      const response = await fetch(`${apiBase}/admin/cache`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'cache-all' }),
+      });
+      const data = await response.json();
+      if (data.status === 'error') {
+        setOperationMessage({ type: 'error', text: data.message });
+      } else {
+        setOperationMessage({ type: 'success', text: 'Cached content to Redis (if configured)' });
+      }
+    } catch (err) {
+      setOperationMessage({ type: 'error', text: err.message });
+    } finally {
+      setOperationLoading(null);
+    }
+  };
+
   const tablesExist = dbStatus?.tables?.some(t => t.exists);
   const allTablesExist = dbStatus?.tables?.every(t => t.exists);
 
@@ -200,6 +242,21 @@ export default function Home() {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <button
+              onClick={handleGenerateUrls}
+              disabled={operationLoading === 'generate-urls'}
+              className="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+            >
+              {operationLoading === 'generate-urls' ? 'Generating...' : 'Generate URLs'}
+            </button>
+
+            <button
+              onClick={handleCacheAll}
+              disabled={operationLoading === 'cache-all'}
+              className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+            >
+              {operationLoading === 'cache-all' ? 'Caching...' : 'Cache to Redis'}
+            </button>
             <button
               onClick={fetchApiStatus}
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
@@ -330,6 +387,15 @@ export default function Home() {
                 Status: <span className="font-mono">{syncProgress.status}</span>
                 {syncProgress.records && ` - ${syncProgress.records} records`}
                 {syncProgress.message && ` - ${syncProgress.message}`}
+              </div>
+            </div>
+          )}
+
+          {urlsGenerated && (
+            <div className="mt-4 p-3 bg-indigo-50 border-l-4 border-indigo-500">
+              <div className="font-semibold">URLs Generated</div>
+              <div className="text-xs text-gray-700 mt-2">
+                Collections: {urlsGenerated.collections.length} • Config: {urlsGenerated.config.length} • Data: {urlsGenerated.data.length} • Files: {urlsGenerated.files.length} • Image: {urlsGenerated.image.length} • JS: {urlsGenerated.js.length} • Resume: {urlsGenerated.resume.length}
               </div>
             </div>
           )}
