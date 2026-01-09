@@ -270,41 +270,71 @@ async function getStatus() {
 
 // Main handler
 async function POST(request) {
+  console.log('[ADMIN OPERATIONS] POST request received');
   try {
     const body = await request.json();
     const { operation, batch } = body;
+    console.log('[ADMIN OPERATIONS] Operation:', operation, 'Batch:', batch);
 
     if (batch && Array.isArray(batch)) {
       // Batch operations
       const results = [];
       for (const op of batch) {
         let result;
-        switch (op.toLowerCase()) {
-          case 'createdb': result = await createDB(); break;
-          case 'deletedb': result = await deleteDB(); break;
-          case 'pumpdata': result = await pumpData(); break;
-          case 'syncopublic': result = await syncPublic(); break;
-          case 'status': result = await getStatus(); break;
-          default: result = { status: 'error', operation: op, error: 'Unknown operation' };
+        try {
+          switch (op.toLowerCase()) {
+            case 'createdb': result = await createDB(); break;
+            case 'deletedb': result = await deleteDB(); break;
+            case 'pumpdata': result = await pumpData(); break;
+            case 'syncopublic': result = await syncPublic(); break;
+            case 'status': result = await getStatus(); break;
+            default: result = { status: 'error', operation: op, error: 'Unknown operation' };
+          }
+          console.log('[ADMIN OPERATIONS] Batch operation result:', result);
+        } catch (batchErr) {
+          console.log('[ADMIN OPERATIONS] Batch Exception:', batchErr.message);
+          result = { status: 'error', operation: op, error: batchErr.message };
         }
         results.push(result);
+      }
+      // Example Redis logging (pseudo-code)
+      try {
+        // await redis.set('operations:batch', JSON.stringify(results));
+        console.log('[ADMIN OPERATIONS] Redis cache simulated for batch');
+      } catch (redisException) {
+        console.log('[ADMIN OPERATIONS] Redis Exception:', redisException.message);
       }
       return NextResponse.json({ status: 'success', operations: batch, results, timestamp: new Date().toISOString() });
     }
 
     // Single operation
     let result;
-    switch (operation?.toLowerCase()) {
-      case 'createdb': result = await createDB(); break;
-      case 'deletedb': result = await deleteDB(); break;
-      case 'pumpdata': result = await pumpData(); break;
-      case 'syncopublic': result = await syncPublic(); break;
-      case 'status': result = await getStatus(); break;
-      default: return NextResponse.json({ status: 'error', error: 'Unknown operation. Use: createdb, deletedb, pumpdata, syncopublic, status' }, { status: 400 });
+    try {
+      switch (operation?.toLowerCase()) {
+        case 'createdb': result = await createDB(); break;
+        case 'deletedb': result = await deleteDB(); break;
+        case 'pumpdata': result = await pumpData(); break;
+        case 'syncopublic': result = await syncPublic(); break;
+        case 'status': result = await getStatus(); break;
+        default: throw new Error('Unknown operation. Use: createdb, deletedb, pumpdata, syncopublic, status');
+      }
+      console.log('[ADMIN OPERATIONS] Operation result:', result);
+    } catch (opException) {
+      console.log('[ADMIN OPERATIONS] Operation Exception:', opException.message);
+      result = { status: 'error', error: opException.message };
+    }
+
+    // Example Redis logging (pseudo-code)
+    try {
+      // await redis.set('operations:last', JSON.stringify(result));
+      console.log('[ADMIN OPERATIONS] Redis cache simulated for operation');
+    } catch (redisException) {
+      console.log('[ADMIN OPERATIONS] Redis Exception:', redisException.message);
     }
 
     return NextResponse.json({ ...result, timestamp: new Date().toISOString() });
   } catch (error) {
+    console.log('[ADMIN OPERATIONS] Handler error:', error.message);
     return NextResponse.json({ status: 'error', error: error.message }, { status: 500 });
   }
 }

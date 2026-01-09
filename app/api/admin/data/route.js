@@ -73,104 +73,147 @@ function scanPublicFolder() {
 }
 
 async function POST(request) {
+  console.log('[ADMIN DATA] POST request received');
   try {
     const { action } = await request.json();
+    console.log('[ADMIN DATA] Action:', action);
 
     if (action === 'pump') {
-      const files = scanPublicFolder();
-      const tables = {
-        collections: [],
-        static_files: [],
-        config_files: [],
-        data_files: [],
-        images: [],
-        resumes: [],
-        javascript_files: [],
-        sync_manifest: []
-      };
+      try {
+        const files = scanPublicFolder();
+        console.log('[ADMIN DATA] Files scanned:', files.length);
+        const tables = {
+          collections: [],
+          static_files: [],
+          config_files: [],
+          data_files: [],
+          images: [],
+          resumes: [],
+          javascript_files: [],
+          sync_manifest: []
+        };
 
-      for (const file of files) {
-        const filename = path.basename(file.relativePath, path.extname(file.relativePath));
-        const ext = getFileExtension(file.relativePath);
-        const now = new Date().toISOString();
+        for (const file of files) {
+          const filename = path.basename(file.relativePath, path.extname(file.relativePath));
+          const ext = getFileExtension(file.relativePath);
+          const now = new Date().toISOString();
 
-        tables.sync_manifest.push({ file_path: file.relativePath, file_hash: file.hash, table_name: file.table, last_synced: now });
+          tables.sync_manifest.push({ file_path: file.relativePath, file_hash: file.hash, table_name: file.table, last_synced: now });
 
-        switch (file.table) {
-          case 'collections': {
-            const parts = file.relativePath.split(path.sep);
-            const langIdx = parts.findIndex(p => p === 'collections');
-            if (langIdx !== -1 && langIdx + 2 < parts.length) {
-              try {
-                tables.collections.push({
-                  lang: parts[langIdx + 1],
-                  type: parts[langIdx + 2],
-                  filename,
-                  file_content: JSON.parse(file.content),
-                  file_hash: file.hash,
-                  synced_at: now
-                });
-              } catch (e) { console.warn(`⚠️  Invalid JSON: ${file.relativePath}`); }
+          try {
+            switch (file.table) {
+              case 'collections': {
+                const parts = file.relativePath.split(path.sep);
+                const langIdx = parts.findIndex(p => p === 'collections');
+                if (langIdx !== -1 && langIdx + 2 < parts.length) {
+                  try {
+                    tables.collections.push({
+                      lang: parts[langIdx + 1],
+                      type: parts[langIdx + 2],
+                      filename,
+                      file_content: JSON.parse(file.content),
+                      file_hash: file.hash,
+                      synced_at: now
+                    });
+                    console.log('[ADMIN DATA] Added collection:', filename);
+                  } catch (e) { console.warn(`⚠️  Invalid JSON: ${file.relativePath}`); }
+                }
+                break;
+              }
+              case 'static_files':
+                tables.static_files.push({ filename, file_type: ext, file_content: file.content, file_hash: file.hash, synced_at: now });
+                console.log('[ADMIN DATA] Added static file:', filename);
+                break;
+              case 'config_files':
+                try {
+                  tables.config_files.push({ filename, file_type: ext, file_content: JSON.parse(file.content), file_hash: file.hash, synced_at: now });
+                  console.log('[ADMIN DATA] Added config file:', filename);
+                } catch (e) { console.warn(`⚠️  Invalid JSON: ${file.relativePath}`); }
+                break;
+              case 'data_files':
+                try {
+                  tables.data_files.push({ filename, file_type: ext, file_content: JSON.parse(file.content), file_hash: file.hash, synced_at: now });
+                  console.log('[ADMIN DATA] Added data file:', filename);
+                } catch (e) { console.warn(`⚠️  Invalid JSON: ${file.relativePath}`); }
+                break;
+              case 'images':
+                tables.images.push({ filename, file_path: file.relativePath, mime_type: `image/${ext}`, file_hash: file.hash, synced_at: now });
+                console.log('[ADMIN DATA] Added image:', filename);
+                break;
+              case 'resumes':
+                tables.resumes.push({ filename, file_type: ext, file_path: file.relativePath, file_hash: file.hash, synced_at: now });
+                console.log('[ADMIN DATA] Added resume:', filename);
+                break;
+              case 'javascript_files':
+                tables.javascript_files.push({ filename, file_path: file.relativePath, file_content: file.content, file_hash: file.hash, synced_at: now });
+                console.log('[ADMIN DATA] Added JS file:', filename);
+                break;
             }
-            break;
+          } catch (fileException) {
+            console.error('[ADMIN DATA] File Exception:', fileException.message);
           }
-          case 'static_files':
-            tables.static_files.push({ filename, file_type: ext, file_content: file.content, file_hash: file.hash, synced_at: now });
-            break;
-          case 'config_files':
-            try {
-              tables.config_files.push({ filename, file_type: ext, file_content: JSON.parse(file.content), file_hash: file.hash, synced_at: now });
-            } catch (e) { console.warn(`⚠️  Invalid JSON: ${file.relativePath}`); }
-            break;
-          case 'data_files':
-            try {
-              tables.data_files.push({ filename, file_type: ext, file_content: JSON.parse(file.content), file_hash: file.hash, synced_at: now });
-            } catch (e) { console.warn(`⚠️  Invalid JSON: ${file.relativePath}`); }
-            break;
-          case 'images':
-            tables.images.push({ filename, file_path: file.relativePath, mime_type: `image/${ext}`, file_hash: file.hash, synced_at: now });
-            break;
-          case 'resumes':
-            tables.resumes.push({ filename, file_type: ext, file_path: file.relativePath, file_hash: file.hash, synced_at: now });
-            break;
-          case 'javascript_files':
-            tables.javascript_files.push({ filename, file_path: file.relativePath, file_content: file.content, file_hash: file.hash, synced_at: now });
-            break;
         }
-      }
 
-      let loaded = 0;
-      for (const [tableName, data] of Object.entries(tables)) {
-        if (data.length === 0) continue;
+        let loaded = 0;
+        for (const [tableName, data] of Object.entries(tables)) {
+          if (data.length === 0) continue;
+          try {
+            await supabase.from(tableName).insert(data);
+            loaded++;
+            console.log(`[ADMIN DATA] Loaded table: ${tableName}, count: ${data.length}`);
+          } catch (error) {
+            console.error(`[ADMIN DATA] DB Error in ${tableName}:`, error.message);
+          }
+        }
+
+        // Example Redis logging (pseudo-code, replace with actual Redis logic if available)
         try {
-          await supabase.from(tableName).insert(data);
-          loaded++;
-        } catch (error) {
-          console.error(`❌ ${tableName}: ${error.message}`);
+          // await redis.set('data:pump', JSON.stringify(tables));
+          console.log('[ADMIN DATA] Redis cache simulated for pump');
+        } catch (redisException) {
+          console.log('[ADMIN DATA] Redis Exception:', redisException.message);
         }
-      }
 
-      return NextResponse.json({ status: 'success', action: 'pump', files_scanned: files.length, tables_loaded: loaded, details: tables });
+        return NextResponse.json({ status: 'success', action: 'pump', files_scanned: files.length, tables_loaded: loaded, details: tables });
+      } catch (pumpException) {
+        console.log('[ADMIN DATA] Pump Exception:', pumpException.message);
+        return NextResponse.json({ status: 'error', error: pumpException.message }, { status: 500 });
+      }
     }
 
     if (action === 'clear') {
-      const tables = ['sync_manifest', 'collections', 'static_files', 'config_files', 'data_files', 'images', 'resumes', 'javascript_files'];
-      let cleared = 0;
+      try {
+        const tables = ['sync_manifest', 'collections', 'static_files', 'config_files', 'data_files', 'images', 'resumes', 'javascript_files'];
+        let cleared = 0;
 
-      for (const t of tables) {
-        try {
-          await supabase.from(t).delete().neq('id', null);
-          cleared++;
-        } catch (e) {
-          console.warn(e.message);
+        for (const t of tables) {
+          try {
+            await supabase.from(t).delete().neq('id', null);
+            cleared++;
+            console.log('[ADMIN DATA] Cleared table:', t);
+          } catch (e) {
+            console.warn('[ADMIN DATA] Clear Exception:', e.message);
+          }
         }
-      }
 
-      return NextResponse.json({ status: 'success', action: 'clear', tables_cleared: cleared });
+        // Example Redis logging (pseudo-code, replace with actual Redis logic if available)
+        try {
+          // await redis.del('data:all');
+          console.log('[ADMIN DATA] Redis cache simulated for clear');
+        } catch (redisException) {
+          console.log('[ADMIN DATA] Redis Exception:', redisException.message);
+        }
+
+        return NextResponse.json({ status: 'success', action: 'clear', tables_cleared: cleared });
+      } catch (clearException) {
+        console.log('[ADMIN DATA] Clear Exception:', clearException.message);
+        return NextResponse.json({ status: 'error', error: clearException.message }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ status: 'error', error: 'Invalid action. Use: pump, clear' }, { status: 400 });
   } catch (error) {
+    console.log('[ADMIN DATA] Handler error:', error.message);
     return NextResponse.json({ status: 'error', error: error.message }, { status: 500 });
   }
 }

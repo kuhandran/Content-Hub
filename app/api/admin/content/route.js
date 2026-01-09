@@ -29,43 +29,77 @@ function validateRequest(body) {
 }
 
 export async function POST(request) {
+  // --- VERBOSE LOGGING FOR DEBUG ---
+  console.log('[ADMIN CONTENT] POST request received');
   try {
     const body = await request.json();
+    console.log('[ADMIN CONTENT] Request body:', body);
     const errorMsg = validateRequest(body);
-    if (errorMsg) return NextResponse.json({ status: 'error', message: errorMsg }, { status: 400 });
+    if (errorMsg) {
+      console.log('[ADMIN CONTENT] Validation error:', errorMsg);
+      return NextResponse.json({ status: 'error', message: errorMsg }, { status: 400 });
+    }
 
     const { table, filename, lang, type, content } = body;
     const cfg = TABLE_CONFIG[table];
     const now = new Date().toISOString();
+    console.log('[ADMIN CONTENT] Table:', table, 'Filename:', filename, 'Lang:', lang, 'Type:', type);
 
     let payload;
-    if (cfg.type === 'json') {
-      let parsed;
-      try {
-        parsed = typeof content === 'string' ? JSON.parse(content) : content;
-      } catch (e) {
-        return NextResponse.json({ status: 'error', message: 'Content must be valid JSON' }, { status: 400 });
-      }
-      if (table === 'collections') {
-        payload = { lang, type, filename, file_content: parsed, updated_at: now, synced_at: now };
+    try {
+      if (cfg.type === 'json') {
+        let parsed;
+        try {
+          parsed = typeof content === 'string' ? JSON.parse(content) : content;
+          console.log('[ADMIN CONTENT] Parsed JSON:', parsed);
+        } catch (e) {
+          console.log('[ADMIN CONTENT] JSON parse error:', e.message);
+          return NextResponse.json({ status: 'error', message: 'Content must be valid JSON' }, { status: 400 });
+        }
+        if (table === 'collections') {
+          payload = { lang, type, filename, file_content: parsed, updated_at: now, synced_at: now };
+          console.log('[ADMIN CONTENT] Collections payload:', payload);
+        } else {
+          payload = { filename, file_type: 'json', file_content: parsed, updated_at: now, synced_at: now };
+          console.log('[ADMIN CONTENT] JSON file payload:', payload);
+        }
       } else {
-        payload = { filename, file_type: 'json', file_content: parsed, updated_at: now, synced_at: now };
+        // text/static/js
+        payload = { filename, file_type: 'text', file_content: content || '', updated_at: now, synced_at: now };
+        console.log('[ADMIN CONTENT] Text file payload:', payload);
       }
-    } else {
-      // text/static/js
-      payload = { filename, file_type: 'text', file_content: content || '', updated_at: now, synced_at: now };
+    } catch (payloadErr) {
+      console.log('[ADMIN CONTENT] Payload construction error:', payloadErr.message);
+      return NextResponse.json({ status: 'error', message: payloadErr.message }, { status: 500 });
     }
 
-    const { error } = await supabase
-      .from(table)
-      .upsert(payload, { onConflict: cfg.conflict, ignoreDuplicates: false });
+    try {
+      console.log('[ADMIN CONTENT] Upserting to Supabase...');
+      const { error: dbError } = await supabase
+        .from(table)
+        .upsert(payload, { onConflict: cfg.conflict, ignoreDuplicates: false });
 
-    if (error) {
-      return NextResponse.json({ status: 'error', message: error.message }, { status: 500 });
+      if (dbError) {
+        console.log('[ADMIN CONTENT] Supabase upsert error:', dbError.message);
+        return NextResponse.json({ status: 'error', message: dbError.message }, { status: 500 });
+      }
+      console.log('[ADMIN CONTENT] Upsert successful:', { table, filename, updated_at: now });
+    } catch (dbException) {
+      console.log('[ADMIN CONTENT] DB Exception:', dbException.message);
+      return NextResponse.json({ status: 'error', message: dbException.message }, { status: 500 });
+    }
+
+    // Example Redis logging (pseudo-code, replace with actual Redis logic if available)
+    try {
+      // await redis.set(`content:${table}:${filename}`, JSON.stringify(payload));
+      console.log('[ADMIN CONTENT] Redis cache simulated for', `content:${table}:${filename}`);
+    } catch (redisException) {
+      console.log('[ADMIN CONTENT] Redis Exception:', redisException.message);
     }
 
     return NextResponse.json({ status: 'success', table, filename, updated_at: now });
   } catch (error) {
+    console.log('[ADMIN CONTENT] Handler error:', error.message);
     return NextResponse.json({ status: 'error', message: error.message }, { status: 500 });
   }
 }
