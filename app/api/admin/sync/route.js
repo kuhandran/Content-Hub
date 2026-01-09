@@ -313,15 +313,34 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const mode = body.mode || 'scan';
+    const vercelId = request.headers?.get?.('x-vercel-id');
+    const forwardedFor = request.headers?.get?.('x-forwarded-for');
+    const region = process.env.VERCEL_REGION || 'unknown-region';
+    const env = process.env.VERCEL_ENV || (process.env.NODE_ENV || 'development');
+
+    console.log('[SYNC] Request received', {
+      mode,
+      vercelId,
+      forwardedFor,
+      region,
+      env,
+      time: new Date().toISOString(),
+    });
 
     // Initialize Supabase client
     const supabase = getSupabaseClient();
+    console.log('[SYNC] Supabase client initialized', {
+      supabaseUrlConfigured: !!(process.env.SUPABASE_URL),
+      serviceKeyConfigured: !!(process.env.SUPABASE_SERVICE_ROLE_KEY),
+    });
 
     const timestamp = new Date().toISOString();
 
     if (mode === 'scan') {
       // Scan for changes without applying
+      console.log('[SYNC] Scan starting');
       const { changes, stats } = await scanForChanges(supabase);
+      console.log('[SYNC] Scan completed', { stats, changesCount: changes.length });
 
       return NextResponse.json({
         status: 'success',
@@ -332,8 +351,10 @@ export async function POST(request) {
       });
     } else if (mode === 'pull') {
       // Pull changes from /public to database
+      console.log('[SYNC] Pull starting');
       const { changes, stats } = await scanForChanges(supabase);
       const result = await pullChangesToDatabase(supabase, changes);
+      console.log('[SYNC] Pull completed', { stats, applied: result.applied, changesCount: changes.length });
 
       return NextResponse.json({
         status: 'success',
@@ -344,6 +365,7 @@ export async function POST(request) {
       });
     } else if (mode === 'push') {
       // Push changes from database to /public (not yet implemented)
+      console.warn('[SYNC] Push requested but not implemented');
       return NextResponse.json({
         status: 'error',
         mode: 'push',
@@ -351,6 +373,7 @@ export async function POST(request) {
         timestamp,
       }, { status: 501 });
     } else {
+      console.warn('[SYNC] Unknown mode', { mode });
       return NextResponse.json({
         status: 'error',
         mode,
@@ -359,6 +382,7 @@ export async function POST(request) {
       }, { status: 400 });
     }
   } catch (error) {
+    console.error('[SYNC] Error handler', { message: error.message, stack: error.stack });
     return NextResponse.json({
       status: 'error',
       mode: 'unknown',
@@ -370,6 +394,11 @@ export async function POST(request) {
 
 // GET endpoint to check sync status
 export async function GET(request) {
+  console.log('[SYNC] GET status', {
+    vercelId: request.headers?.get?.('x-vercel-id'),
+    region: process.env.VERCEL_REGION || 'unknown-region',
+    time: new Date().toISOString(),
+  });
   return NextResponse.json({
     status: 'success',
     message: 'Sync endpoint is active',
