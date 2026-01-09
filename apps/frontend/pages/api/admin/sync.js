@@ -208,7 +208,12 @@ async function syncFolder(res, folderName, tableName) {
 
     const files = fs.readdirSync(folderPath).filter(f => {
       const stat = fs.statSync(path.join(folderPath, f));
-      return stat.isFile();
+      if (!stat.isFile()) return false;
+      
+      // Skip binary files - only sync text-based files
+      const textExtensions = ['.json', '.html', '.xml', '.js', '.svg', '.txt', '.css', '.md'];
+      const fileExt = path.extname(f).toLowerCase();
+      return textExtensions.includes(fileExt);
     });
 
     if (files.length === 0) {
