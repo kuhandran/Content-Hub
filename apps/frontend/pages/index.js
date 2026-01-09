@@ -88,6 +88,11 @@ export default function Home() {
     }
   };
 
+  const handleViewLogs = async () => {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
+    window.open(`${apiBase}/admin/logs?limit=100`, '_blank');
+  };
+
   const tablesExist = dbStatus?.tables?.some(t => t.exists);
   const allTablesExist = dbStatus?.tables?.every(t => t.exists);
 
@@ -198,6 +203,11 @@ export default function Home() {
               title={!allTablesExist ? 'Create tables first' : 'Import data from JSON files'}
             >
               {operationLoading === 'pumpdata' ? 'Pumping...' : 'Pump Data'}
+            <button
+              onClick={handleViewLogs}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+            >
+              View Logs
             </button>
           </div>
 
