@@ -209,7 +209,7 @@ async function handleCreateDB(res) {
 async function handleDeleteDB(res) {
   logDatabase('OPERATION', 'system', { operation: 'deletedb', action: 'start' });
   
-  const tables = ['projects', 'skills', 'experience', 'education', 'case_studies', 'achievements'];
+  const tables = ['collections', 'config', 'data', 'files', 'image', 'js', 'resume'];
   const dropped = [];
 
   for (const table of tables) {
