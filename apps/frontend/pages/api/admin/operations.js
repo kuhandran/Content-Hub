@@ -194,7 +194,8 @@ async function handleDeleteDB(res) {
 }
 
 async function handlePumpData(res) {
-  const dataPath = path.join(process.cwd(), '../../public/data');
+  // Read from frontend's public/data (bundled with the app in Vercel)
+  const dataPath = path.join(process.cwd(), 'public/data');
   let imported = {};
 
   // Import projects
