@@ -1,10 +1,9 @@
 {
   "name": "content-hub-monorepo",
   "version": "2.0.0",
-  "description": "Content Hub - Monorepo with Backend API and Frontend",
+  "description": "Content Hub - Next.js Frontend with API Routes",
   "private": true,
   "workspaces": [
-    "apps/backend",
     "apps/frontend"
   ],
   "repository": {
@@ -12,17 +11,10 @@
     "url": "https://github.com/kuhandran/Content-Hub.git"
   },
   "scripts": {
-    "dev": "npm run dev --workspaces",
-    "build": "npm run build --workspaces",
-    "start": "npm start --workspaces",
-    "backend:dev": "npm run dev --workspace=apps/backend",
-    "backend:build": "npm run build --workspace=apps/backend",
-    "backend:start": "npm start --workspace=apps/backend",
-    "frontend:dev": "npm run dev --workspace=apps/frontend",
-    "frontend:build": "npm run build --workspace=apps/frontend",
-    "frontend:start": "npm start --workspace=apps/frontend",
-    "setup-db": "npm run setup-db --workspace=apps/backend",
-    "test": "npm test --workspaces"
+    "dev": "npm run dev --workspace=apps/frontend",
+    "build": "npm run build --workspace=apps/frontend",
+    "start": "npm start --workspace=apps/frontend",
+    "test": "npm test --workspace=apps/frontend"
   },
   "keywords": [
     "cms",
