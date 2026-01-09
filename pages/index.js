@@ -276,22 +276,49 @@ function TabButton({ label, active, onClick }) {
                 </div>
               )}
 
-              <div className="flex flex-wrap gap-2 mb-4">
-                <ActionButton label="Generate URLs" onClick={handleGenerateUrls} loading={operationLoading === 'generate-urls'} tone="slate" />
-                <ActionButton label="Cache to Redis" onClick={handleCacheAll} loading={operationLoading === 'cache-all'} tone="cyan" />
-                <ActionButton label="Migrate" onClick={() => handleOperation('migrate')} loading={operationLoading === 'migrate'} tone="amber" />
-                <ActionButton label="DB Status" onClick={() => handleOperation('status')} loading={operationLoading === 'status'} tone="indigo" />
-                <ActionButton label="Create DB" onClick={() => handleOperation('createdb')} disabled={allTablesExist} loading={operationLoading === 'createdb'} tone="emerald" />
-                <ActionButton label="Delete DB" onClick={() => handleOperation('deletedb')} disabled={!tablesExist} loading={operationLoading === 'deletedb'} tone="rose" />
-                <ActionButton label="Pump Data" onClick={() => handleOperation('pumpdata')} disabled={!allTablesExist} loading={operationLoading === 'pumpdata'} tone="orange" />
-                <ActionButton label="Sync Collections" onClick={() => handleSyncTable('collections')} loading={operationLoading === 'collections'} tone="blue" />
-                <ActionButton label="Sync Config" onClick={() => handleSyncTable('config')} loading={operationLoading === 'config'} tone="blue" />
-                <ActionButton label="Sync Data" onClick={() => handleSyncTable('data')} loading={operationLoading === 'data'} tone="blue" />
-                <ActionButton label="Sync Files" onClick={() => handleSyncTable('files')} loading={operationLoading === 'files'} tone="blue" />
-                <ActionButton label="Sync Images" onClick={() => handleSyncTable('image')} loading={operationLoading === 'image'} tone="blue" />
-                <ActionButton label="Sync JS" onClick={() => handleSyncTable('js')} loading={operationLoading === 'js'} tone="blue" />
-                <ActionButton label="Sync Resume" onClick={() => handleSyncTable('resume')} loading={operationLoading === 'resume'} tone="blue" />
-                <ActionButton label={showLogs ? 'Hide Logs' : 'View Logs'} onClick={handleViewLogs} tone="slate" />
+              {/* Grouped operations into cards instead of a single button row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Generate */}
+                <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Generate</div>
+                  <div className="flex flex-wrap gap-2">
+                    <ActionButton label="Generate URLs" onClick={handleGenerateUrls} loading={operationLoading === 'generate-urls'} tone="slate" />
+                  </div>
+                </div>
+
+                {/* Redis */}
+                <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Redis</div>
+                  <div className="flex flex-wrap gap-2">
+                    <ActionButton label="Cache to Redis" onClick={handleCacheAll} loading={operationLoading === 'cache-all'} tone="cyan" />
+                  </div>
+                </div>
+
+                {/* Database */}
+                <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Database</div>
+                  <div className="flex flex-wrap gap-2">
+                    <ActionButton label="Migrate" onClick={() => handleOperation('migrate')} loading={operationLoading === 'migrate'} tone="amber" />
+                    <ActionButton label="DB Status" onClick={() => handleOperation('status')} loading={operationLoading === 'status'} tone="indigo" />
+                    <ActionButton label="Create DB" onClick={() => handleOperation('createdb')} disabled={allTablesExist} loading={operationLoading === 'createdb'} tone="emerald" />
+                    <ActionButton label="Delete DB" onClick={() => handleOperation('deletedb')} disabled={!tablesExist} loading={operationLoading === 'deletedb'} tone="rose" />
+                    <ActionButton label="Pump Data" onClick={() => handleOperation('pumpdata')} disabled={!allTablesExist} loading={operationLoading === 'pumpdata'} tone="orange" />
+                  </div>
+                </div>
+
+                {/* Sync */}
+                <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Sync</div>
+                  <div className="flex flex-wrap gap-2">
+                    <ActionButton label="Collections" onClick={() => handleSyncTable('collections')} loading={operationLoading === 'collections'} tone="blue" />
+                    <ActionButton label="Config" onClick={() => handleSyncTable('config')} loading={operationLoading === 'config'} tone="blue" />
+                    <ActionButton label="Data" onClick={() => handleSyncTable('data')} loading={operationLoading === 'data'} tone="blue" />
+                    <ActionButton label="Files" onClick={() => handleSyncTable('files')} loading={operationLoading === 'files'} tone="blue" />
+                    <ActionButton label="Images" onClick={() => handleSyncTable('image')} loading={operationLoading === 'image'} tone="blue" />
+                    <ActionButton label="JS" onClick={() => handleSyncTable('js')} loading={operationLoading === 'js'} tone="blue" />
+                    <ActionButton label="Resume" onClick={() => handleSyncTable('resume')} loading={operationLoading === 'resume'} tone="blue" />
+                  </div>
+                </div>
               </div>
 
               {syncProgress && (
@@ -387,20 +414,21 @@ function TabButton({ label, active, onClick }) {
 
 
             {/* Logs */}
-            {showLogs && (
-              <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Logs</div>
-                    <div className="text-lg font-semibold text-slate-800">Latest API Logs</div>
-                  </div>
-                  <button onClick={fetchLogs} className="text-sm text-slate-600 hover:text-slate-900">Refresh</button>
+            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Logs</div>
+                  <div className="text-lg font-semibold text-slate-800">Latest API Logs</div>
                 </div>
+                <button onClick={handleViewLogs} className="text-sm text-slate-600 hover:text-slate-900">{showLogs ? 'Hide' : 'View Logs'}</button>
+              </div>
+              {showLogs && (
                 <div className="space-y-2 max-h-64 overflow-auto text-sm">
+                  <button onClick={fetchLogs} className="text-xs text-slate-600 hover:text-slate-900 mb-2">Refresh Logs</button>
                   <JsonViewer data={logs} />
                 </div>
-              </section>
-            )}
+              )}
+            </section>
           </div>
         </main>
       </div>
