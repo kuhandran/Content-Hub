@@ -229,19 +229,15 @@ export default function Home() {
           </div>
           <nav className="flex-1 px-4 py-6 space-y-2 text-sm text-slate-700">
             <div className="uppercase text-[11px] tracking-[0.2em] text-slate-400 px-2">Overview</div>
-            <div className="px-3 py-2 rounded-lg bg-slate-100 text-slate-900 font-semibold">Dashboard</div>
+            <TabButton label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
             <div className="uppercase text-[11px] tracking-[0.2em] text-slate-400 px-2 mt-4">Operations</div>
-            <div className="grid grid-cols-1 gap-2">
-              <button className="text-left px-3 py-2 rounded-lg hover:bg-slate-100">DB</button>
-              <button className="text-left px-3 py-2 rounded-lg hover:bg-slate-100">Redis Cache</button>
-              <button className="text-left px-3 py-2 rounded-lg hover:bg-slate-100">Sync</button>
-              <button className="text-left px-3 py-2 rounded-lg hover:bg-slate-100">Generate</button>
-            </div>
+            <TabButton label="DB" active={activeTab === 'db'} onClick={() => setActiveTab('db')} />
+            <TabButton label="Redis Cache" active={activeTab === 'redis'} onClick={() => setActiveTab('redis')} />
+            <TabButton label="Sync" active={activeTab === 'sync'} onClick={() => setActiveTab('sync')} />
+            <TabButton label="Generate" active={activeTab === 'generate'} onClick={() => setActiveTab('generate')} />
             <div className="uppercase text-[11px] tracking-[0.2em] text-slate-400 px-2 mt-4">Content</div>
-            <div className="grid grid-cols-1 gap-2">
-              <button className="text-left px-3 py-2 rounded-lg hover:bg-slate-100">Editor</button>
-              <button className="text-left px-3 py-2 rounded-lg hover:bg-slate-100">Images</button>
-            </div>
+            <TabButton label="Editor" active={activeTab === 'editor'} onClick={() => setActiveTab('editor')} />
+            <TabButton label="Images" active={activeTab === 'images'} onClick={() => setActiveTab('images')} />
           </nav>
           <div className="px-6 py-4 border-t border-slate-200 text-xs text-slate-500">v2 • Next.js + Supabase</div>
         </aside>
@@ -266,7 +262,7 @@ export default function Home() {
               <KpiCard title="Sync" value="Ready" badge="Files" tone="orange" subtitle="Public → DB" />
             </div>
 
-            {/* Operations */}
+            {/* Operations as tabs */}
             <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -277,11 +273,11 @@ export default function Home() {
 
               {operationMessage && (
                 <div className={`mb-4 p-4 rounded-xl border ${operationMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
-                  {operationMessage.text}
+                  <pre className="whitespace-pre-wrap break-words">{typeof operationMessage.text === 'object' ? JSON.stringify(operationMessage.text, null, 2) : operationMessage.text}</pre>
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              <div className="flex flex-wrap gap-2 mb-4">
                 <ActionButton label="Generate URLs" onClick={handleGenerateUrls} loading={operationLoading === 'generate-urls'} tone="slate" />
                 <ActionButton label="Cache to Redis" onClick={handleCacheAll} loading={operationLoading === 'cache-all'} tone="cyan" />
                 <ActionButton label="Migrate" onClick={() => handleOperation('migrate')} loading={operationLoading === 'migrate'} tone="amber" />
@@ -308,10 +304,21 @@ export default function Home() {
 
               {urlsGenerated && (
                 <div className="mt-4 p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-sm text-indigo-900">
-                  URLs: collections {urlsGenerated.collections.length} • config {urlsGenerated.config.length} • data {urlsGenerated.data.length} • files {urlsGenerated.files.length} • image {urlsGenerated.image.length} • js {urlsGenerated.js.length} • resume {urlsGenerated.resume.length}
+                  <pre className="whitespace-pre-wrap break-words">{JSON.stringify(urlsGenerated, null, 2)}</pre>
                 </div>
               )}
             </section>
+// TabButton component for sidebar
+function TabButton({ label, active, onClick }) {
+  return (
+    <button
+      className={`w-full text-left px-3 py-2 rounded-lg font-semibold transition-colors ${active ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'}`}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  );
+}
 
             {/* Content editor */}
             <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
