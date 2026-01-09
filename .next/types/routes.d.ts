@@ -3,7 +3,7 @@
 
 type AppRoutes = never
 type AppRouteHandlerRoutes = "/api/admin/data" | "/api/admin/db" | "/api/admin/operations" | "/api/admin/sync"
-type PageRoutes = never
+type PageRoutes = "/"
 type LayoutRoutes = never
 type RedirectRoutes = never
 type RewriteRoutes = never
@@ -11,6 +11,7 @@ type Routes = AppRoutes | PageRoutes | LayoutRoutes | RedirectRoutes | RewriteRo
 
 
 interface ParamMap {
+  "/": {}
   "/api/admin/data": {}
   "/api/admin/db": {}
   "/api/admin/operations": {}
