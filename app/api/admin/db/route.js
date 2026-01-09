@@ -6,19 +6,21 @@
  * POST: Create/Delete/Manage tables
  */
 
-const { createClient } = require('@supabase/supabase-js');
-const { NextResponse } = require('next/server');
+
+import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from 'next/server';
+import { logRequest, logResponse, logDatabase, logError } from '../../../../lib/logger';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || '',
   process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
-async function POST(request) {
-  console.log('[ADMIN DB] POST request received');
+
+export async function POST(request) {
+  logRequest(request);
   try {
     const { action, table } = await request.json();
-    console.log('[ADMIN DB] Action:', action, 'Table:', table);
 
     if (action === 'create') {
       try {
@@ -38,19 +40,20 @@ async function POST(request) {
         const statements = schema.split(';').filter(s => s.trim());
         let created = 0;
 
+
         for (const stmt of statements) {
           try {
             await supabase.rpc('exec_sql', { sql: stmt.trim() });
             created++;
-            console.log('[ADMIN DB] Executed statement:', stmt.trim());
+            logDatabase('EXEC_SQL', 'schema', { statement: stmt.trim() });
           } catch (e) {
-            if (!e.message.includes('exists')) console.warn('[ADMIN DB] Statement error:', e.message);
+            if (!e.message.includes('exists')) logError(e);
           }
         }
-
+        logResponse(200, { action: 'create', tables: 8, statements_executed: created });
         return NextResponse.json({ status: 'success', action: 'create', tables: 8, statements_executed: created });
       } catch (createException) {
-        console.log('[ADMIN DB] Create Exception:', createException.message);
+        logError(createException);
         return NextResponse.json({ status: 'error', error: createException.message }, { status: 500 });
       }
     }
@@ -60,51 +63,55 @@ async function POST(request) {
         const tables = ['sync_manifest', 'collections', 'static_files', 'config_files', 'data_files', 'images', 'resumes', 'javascript_files'];
         let cleared = 0;
 
+
         for (const t of tables) {
           try {
             await supabase.from(t).delete().neq('id', null);
             cleared++;
-            console.log('[ADMIN DB] Cleared table:', t);
+            logDatabase('CLEAR', t);
           } catch (e) {
-            console.warn('[ADMIN DB] Clear Exception:', e.message);
+            logError(e);
           }
         }
-
+        logResponse(200, { action: 'delete', tables_cleared: cleared });
         return NextResponse.json({ status: 'success', action: 'delete', tables_cleared: cleared });
       } catch (deleteException) {
-        console.log('[ADMIN DB] Delete Exception:', deleteException.message);
+        logError(deleteException);
         return NextResponse.json({ status: 'error', error: deleteException.message }, { status: 500 });
       }
     }
 
     if (action === 'drop' && table) {
+
       try {
         await supabase.rpc('exec_sql', { sql: `DROP TABLE IF EXISTS ${table} CASCADE;` });
-        console.log('[ADMIN DB] Dropped table:', table);
+        logDatabase('DROP', table);
+        logResponse(200, { action: 'drop', table });
         return NextResponse.json({ status: 'success', action: 'drop', table });
       } catch (dropException) {
-        console.log('[ADMIN DB] Drop Exception:', dropException.message);
+        logError(dropException);
         return NextResponse.json({ status: 'error', error: dropException.message }, { status: 500 });
       }
     }
 
+
     return NextResponse.json({ status: 'error', error: 'Invalid action' }, { status: 400 });
   } catch (error) {
-    console.log('[ADMIN DB] Handler error:', error.message);
+    logError(error);
     return NextResponse.json({ status: 'error', error: error.message }, { status: 500 });
   }
 }
 
-async function GET() {
+
+export async function GET() {
   try {
     const tables = ['collections', 'static_files', 'config_files', 'data_files', 'images', 'resumes', 'javascript_files', 'sync_manifest'];
     const stats = {};
-
     for (const t of tables) {
       const { count } = await supabase.from(t).select('*', { count: 'exact', head: true });
       stats[t] = count || 0;
     }
-
+    logResponse(200, { database: stats });
     return NextResponse.json({
       status: 'success',
       database: stats,
@@ -112,8 +119,7 @@ async function GET() {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
+    logError(error);
     return NextResponse.json({ status: 'error', error: error.message }, { status: 500 });
   }
 }
-
-module.exports = { POST, GET };

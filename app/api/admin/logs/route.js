@@ -1,0 +1,18 @@
+// /api/admin/logs - return logs
+import { getLogs, logError } from '../../../../lib/logger';
+
+export async function GET() {
+  try {
+    const logs = getLogs({ limit: 100 });
+    return new Response(JSON.stringify({ status: 'success', logs }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (err) {
+    logError(err);
+    return new Response(JSON.stringify({ status: 'error', message: err.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}

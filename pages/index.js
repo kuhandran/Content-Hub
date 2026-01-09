@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import JsonViewer from '../components/JsonViewer';
 
 export default function Home() {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -411,12 +412,7 @@ function TabButton({ label, active, onClick }) {
                   <button onClick={fetchLogs} className="text-sm text-slate-600 hover:text-slate-900">Refresh</button>
                 </div>
                 <div className="space-y-2 max-h-64 overflow-auto text-sm">
-                  {logs.map((log, idx) => (
-                    <div key={idx} className="border border-slate-200 rounded-xl p-3 bg-slate-50">
-                      <div className="font-mono text-xs text-slate-500">{log.timestamp}</div>
-                      <div className="text-slate-800">{log.message}</div>
-                    </div>
-                  ))}
+                  <JsonViewer data={logs} />
                 </div>
               </section>
             )}
