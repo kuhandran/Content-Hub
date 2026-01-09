@@ -252,43 +252,59 @@ export default function Home() {
             </button>
 
             <button
-              onClick={() => handleSyncTable('projects')}
-              disabled={operationLoading === 'projects'}
+              onClick={() => handleSyncTable('collections')}
+              disabled={operationLoading === 'collections'}
               className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
             >
-              {operationLoading === 'projects' ? 'Syncing...' : 'Sync Projects'}
+              {operationLoading === 'collections' ? 'Syncing...' : 'Sync Collections'}
             </button>
 
             <button
-              onClick={() => handleSyncTable('skills')}
-              disabled={operationLoading === 'skills'}
+              onClick={() => handleSyncTable('config')}
+              disabled={operationLoading === 'config'}
               className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
             >
-              {operationLoading === 'skills' ? 'Syncing...' : 'Sync Skills'}
+              {operationLoading === 'config' ? 'Syncing...' : 'Sync Config'}
             </button>
 
             <button
-              onClick={() => handleSyncTable('experience')}
-              disabled={operationLoading === 'experience'}
+              onClick={() => handleSyncTable('data')}
+              disabled={operationLoading === 'data'}
               className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
             >
-              {operationLoading === 'experience' ? 'Syncing...' : 'Sync Experience'}
+              {operationLoading === 'data' ? 'Syncing...' : 'Sync Data'}
             </button>
 
             <button
-              onClick={() => handleSyncTable('education')}
-              disabled={operationLoading === 'education'}
+              onClick={() => handleSyncTable('files')}
+              disabled={operationLoading === 'files'}
               className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
             >
-              {operationLoading === 'education' ? 'Syncing...' : 'Sync Education'}
+              {operationLoading === 'files' ? 'Syncing...' : 'Sync Files'}
             </button>
 
             <button
-              onClick={() => handleSyncTable('achievements')}
-              disabled={operationLoading === 'achievements'}
+              onClick={() => handleSyncTable('image')}
+              disabled={operationLoading === 'image'}
               className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
             >
-              {operationLoading === 'achievements' ? 'Syncing...' : 'Sync Achievements'}
+              {operationLoading === 'image' ? 'Syncing...' : 'Sync Image'}
+            </button>
+
+            <button
+              onClick={() => handleSyncTable('js')}
+              disabled={operationLoading === 'js'}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
+            >
+              {operationLoading === 'js' ? 'Syncing...' : 'Sync JS'}
+            </button>
+
+            <button
+              onClick={() => handleSyncTable('resume')}
+              disabled={operationLoading === 'resume'}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
+            >
+              {operationLoading === 'resume' ? 'Syncing...' : 'Sync Resume'}
             </button>
 
             <button
@@ -342,7 +358,7 @@ export default function Home() {
           {dbStatus?.tables && (
             <div className="mt-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">Database Tables</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
                 {dbStatus.tables.map(table => (
                   <div 
                     key={table.table}

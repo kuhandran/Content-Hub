@@ -3,12 +3,11 @@ import { logDatabase, logError, logResponse } from '../../../lib/logger';
 import fs from 'fs';
 import path from 'path';
 
-// Keep track of sync state in memory (resets on deployment)
 const syncState = {
   inProgress: false,
   currentTable: null,
-  currentRecord: 0,
-  totalRecords: 0,
+  currentFile: 0,
+  totalFiles: 0,
   completedTables: [],
   errors: [],
   startTime: null,
@@ -26,16 +25,20 @@ export default async function handler(req, res) {
 
   try {
     switch (action) {
-      case 'sync-projects':
-        return await syncTable(res, 'projects', 'projects.json', projectMapper);
-      case 'sync-skills':
-        return await syncTable(res, 'skills', 'skills.json', skillsMapper);
-      case 'sync-experience':
-        return await syncTable(res, 'experience', 'experience.json', experienceMapper);
-      case 'sync-education':
-        return await syncTable(res, 'education', 'education.json', educationMapper);
-      case 'sync-achievements':
-        return await syncTable(res, 'achievements', 'achievements.json', achievementsMapper);
+      case 'sync-collections':
+        return await syncCollections(res);
+      case 'sync-config':
+        return await syncFolder(res, 'config', 'config');
+      case 'sync-data':
+        return await syncFolder(res, 'data', 'data');
+      case 'sync-files':
+        return await syncFolder(res, 'files', 'files');
+      case 'sync-image':
+        return await syncFolder(res, 'image', 'image');
+      case 'sync-js':
+        return await syncFolder(res, 'js', 'js');
+      case 'sync-resume':
+        return await syncFolder(res, 'resume', 'resume');
       case 'status':
         return res.status(200).json({
           status: 'success',
@@ -59,7 +62,7 @@ export default async function handler(req, res) {
   }
 }
 
-async function syncTable(res, tableName, fileName, mapper) {
+async function syncCollections(res) {
   if (syncState.inProgress) {
     return res.status(429).json({
       status: 'error',
@@ -70,64 +73,180 @@ async function syncTable(res, tableName, fileName, mapper) {
   }
 
   syncState.inProgress = true;
-  syncState.currentTable = tableName;
+  syncState.currentTable = 'collections';
   syncState.startTime = new Date();
   syncState.errors = [];
 
-  console.log(`[SYNC] Starting sync for table: ${tableName}`);
-  logDatabase('SYNC', tableName, { action: 'start' });
+  console.log(`[SYNC] Starting sync for collections`);
+  logDatabase('SYNC', 'collections', { action: 'start' });
 
   try {
-    const dataPath = path.join(process.cwd(), 'public/data');
-    const filePath = path.join(dataPath, fileName);
+    const collectionsPath = path.join(process.cwd(), 'public/collections');
+    const languages = fs.readdirSync(collectionsPath).filter(f => 
+      fs.statSync(path.join(collectionsPath, f)).isDirectory()
+    );
 
-    if (!fs.existsSync(filePath)) {
-      throw new Error(`Data file not found: ${fileName}`);
-    }
+    console.log(`[SYNC] Found ${languages.length} language folders`);
 
-    const fileContent = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    const records = mapper(fileContent);
+    let totalInserted = 0;
 
-    syncState.totalRecords = records.length;
-    syncState.currentRecord = 0;
+    for (const lang of languages) {
+      const langPath = path.join(collectionsPath, lang);
+      const types = fs.readdirSync(langPath).filter(f => 
+        fs.statSync(path.join(langPath, f)).isDirectory()
+      );
 
-    console.log(`[SYNC] Inserting ${records.length} records into ${tableName}`);
+      for (const type of types) {
+        const typePath = path.join(langPath, type);
+        const files = fs.readdirSync(typePath).filter(f => f.endsWith('.json'));
 
-    // Insert records in batches to avoid timeout
-    const BATCH_SIZE = 10;
-    for (let i = 0; i < records.length; i += BATCH_SIZE) {
-      const batch = records.slice(i, i + BATCH_SIZE);
-      
-      for (const record of batch) {
-        try {
-          await insertRecord(tableName, record);
-          syncState.currentRecord++;
-          console.log(`[SYNC] ${tableName}: ${syncState.currentRecord}/${syncState.totalRecords}`);
-        } catch (error) {
-          syncState.errors.push({
-            record: syncState.currentRecord,
-            error: error.message,
-          });
-          console.error(`[SYNC] Error inserting record ${syncState.currentRecord}:`, error);
+        for (const file of files) {
+          try {
+            const filePath = path.join(typePath, file);
+            const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+            syncState.currentFile++;
+            syncState.totalFiles = languages.length * 50; // Approximate
+
+            await sql`
+              INSERT INTO collections (lang, type, filename, content)
+              VALUES (${lang}, ${type}, ${file}, ${JSON.stringify(content)})
+            `;
+
+            totalInserted++;
+            console.log(`[SYNC] collections: ${totalInserted} files`);
+          } catch (error) {
+            syncState.errors.push({
+              file,
+              lang,
+              type,
+              error: error.message,
+            });
+            console.error(`[SYNC] Error inserting ${lang}/${type}/${file}:`, error.message);
+          }
+
+          // Delay between batches
+          await new Promise(resolve => setTimeout(resolve, 50));
         }
       }
-
-      // Small delay between batches to prevent overwhelming the DB
-      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
-    syncState.completedTables.push(tableName);
-    logDatabase('SYNC', tableName, { 
+    syncState.completedTables.push('collections');
+    logDatabase('SYNC', 'collections', { 
       action: 'complete',
-      recordsInserted: syncState.currentRecord,
+      filesInserted: totalInserted,
       errors: syncState.errors.length
     });
 
     const response = {
       status: 'success',
-      message: `Synced ${syncState.currentRecord} records to ${tableName}`,
-      table: tableName,
-      recordsInserted: syncState.currentRecord,
+      message: `Synced ${totalInserted} collection files`,
+      table: 'collections',
+      filesInserted: totalInserted,
+      errors: syncState.errors,
+      timestamp: new Date().toISOString(),
+    };
+
+    logResponse(200, response);
+    return res.status(200).json(response);
+
+  } catch (error) {
+    logError(error, { table: 'collections', action: 'sync' });
+    const errorResponse = {
+      status: 'error',
+      message: error.message,
+      table: 'collections',
+      syncState,
+      timestamp: new Date().toISOString(),
+    };
+    logResponse(500, errorResponse);
+    return res.status(500).json(errorResponse);
+  } finally {
+    syncState.inProgress = false;
+    syncState.currentTable = null;
+  }
+}
+
+async function syncFolder(res, folderName, tableName) {
+  if (syncState.inProgress) {
+    return res.status(429).json({
+      status: 'error',
+      message: 'Sync already in progress',
+      syncState,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  syncState.inProgress = true;
+  syncState.currentTable = folderName;
+  syncState.startTime = new Date();
+  syncState.errors = [];
+
+  console.log(`[SYNC] Starting sync for ${folderName}`);
+  logDatabase('SYNC', tableName, { action: 'start' });
+
+  try {
+    const folderPath = path.join(process.cwd(), `public/${folderName}`);
+
+    if (!fs.existsSync(folderPath)) {
+      throw new Error(`Folder not found: ${folderName}`);
+    }
+
+    const files = fs.readdirSync(folderPath).filter(f => {
+      const stat = fs.statSync(path.join(folderPath, f));
+      return stat.isFile();
+    });
+
+    console.log(`[SYNC] Found ${files.length} files in ${folderName}`);
+
+    syncState.totalFiles = files.length;
+    syncState.currentFile = 0;
+
+    let totalInserted = 0;
+    const BATCH_SIZE = 5;
+
+    for (let i = 0; i < files.length; i += BATCH_SIZE) {
+      const batch = files.slice(i, i + BATCH_SIZE);
+
+      for (const file of batch) {
+        try {
+          const filePath = path.join(folderPath, file);
+          const filecontent = fs.readFileSync(filePath, 'utf8');
+
+          syncState.currentFile++;
+
+          await sql`
+            INSERT INTO ${sql(tableName)} (filename, filecontent)
+            VALUES (${file}, ${filecontent})
+          `;
+
+          totalInserted++;
+          console.log(`[SYNC] ${folderName}: ${syncState.currentFile}/${syncState.totalFiles}`);
+        } catch (error) {
+          syncState.errors.push({
+            file,
+            error: error.message,
+          });
+          console.error(`[SYNC] Error inserting ${file}:`, error.message);
+        }
+      }
+
+      // Delay between batches
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    syncState.completedTables.push(folderName);
+    logDatabase('SYNC', tableName, { 
+      action: 'complete',
+      filesInserted: totalInserted,
+      errors: syncState.errors.length
+    });
+
+    const response = {
+      status: 'success',
+      message: `Synced ${totalInserted} files to ${folderName}`,
+      table: folderName,
+      filesInserted: totalInserted,
       errors: syncState.errors,
       timestamp: new Date().toISOString(),
     };
@@ -140,7 +259,7 @@ async function syncTable(res, tableName, fileName, mapper) {
     const errorResponse = {
       status: 'error',
       message: error.message,
-      table: tableName,
+      table: folderName,
       syncState,
       timestamp: new Date().toISOString(),
     };
@@ -150,115 +269,4 @@ async function syncTable(res, tableName, fileName, mapper) {
     syncState.inProgress = false;
     syncState.currentTable = null;
   }
-}
-
-async function insertRecord(tableName, record) {
-  switch (tableName) {
-    case 'projects':
-      return await sql`
-        INSERT INTO projects (title, description, image, tech_stack, metrics, live_url, github_url, case_study_slug)
-        VALUES (
-          ${record.title},
-          ${record.description},
-          ${record.image},
-          ${record.tech_stack},
-          ${record.metrics},
-          ${record.live_url},
-          ${record.github_url},
-          ${record.case_study_slug}
-        )
-      `;
-    case 'skills':
-      return await sql`
-        INSERT INTO skills (category, name, icon, skill_data)
-        VALUES (${record.category}, ${record.name}, ${record.icon}, ${record.skill_data})
-      `;
-    case 'experience':
-      return await sql`
-        INSERT INTO experience (company, position, duration, location, description, achievements)
-        VALUES (${record.company}, ${record.position}, ${record.duration}, ${record.location}, ${record.description}, ${record.achievements})
-      `;
-    case 'education':
-      return await sql`
-        INSERT INTO education (degree, institution, year, description)
-        VALUES (${record.degree}, ${record.institution}, ${record.year}, ${record.description})
-      `;
-    case 'achievements':
-      return await sql`
-        INSERT INTO achievements (title, description, date, icon)
-        VALUES (${record.title}, ${record.description}, ${record.date}, ${record.icon})
-      `;
-  }
-}
-
-// Mappers convert JSON data to insert-ready records
-function projectMapper(data) {
-  const records = Array.isArray(data) ? data : [];
-  return records.filter(p => p.title && p.description).map(p => ({
-    title: p.title || null,
-    description: p.description || null,
-    image: p.image || null,
-    tech_stack: JSON.stringify(p.techStack || []),
-    metrics: p.metrics || null,
-    live_url: p.liveUrl || null,
-    github_url: p.githubUrl || null,
-    case_study_slug: p.caseStudySlug || null,
-  }));
-}
-
-function skillsMapper(data) {
-  const records = [];
-  for (const [category, skillData] of Object.entries(data)) {
-    if (skillData && skillData.name) {
-      records.push({
-        category: category || null,
-        name: skillData.name || null,
-        icon: skillData.icon || null,
-        skill_data: JSON.stringify(skillData.skills || []),
-      });
-    }
-  }
-  return records;
-}
-
-function experienceMapper(data) {
-  const records = Array.isArray(data) ? data : [];
-  return records.filter(e => e.company && e.position).map(e => ({
-    company: e.company || null,
-    position: e.position || null,
-    duration: e.duration || null,
-    location: e.location || null,
-    description: e.description || null,
-    achievements: JSON.stringify(e.achievements || []),
-  }));
-}
-
-function educationMapper(data) {
-  const records = Array.isArray(data) ? data : [];
-  return records.filter(e => e.degree && e.institution).map(e => ({
-    degree: e.degree || null,
-    institution: e.institution || null,
-    year: e.year || null,
-    description: e.description || null,
-  }));
-}
-
-function achievementsMapper(data) {
-  let achievements = [];
-  
-  // Handle both array and object formats
-  if (Array.isArray(data)) {
-    achievements = data;
-  } else if (typeof data === 'object') {
-    // If it's an object with awards/certifications, flatten them
-    if (data.awards) achievements = achievements.concat(data.awards);
-    if (data.certifications) achievements = achievements.concat(data.certifications);
-  }
-  
-  return achievements.filter(a => a.name || a.title).map(a => ({
-    title: a.name || a.title || null,
-    description: a.description || null,
-    date: a.year || a.date || null,
-    icon: a.icon || null,
-  }));
 }

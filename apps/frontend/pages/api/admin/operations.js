@@ -48,7 +48,7 @@ export default async function handler(req, res) {
 async function handleStatus(res) {
   logDatabase('OPERATION', 'system', { operation: 'status', action: 'start' });
   
-  const tables = ['projects', 'skills', 'experience', 'education', 'case_studies', 'achievements'];
+  const tables = ['collections', 'config', 'data', 'files', 'image', 'js', 'resume'];
   const status = [];
 
   for (const table of tables) {
@@ -111,7 +111,7 @@ async function handleCreateDB(res) {
     SELECT table_name 
     FROM information_schema.tables 
     WHERE table_schema = 'public' 
-    AND table_name IN ('projects', 'skills', 'experience', 'education', 'case_studies', 'achievements')
+    AND table_name IN ('collections', 'config', 'data', 'files', 'image', 'js', 'resume')
   `;
 
   if (existing.length > 0) {
@@ -133,57 +133,48 @@ async function handleCreateDB(res) {
 
   // Create tables
   const tablesToCreate = [
-    { name: 'projects', schema: `CREATE TABLE IF NOT EXISTS projects (
+    { name: 'collections', schema: `CREATE TABLE IF NOT EXISTS collections (
       id SERIAL PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT,
-      image TEXT,
-      tech_stack JSONB,
-      metrics TEXT,
-      live_url TEXT,
-      github_url TEXT,
-      case_study_slug TEXT,
-      created_at TIMESTAMP DEFAULT NOW()
-    )` },
-    { name: 'skills', schema: `CREATE TABLE IF NOT EXISTS skills (
-      id SERIAL PRIMARY KEY,
-      category TEXT NOT NULL,
-      name TEXT NOT NULL,
-      icon TEXT,
-      skill_data JSONB,
-      created_at TIMESTAMP DEFAULT NOW()
-    )` },
-    { name: 'experience', schema: `CREATE TABLE IF NOT EXISTS experience (
-      id SERIAL PRIMARY KEY,
-      company TEXT NOT NULL,
-      position TEXT NOT NULL,
-      duration TEXT,
-      location TEXT,
-      description TEXT,
-      achievements JSONB,
-      created_at TIMESTAMP DEFAULT NOW()
-    )` },
-    { name: 'education', schema: `CREATE TABLE IF NOT EXISTS education (
-      id SERIAL PRIMARY KEY,
-      degree TEXT NOT NULL,
-      institution TEXT NOT NULL,
-      year TEXT,
-      description TEXT,
-      created_at TIMESTAMP DEFAULT NOW()
-    )` },
-    { name: 'case_studies', schema: `CREATE TABLE IF NOT EXISTS case_studies (
-      id SERIAL PRIMARY KEY,
-      slug TEXT UNIQUE NOT NULL,
-      title TEXT NOT NULL,
+      lang TEXT NOT NULL,
+      type TEXT NOT NULL,
+      filename TEXT NOT NULL,
       content JSONB,
       created_at TIMESTAMP DEFAULT NOW()
     )` },
-    { name: 'achievements', schema: `CREATE TABLE IF NOT EXISTS achievements (
+    { name: 'config', schema: `CREATE TABLE IF NOT EXISTS config (
       id SERIAL PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT,
-      date TEXT,
-      icon TEXT,
+      filename TEXT NOT NULL,
+      filecontent TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )` },
+    { name: 'data', schema: `CREATE TABLE IF NOT EXISTS data (
+      id SERIAL PRIMARY KEY,
+      filename TEXT NOT NULL,
+      filecontent TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )` },
+    { name: 'files', schema: `CREATE TABLE IF NOT EXISTS files (
+      id SERIAL PRIMARY KEY,
+      filename TEXT NOT NULL,
+      filecontent TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )` },
+    { name: 'image', schema: `CREATE TABLE IF NOT EXISTS image (
+      id SERIAL PRIMARY KEY,
+      filename TEXT NOT NULL,
+      filecontent TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )` },
+    { name: 'js', schema: `CREATE TABLE IF NOT EXISTS js (
+      id SERIAL PRIMARY KEY,
+      filename TEXT NOT NULL,
+      filecontent TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )` },
+    { name: 'resume', schema: `CREATE TABLE IF NOT EXISTS resume (
+      id SERIAL PRIMARY KEY,
+      filename TEXT NOT NULL,
+      filecontent TEXT,
       created_at TIMESTAMP DEFAULT NOW()
     )` },
   ];
