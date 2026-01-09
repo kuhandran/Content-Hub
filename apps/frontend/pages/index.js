@@ -12,6 +12,9 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [operationLoading, setOperationLoading] = useState(null);
   const [operationMessage, setOperationMessage] = useState(null);
+  const [showLogs, setShowLogs] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [syncProgress, setSyncProgress] = useState(null);
 
   useEffect(() => {
     fetchApiStatus();
@@ -89,8 +92,51 @@ export default function Home() {
   };
 
   const handleViewLogs = async () => {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
-    window.open(`${apiBase}/admin/logs?limit=100`, '_blank');
+    setShowLogs(!showLogs);
+    if (!showLogs) {
+      fetchLogs();
+    }
+  };
+
+  const fetchLogs = async () => {
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
+      const response = await fetch(`${apiBase}/admin/logs?limit=50`);
+      const data = await response.json();
+      setLogs(data.logs || []);
+    } catch (err) {
+      console.error('Error fetching logs:', err);
+    }
+  };
+
+  const handleSyncTable = async (table) => {
+    try {
+      setSyncProgress({ table, status: 'syncing' });
+      setOperationLoading(table);
+      
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
+      const response = await fetch(`${apiBase}/admin/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: `sync-${table}` }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.status === 'error') {
+        setSyncProgress({ table, status: 'error', message: data.message });
+        setOperationMessage({ type: 'error', text: data.message });
+      } else {
+        setSyncProgress({ table, status: 'complete', records: data.recordsInserted });
+        setOperationMessage({ type: 'success', text: `Synced ${data.recordsInserted} records to ${table}` });
+        setTimeout(() => fetchDbStatus(), 500);
+      }
+    } catch (err) {
+      setSyncProgress({ table, status: 'error', message: err.message });
+      setOperationMessage({ type: 'error', text: err.message });
+    } finally {
+      setOperationLoading(null);
+    }
   };
 
   const tablesExist = dbStatus?.tables?.some(t => t.exists);
@@ -204,12 +250,91 @@ export default function Home() {
             >
               {operationLoading === 'pumpdata' ? 'Pumping...' : 'Pump Data'}
             <button
-              onClick={handleViewLogs}
-              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              onClick={() => handleSyncTable('projects')}
+              disabled={operationLoading === 'projects'}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
             >
-              View Logs
+              {operationLoading === 'projects' ? 'Syncing...' : 'Sync Projects'}
+            </button>
+
+            <button
+              onClick={() => handleSyncTable('skills')}
+              disabled={operationLoading === 'skills'}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
+            >
+              {operationLoading === 'skills' ? 'Syncing...' : 'Sync Skills'}
+            </button>
+
+            <button
+              onClick={() => handleSyncTable('experience')}
+              disabled={operationLoading === 'experience'}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
+            >
+              {operationLoading === 'experience' ? 'Syncing...' : 'Sync Experience'}
+            </button>
+
+            <button
+              onClick={() => handleSyncTable('education')}
+              disabled={operationLoading === 'education'}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
+            >
+              {operationLoading === 'education' ? 'Syncing...' : 'Sync Education'}
+            </button>
+
+            <button
+              onClick={() => handleSyncTable('achievements')}
+              disabled={operationLoading === 'achievements'}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
+            >
+              {operationLoading === 'achievements' ? 'Syncing...' : 'Sync Achievements'}
+            </button>
+
+            <button
+              onClick={handleViewLogs}
+              className={`${showLogs ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-gray-600 hover:bg-gray-700'} text-white font-bold py-2 px-4 rounded`}
+            >
+              {showLogs ? 'Hide Logs' : 'View Logs'}
             </button>
           </div>
+
+          {syncProgress && (
+            <div className="mt-4 p-3 bg-blue-50 border-l-4 border-blue-500">
+              <div className="font-semibold">{syncProgress.table}</div>
+              <div className="text-sm text-gray-600">
+                Status: <span className="font-mono">{syncProgress.status}</span>
+                {syncProgress.records && ` - ${syncProgress.records} records`}
+                {syncProgress.message && ` - ${syncProgress.message}`}
+              </div>
+            </div>
+          )}
+
+          {showLogs && (
+            <div className="mt-4 bg-gray-900 text-gray-100 rounded p-4 font-mono text-xs max-h-96 overflow-y-auto">
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-bold">Live Logs ({logs.length})</span>
+                <button 
+                  onClick={fetchLogs}
+                  className="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
+                >
+                  Refresh
+                </button>
+              </div>
+              {logs.length === 0 ? (
+                <div className="text-gray-500">No logs yet...</div>
+              ) : (
+                logs.map((log, idx) => (
+                  <div key={idx} className={`mb-1 ${
+                    log.type === 'ERROR' ? 'text-red-400' :
+                    log.type === 'DATABASE' ? 'text-blue-400' :
+                    log.type === 'RESPONSE' ? 'text-green-400' :
+                    'text-gray-400'
+                  }`}>
+                    [{log.timestamp}] [{log.type}] {log.message || log.operation || log.method}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
 
           {/* DB Status Display */}
           {dbStatus?.tables && (
