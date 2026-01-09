@@ -34,13 +34,11 @@ export default function Home() {
   const fetchApiStatus = async () => {
     try {
       setLoading(true);
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
-      const response = await fetch(apiBase);
-
+      // Use a real endpoint for API status, e.g., /api/admin/data or /api/admin/operations
+      const response = await fetch('/api/admin/data');
       if (!response.ok) {
         throw new Error(`API returned ${response.status}`);
       }
-
       const data = await response.json();
       setApiStatus(data);
       setError(null);
@@ -71,8 +69,7 @@ function TabButton({ label, active, onClick }) {
 
   const fetchDbStatus = async () => {
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
-      const response = await fetch(`${apiBase}/admin/operations`, {
+      const response = await fetch('/api/admin/operations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ operation: 'status' }),
@@ -88,16 +85,12 @@ function TabButton({ label, active, onClick }) {
     try {
       setOperationLoading(operation);
       setOperationMessage(null);
-      
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
-      const response = await fetch(`${apiBase}/admin/operations`, {
+      const response = await fetch('/api/admin/operations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ operation }),
       });
-      
       const data = await response.json();
-      
       if (data.status === 'error') {
         setOperationMessage({ type: 'error', text: data.message });
       } else {
@@ -121,8 +114,7 @@ function TabButton({ label, active, onClick }) {
 
   const fetchLogs = async () => {
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
-      const response = await fetch(`${apiBase}/admin/logs?limit=50`);
+      const response = await fetch('/api/admin/logs?limit=50');
       const data = await response.json();
       setLogs(data.logs || []);
     } catch (err) {
@@ -134,16 +126,12 @@ function TabButton({ label, active, onClick }) {
     try {
       setSyncProgress({ table, status: 'syncing' });
       setOperationLoading(table);
-      
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
-      const response = await fetch(`${apiBase}/admin/sync`, {
+      const response = await fetch('/api/admin/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: `sync-${table}` }),
       });
-      
       const data = await response.json();
-      
       if (data.status === 'error') {
         setSyncProgress({ table, status: 'error', message: data.message });
         setOperationMessage({ type: 'error', text: data.message });
@@ -163,8 +151,7 @@ function TabButton({ label, active, onClick }) {
   const handleGenerateUrls = async () => {
     try {
       setOperationLoading('generate-urls');
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
-      const response = await fetch(`${apiBase}/admin/urls`);
+      const response = await fetch('/api/admin/urls');
       const data = await response.json();
       if (data.status === 'error') {
         setOperationMessage({ type: 'error', text: data.message });
@@ -182,8 +169,7 @@ function TabButton({ label, active, onClick }) {
   const handleCacheAll = async () => {
     try {
       setOperationLoading('cache-all');
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
-      const response = await fetch(`${apiBase}/admin/cache`, {
+      const response = await fetch('/api/admin/cache', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'cache-all' }),
@@ -204,7 +190,6 @@ function TabButton({ label, active, onClick }) {
   const handleSaveContent = async () => {
     setEditorMessage(null);
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
       const payload = {
         table: editorTable,
         filename: editorFilename,
@@ -214,7 +199,7 @@ function TabButton({ label, active, onClick }) {
         payload.lang = editorLang;
         payload.type = editorType;
       }
-      const response = await fetch(`${apiBase}/admin/content`, {
+      const response = await fetch('/api/admin/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
