@@ -249,6 +249,8 @@ export default function Home() {
               title={!allTablesExist ? 'Create tables first' : 'Import data from JSON files'}
             >
               {operationLoading === 'pumpdata' ? 'Pumping...' : 'Pump Data'}
+            </button>
+
             <button
               onClick={() => handleSyncTable('projects')}
               disabled={operationLoading === 'projects'}
