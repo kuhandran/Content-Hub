@@ -1,20 +1,18 @@
 {
-  "name": "content-hub-monorepo",
+  "name": "content-hub",
   "version": "2.0.0",
-  "description": "Content Hub - Next.js Frontend with API Routes",
+  "description": "Content Hub - Next.js App with API Routes and Content Management",
   "private": true,
-  "workspaces": [
-    "apps/frontend"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/kuhandran/Content-Hub.git"
   },
   "scripts": {
-    "dev": "npm run dev --workspace=apps/frontend",
-    "build": "npm run build --workspace=apps/frontend",
-    "start": "npm start --workspace=apps/frontend",
-    "test": "npm test --workspace=apps/frontend"
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "lint": "next lint",
+    "test": "echo 'Tests placeholder'"
   },
   "keywords": [
     "cms",
@@ -29,5 +27,21 @@
   "engines": {
     "node": ">=18.x",
     "npm": ">=9.x"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.90.1",
+    "autoprefixer": "^10.4.23",
+    "axios": "^1.13.2",
+    "dotenv": "^17.2.3",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.5.9",
+    "ioredis": "^5.9.1",
+    "next": "^16.1.1",
+    "pg": "^8.16.3",
+    "postcss": "^8.5.6",
+    "postgres": "^3.4.8",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "tailwindcss": "^3.4.19"
   }
 }

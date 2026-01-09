@@ -1,20 +1,0 @@
-{
-  "awards": [
-    {
-      "name": "فائز CodeFest 3.0",
-      "organization": "هاكاثون 24 ساعة",
-      "year": "2023",
-      "icon": "🏆",
-      "description": "تنافس مع 150 طالب في تحدي برمجة مكثف لمدة 24 ساعة"
-    }
-  ],
-  "certifications": [
-    {
-      "name": "التطوير على AWS",
-      "provider": "Amazon Web Services",
-      "year": "2023",
-      "icon": "☁️",
-      "credentialUrl": "#"
-    }
-  ]
-}

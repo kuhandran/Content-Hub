@@ -1,0 +1,8 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/admin/data/route": "/api/admin/data",
+  "/api/admin/db/route": "/api/admin/db",
+  "/api/admin/operations/route": "/api/admin/operations",
+  "/api/admin/sync/route": "/api/admin/sync"
+}

@@ -1,7 +1,0 @@
-{
-  "framework": "nextjs",
-  "installCommand": "npm install --include=dev",
-  "buildCommand": "npm run build"
-}
-
-
