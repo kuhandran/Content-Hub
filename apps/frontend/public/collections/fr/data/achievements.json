@@ -1,0 +1,20 @@
+{
+  "awards": [
+    {
+      "name": "Gagnant du CodeFest 3.0",
+      "organization": "Hackathon de 24 heures",
+      "year": "2023",
+      "icon": "🏆",
+      "description": "Compétition entre 150 étudiants dans un défi de codage intensif de 24 heures"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Développement sur AWS",
+      "provider": "Amazon Web Services",
+      "year": "2023",
+      "icon": "☁️",
+      "credentialUrl": "#"
+    }
+  ]
+}

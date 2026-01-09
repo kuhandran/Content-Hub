@@ -1,0 +1,72 @@
+[
+  {
+    "title": "Gestionnaire de Projet Technique",
+    "company": "FWD Insurance",
+    "duration": "Août 2023 - Présent",
+    "location": "Kuala Lumpur, Malaisie",
+    "description": [
+      "Diriger les équipes de livraison transfrontalières, assurant l'alignement des opérations régionales",
+      "J'ai lancé des initiatives d'amélioration continue, réduisant les tickets d'incident anciens de 15%",
+      "Gestion du développement d'applications React Native pour les modules DMS, OWB et UnderWrite Me",
+      "Application des méthodologies agiles pour optimiser les flux de travail et s'adapter aux demandes du projet"
+    ],
+    "techStack": ["React Native", "Agile", "Project Management", "Cross-functional Teams"],
+    "logo": "image/fwd-logo.png"
+  },
+  {
+    "title": "Ingénieur Logiciel Senior",
+    "company": "Maybank",
+    "duration": "Août 2021 - Août 2023",
+    "location": "Kuala Lumpur, Malaisie",
+    "description": [
+      "Développement et maintenance des applications React.js, assurant l'alignement avec les exigences commerciales",
+      "Utilisation de React Hooks pour créer des formulaires dynamiques, réalisant une réduction des coûts de développement",
+      "Gestion de la base de code, approbation des fusions et allocation des tâches pour améliorer l'efficacité de l'équipe",
+      "Conception et implémentation des API RESTful, améliorant les fonctionnalités des applications"
+    ],
+    "techStack": ["React.js", "Redux", "RESTful APIs", "React Hooks", "Git"],
+    "logo": "image/maybank-logo.png"
+  },
+  {
+    "title": "Ingénieur Logiciel",
+    "company": "Maybank",
+    "duration": "Novembre 2020 - Août 2021",
+    "location": "Kuala Lumpur, Malaisie",
+    "description": [
+      "Développement des composants React, Redux, Router et Axios pour améliorer l'interface utilisateur/expérience utilisateur",
+      "Amélioration de l'expérience utilisateur et de la vitesse de chargement de 15%",
+      "Implémentation d'architectures d'applications d'une seule page pour la scalabilité",
+      "Collaboration à distance utilisant les méthodologies Agile avec des équipes mondiales"
+    ],
+    "techStack": ["React", "Redux", "Axios", "SPA Architecture", "Agile"],
+    "logo": "image/maybank-logo.png"
+  },
+  {
+    "title": "Développeur UI/UX",
+    "company": "Maybank",
+    "duration": "Janvier 2019 - Novembre 2020",
+    "location": "Kuala Lumpur, Malaisie",
+    "description": [
+      "Développement et mise à niveau de l'interface utilisateur/expérience utilisateur en utilisant les bibliothèques React, Redux et router",
+      "Création de composants réutilisables et de schémas de données pour rationaliser le développement",
+      "Amélioration des performances des applications en concevant des solutions d'interface communes",
+      "Amélioration de la modularité du projet par une architecture basée sur les composants"
+    ],
+    "techStack": ["React", "Redux", "UI/UX Design", "Component Architecture"],
+    "logo": "image/maybank-logo.png"
+  },
+  {
+    "title": "Développeur Junior",
+    "company": "Maybank",
+    "duration": "Janvier 2018 - Janvier 2019",
+    "location": "Kuala Lumpur, Malaisie",
+    "description": [
+      "Collaboration dans le SDLC pour améliorer la qualité des produits",
+      "Participation aux examens du code, amélioration des techniques de programmation",
+      "Résolution des vulnérabilités de cybersécurité assurant la conformité à Bank Negara",
+      "Soutien de l'intégration API pour le renouvellement et les achats d'assurance"
+    ],
+    "techStack": ["Java", "API Integration", "Security", "SDLC"],
+    "logo": "image/maybank-logo.png"
+  }
+]

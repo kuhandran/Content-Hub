@@ -189,13 +189,45 @@ async function syncFolder(res, folderName, tableName) {
     const folderPath = path.join(process.cwd(), `public/${folderName}`);
 
     if (!fs.existsSync(folderPath)) {
-      throw new Error(`Folder not found: ${folderName}`);
+      const warningMsg = `Folder not found: ${folderName} - this is OK if folder is empty or not in this app`;
+      console.warn(`[SYNC] ${warningMsg}`);
+      logDatabase('SYNC', tableName, { action: 'skipped', reason: 'folder_not_found' });
+      
+      const response = {
+        status: 'warning',
+        message: warningMsg,
+        table: folderName,
+        filesInserted: 0,
+        errors: [],
+        timestamp: new Date().toISOString(),
+      };
+
+      logResponse(200, response);
+      return res.status(200).json(response);
     }
 
     const files = fs.readdirSync(folderPath).filter(f => {
       const stat = fs.statSync(path.join(folderPath, f));
       return stat.isFile();
     });
+
+    if (files.length === 0) {
+      const warningMsg = `No files found in ${folderName}`;
+      console.log(`[SYNC] ${warningMsg}`);
+      logDatabase('SYNC', tableName, { action: 'empty', files: 0 });
+      
+      const response = {
+        status: 'success',
+        message: warningMsg,
+        table: folderName,
+        filesInserted: 0,
+        errors: [],
+        timestamp: new Date().toISOString(),
+      };
+
+      logResponse(200, response);
+      return res.status(200).json(response);
+    }
 
     console.log(`[SYNC] Found ${files.length} files in ${folderName}`);
 

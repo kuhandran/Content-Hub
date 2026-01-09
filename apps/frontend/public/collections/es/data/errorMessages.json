@@ -1,0 +1,92 @@
+{
+  "errors": {
+    "common": {
+      "unknownError": "Ocurrió un error inesperado. Por favor, inténtelo de nuevo.",
+      "tryAgain": "Por favor, inténtelo de nuevo más tarde.",
+      "contactDirectly": "Por favor, contácteme directamente."
+    },
+    "network": {
+      "connectionError": "Error de conexión. Por favor, verifique su conexión a Internet.",
+      "timeout": "Tiempo de espera agotado. Por favor, inténtelo de nuevo.",
+      "notFound": "Recurso no encontrado.",
+      "httpError": "Ocurrió un error HTTP"
+    },
+    "validation": {
+      "required": "Este campo es obligatorio",
+      "invalidFormat": "Formato no válido",
+      "invalidEmail": "Formato de correo electrónico no válido",
+      "tooShort": "La entrada es demasiado corta",
+      "tooLong": "La entrada es demasiado larga"
+    },
+    "file": {
+      "invalidType": "Tipo de archivo no válido. Solo se permiten archivos PDF y DOCX.",
+      "invalidSize": "El tamaño del archivo excede el límite máximo (5MB)",
+      "uploadFailed": "Error al cargar el archivo",
+      "noFile": "No se seleccionó ningún archivo"
+    },
+    "contact": {
+      "validation": {
+        "missingFields": "Todos los campos son obligatorios",
+        "invalidEmail": "Formato de correo electrónico no válido"
+      },
+      "file": {
+        "invalidType": "Solo se permiten archivos PDF y DOCX",
+        "invalidSize": "El tamaño del archivo debe ser menor a 5MB"
+      },
+      "submission": {
+        "failed": "Error al enviar el mensaje",
+        "failedWithDetails": "Error al enviar el mensaje. Por favor, inténtelo de nuevo más tarde o contácteme directamente.",
+        "success": "¡Su mensaje ha sido enviado exitosamente! Responderé dentro de 24-48 horas."
+      }
+    },
+    "data": {
+      "loadingFailed": "Error al cargar datos del servidor",
+      "contentLabels": "Error al cargar etiquetas de contenido",
+      "defaultLabels": "Error al cargar etiquetas predeterminadas",
+      "achievements": "Error al obtener datos de logros",
+      "education": "Error al obtener datos de educación",
+      "experience": "Error al obtener datos de experiencia",
+      "projects": "Error al obtener datos de proyectos",
+      "skills": "Error al obtener datos de habilidades",
+      "pageLayout": "Error al obtener diseño de página",
+      "apiConfig": "Error al obtener configuración de API",
+      "httpError": "Ocurrió un error HTTP"
+    },
+    "chatbot": {
+      "connectionError": "No se puede conectar al servicio de chatbot. Por favor, inténtelo de nuevo más tarde.",
+      "otpError": "Error al enviar OTP. Por favor, inténtelo de nuevo.",
+      "otpError2": "Error al verificar OTP. Por favor, verifique e inténtelo de nuevo.",
+      "otpFailed": "Verificación de OTP fallida. Por favor, solicite un nuevo OTP.",
+      "sendError": "Error al enviar el mensaje. Por favor, inténtelo de nuevo."
+    }
+  },
+  "warnings": {
+    "fallbackUsed": "Usando datos de respaldo - el contenido CDN puede no estar disponible",
+    "defaultLabels": "Error al cargar etiquetas predeterminadas del archivo, usando objeto vacío",
+    "projectsData": "Error al obtener datos de proyectos de CDN, usando datos predeterminados",
+    "skillsData": "Error al obtener datos de habilidades de CDN, usando datos predeterminados",
+    "experienceData": "Error al obtener datos de experiencia de CDN, usando datos predeterminados",
+    "educationData": "Error al obtener datos de educación de CDN, usando datos predeterminados",
+    "sectionNotFound": "Tipo de sección no encontrado en el registro de secciones",
+    "componentNotFound": "Tipo de componente no encontrado en el mapa de componentes"
+  },
+  "info": {
+    "processing": "Procesando su solicitud...",
+    "loading": "Cargando datos...",
+    "submitting": "Enviando formulario...",
+    "sending": "Enviando correo electrónico...",
+    "verifying": "Verificando información..."
+  },
+  "messages": {
+    "success": {
+      "contactForm": "¡Su mensaje ha sido enviado exitosamente! Responderé dentro de 24-48 horas.",
+      "fileUploaded": "Archivo cargado exitosamente",
+      "dataLoaded": "Datos cargados exitosamente",
+      "formSubmitted": "Formulario enviado exitosamente"
+    },
+    "error": {
+      "title": "Error",
+      "description": "Algo salió mal"
+    }
+  }
+}

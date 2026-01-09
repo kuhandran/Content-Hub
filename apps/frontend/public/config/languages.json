@@ -1,0 +1,163 @@
+{
+  "languages": [
+    {
+      "code": "en",
+      "name": "English",
+      "nativeName": "English",
+      "flag": "🇬🇧",
+      "region": "Global",
+      "variants": [
+        "en-GB",
+        "en-US",
+        "en-CA",
+        "en-AU",
+        "en-NZ"
+      ],
+      "status": "completed",
+      "lastUpdated": "2025-01-02",
+      "translationModel": null
+    },
+    {
+      "code": "ar-AE",
+      "name": "Arabic",
+      "nativeName": "العربية",
+      "flag": "🇦🇪",
+      "region": "Middle East",
+      "status": "completed",
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-ar"
+    },
+    {
+      "code": "es",
+      "name": "Spanish",
+      "nativeName": "Español",
+      "flag": "🇪🇸",
+      "region": "Europe",
+      "status": "completed",
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-es"
+    },
+    {
+      "code": "fr",
+      "name": "French",
+      "nativeName": "Français",
+      "flag": "🇫🇷",
+      "region": "Europe",
+      "status": "completed",
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-fr"
+    },
+    {
+      "code": "de",
+      "name": "German",
+      "nativeName": "Deutsch",
+      "flag": "🇩🇪",
+      "region": "Europe",
+      "status": "pending",
+      "lastUpdated": null,
+      "translationModel": "Helsinki-NLP/opus-mt-en-de"
+    },
+    {
+      "code": "hi",
+      "name": "Hindi",
+      "nativeName": "हिन्दी",
+      "flag": "🇮🇳",
+      "region": "South Asia",
+      "status": "completed",
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-hi"
+    },
+    {
+      "code": "id",
+      "name": "Indonesian",
+      "nativeName": "Bahasa Indonesia",
+      "flag": "🇮🇩",
+      "region": "Southeast Asia",
+      "status": "completed",
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-id"
+    },
+    {
+      "code": "my",
+      "name": "Malay",
+      "nativeName": "Bahasa Melayu",
+      "flag": "🇲🇾",
+      "region": "Southeast Asia",
+      "status": "completed",
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-my"
+    },
+    {
+      "code": "si",
+      "name": "Sinhala",
+      "nativeName": "සිංහල",
+      "flag": "🇱🇰",
+      "region": "South Asia",
+      "status": "completed",
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-si"
+    },
+    {
+      "code": "ta",
+      "name": "Tamil",
+      "nativeName": "தமிழ்",
+      "flag": "🇮🇳",
+      "region": "South Asia",
+      "status": "completed",
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-ta"
+    },
+    {
+      "code": "th",
+      "name": "Thai",
+      "nativeName": "ไทย",
+      "flag": "🇹🇭",
+      "region": "Southeast Asia",
+      "status": "completed",
+      "lastUpdated": "2025-01-02",
+      "translationModel": "Helsinki-NLP/opus-mt-en-th"
+    },
+    {
+      "code": "zh",
+      "name": "Chinese",
+      "nativeName": "中文",
+      "flag": "🇨🇳",
+      "region": "East Asia",
+      "status": "pending",
+      "lastUpdated": null,
+      "translationModel": "Helsinki-NLP/opus-mt-en-zh"
+    },
+    {
+      "code": "pt",
+      "name": "Portuguese",
+      "nativeName": "Português",
+      "flag": "🇵🇹",
+      "region": "Europe",
+      "status": "pending",
+      "lastUpdated": null,
+      "translationModel": "Helsinki-NLP/opus-mt-tc-big-en-pt"
+    }
+  ],
+  "defaultLanguage": "en",
+  "fallbackLanguage": "en",
+  "supportedLocales": 10,
+  "completedLocales": 10,
+  "fileTypes": [
+    "contentLabels.json",
+    "projects.json",
+    "experience.json",
+    "skills.json",
+    "education.json",
+    "achievements.json",
+    "chatConfig.json",
+    "pageLayout.json"
+  ],
+  "apiEndpoints": {
+    "listLanguages": "GET /api/config/languages",
+    "getLocaleData": "GET /api/collections/:language/:type/:file",
+    "updateLocaleData": "PATCH /api/collections/:language/:type/:file",
+    "createLocaleData": "POST /api/collections/:language/:type/:file",
+    "deleteLocaleData": "DELETE /api/collections/:language/:type/:file",
+    "listLocaleFiles": "GET /api/collections/:language/:type"
+  }
+}

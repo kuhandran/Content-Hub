@@ -1,0 +1,45 @@
+{
+  "sections": [
+    {
+      "id": "hero",
+      "type": "Hero",
+      "className": "hero-section",
+      "layout": "custom",
+      "custom": {
+        "renderAsCustom": true
+      }
+    },
+    {
+      "id": "about",
+      "type": "About",
+      "layout": "custom",
+      "custom": {
+        "renderAsCustom": true
+      }
+    },
+    {
+      "id": "skills",
+      "type": "Skills",
+      "layout": "custom",
+      "custom": {
+        "renderAsCustom": true
+      }
+    },
+    {
+      "id": "projects",
+      "type": "Projects",
+      "header": {
+        "subtitle": "पोर्टफोलियो",
+        "title": "विशेष प्रोजेक्ट्स",
+        "description": "एंटरप्राइज एप्लिकेशन्स में प्रभावशाली समाधान प्रदर्शित करना"
+      },
+      "backgroundColor": "bg-white",
+      "layout": "grid",
+      "gridCols": "md:grid-cols-2 lg:grid-cols-3",
+      "dataSource": "projects",
+      "custom": {
+        "renderAsCustom": true
+      }
+    }
+  ]
+}

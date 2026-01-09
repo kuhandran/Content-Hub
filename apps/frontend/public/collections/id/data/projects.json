@@ -1,0 +1,118 @@
+[
+    {
+        "title": "Aplikasi FWD Insurance React Native",
+        "description": "Platform asuransi perusahaan dengan modul DMS, OWB, dan UnderWrite Me untuk operasi yang disederhanakan dan pengalaman pengguna yang ditingkatkan.",
+        "fullDescription": "Platform asuransi komprehensif yang dibangun dengan React Native, memberikan agen dengan alat digital untuk mengelola kebijakan pelanggan, underwriting, dan pemrosesan klaim. Fitur mencakup sinkronisasi real-time, kemampuan offline, dan kompatibilitas lintas platform.",
+        "image": "/image/Project1.png",
+        "techStack": [
+            "React Native",
+            "RESTful APIs",
+            "Redux",
+            "TypeScript"
+        ],
+        "metrics": "Peningkatan efisiensi 15%",
+        "liveUrl": "https://www.fwd.com/en/the-fwd-difference/doing-more-with-digital-technology/giving-our-agents-the-digital-tools-they-need/",
+        "highlights": [
+            "Integrasi DMS",
+            "Fungsionalitas Online/Offline",
+            "Sinkronisasi data real-time",
+            "Dukungan multi-platform"
+        ]
+    },
+    {
+        "title": "Platform Perbankan Digital Maybank",
+        "description": "Aplikasi satu halaman modern untuk layanan perbankan digital dengan kinerja optimal dan pengalaman pengguna yang mulus.",
+        "fullDescription": "Platform perbankan digital yang kaya fitur yang memungkinkan pelanggan mengelola keuangan mereka, mentransfer dana, membayar tagihan, dan mengajukan produk perbankan. Dibangun dengan React dan dioptimalkan untuk waktu pemuatan cepat dan desain responsif.",
+        "image": "/image/Project2.png",
+        "techStack": [
+            "React.js",
+            "Redux",
+            "React Hooks",
+            "Axios"
+        ],
+        "metrics": "Kecepatan pemuatan 15% lebih cepat",
+        "liveUrl": "https://www.maybank2u.com.my/home/m2u/common/login.do",
+        "highlights": [
+            "Waktu pemuatan cepat",
+            "Desain responsif",
+            "Autentikasi aman",
+            "Beberapa fitur perbankan"
+        ]
+    },
+    {
+        "title": "Integrasi API Perbankan",
+        "description": "Pengembangan API RESTful untuk integrasi produk asuransi, memungkinkan pembaruan dan pembelian yang mulus melalui mitra perbankan.",
+        "fullDescription": "Lapisan API yang kuat yang memungkinkan integrasi produk asuransi dalam platform perbankan. Mendukung pembaruan kebijakan, pembelian baru, pengajuan klaim, dan integrasi layanan pelanggan di seluruh mitra perbankan.",
+        "image": "/image/Project3.png",
+        "techStack": [
+            "Spring Boot",
+            "RESTful APIs",
+            "Microservices",
+            "Java"
+        ],
+        "highlights": [
+            "Arsitektur microservices",
+            "Desain API-first",
+            "Ketersediaan tinggi",
+            "Integrasi mitra bank"
+        ],
+        "githubUrl": "#"
+    },
+    {
+        "title": "Dasbor Analitik Power BI",
+        "description": "Solusi visualisasi data komprehensif yang memberikan wawasan bisnis yang dapat ditindaklanjuti dan analitik real-time untuk pengambilan keputusan.",
+        "fullDescription": "Dasbor analitik canggih yang mengonsolidasikan data dari berbagai sumber, memberikan wawasan real-time tentang metrik bisnis, tren pelanggan, dan kinerja operasional. Fitur visualisasi interaktif dan pelacakan KPI khusus.",
+        "image": "/image/Project4.png",
+        "techStack": [
+            "Power BI",
+            "Data Visualization",
+            "SQL",
+            "DAX"
+        ],
+        "highlights": [
+            "Analitik real-time",
+            "KPI khusus",
+            "Konsolidasi data",
+            "Dasbor interaktif"
+        ],
+        "liveUrl": "#"
+    },
+    {
+        "title": "Portal Tim Lintas Batas",
+        "description": "Platform manajemen proyek dan kolaborasi untuk tim yang tersebar dengan pembaruan real-time dan pelacakan kinerja.",
+        "fullDescription": "Platform kolaborasi komprehensif yang dirancang untuk tim yang tersebar di berbagai negara. Fitur manajemen proyek, komunikasi real-time, berbagi file, dan analitik kinerja untuk kolaborasi tim yang tersebar.",
+        "image": "/image/Project5.png",
+        "techStack": [
+            "React",
+            "Node.js",
+            "MongoDB",
+            "WebSocket"
+        ],
+        "highlights": [
+            "Kolaborasi real-time",
+            "Manajemen proyek",
+            "Analitik tim",
+            "Berbagi file"
+        ],
+        "liveUrl": "#"
+    },
+    {
+        "title": "Alat Kepatuhan Keamanan Siber",
+        "description": "Sistem penilaian kerentanan keamanan dan pemantauan kepatuhan untuk standar Bank Negara.",
+        "fullDescription": "Alat keamanan pemantauan dan kepatuhan tingkat perusahaan yang mengidentifikasi kerentanan, melacak kepatuhan dengan peraturan perbankan, dan memberikan rekomendasi remedial otomatis. Memastikan kepatuhan terhadap standar keamanan Bank Negara Malaysia.",
+        "image": "/image/Project6.png",
+        "techStack": [
+            "Java",
+            "Spring Security",
+            "PostgreSQL",
+            "Docker"
+        ],
+        "highlights": [
+            "Pemindaian kerentanan",
+            "Pemantauan kepatuhan",
+            "Otomasi keamanan",
+            "Kepatuhan peraturan"
+        ],
+        "githubUrl": "#"
+    }
+]

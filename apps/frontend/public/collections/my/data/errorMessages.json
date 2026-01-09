@@ -1,0 +1,92 @@
+{
+  "errors": {
+    "common": {
+      "unknownError": "Ralat yang tidak dijangka berlaku. Sila cuba lagi.",
+      "tryAgain": "Sila cuba lagi kemudian.",
+      "contactDirectly": "Sila hubungi saya secara langsung."
+    },
+    "network": {
+      "connectionError": "Ralat sambungan. Sila semak sambungan internet anda.",
+      "timeout": "Masa tamat permintaan. Sila cuba lagi.",
+      "notFound": "Sumber tidak dijumpai.",
+      "httpError": "Ralat HTTP berlaku"
+    },
+    "validation": {
+      "required": "Medan ini diperlukan",
+      "invalidFormat": "Format tidak sah",
+      "invalidEmail": "Format e-mel tidak sah",
+      "tooShort": "Input terlalu pendek",
+      "tooLong": "Input terlalu panjang"
+    },
+    "file": {
+      "invalidType": "Jenis fail tidak sah. Hanya fail PDF dan DOCX dibenarkan.",
+      "invalidSize": "Saiz fail melebihi had maksimum (5MB)",
+      "uploadFailed": "Gagal memuat naik fail",
+      "noFile": "Tiada fail dipilih"
+    },
+    "contact": {
+      "validation": {
+        "missingFields": "Semua medan diperlukan",
+        "invalidEmail": "Format e-mel tidak sah"
+      },
+      "file": {
+        "invalidType": "Hanya fail PDF dan DOCX dibenarkan",
+        "invalidSize": "Saiz fail mestilah kurang daripada 5MB"
+      },
+      "submission": {
+        "failed": "Gagal menghantar mesej",
+        "failedWithDetails": "Gagal menghantar mesej. Sila cuba lagi kemudian atau hubungi saya secara langsung.",
+        "success": "Mesej anda telah berjaya dihantar! Saya akan membalas dalam masa 24-48 jam."
+      }
+    },
+    "data": {
+      "loadingFailed": "Gagal memuatkan data dari pelayan",
+      "contentLabels": "Gagal memuatkan label kandungan",
+      "defaultLabels": "Gagal memuatkan label lalai",
+      "achievements": "Ralat mendapatkan data pencapaian",
+      "education": "Ralat mendapatkan data pendidikan",
+      "experience": "Ralat mendapatkan data pengalaman",
+      "projects": "Ralat mendapatkan data projek",
+      "skills": "Ralat mendapatkan data kemahiran",
+      "pageLayout": "Ralat mendapatkan susun atur halaman",
+      "apiConfig": "Ralat mendapatkan konfigurasi API",
+      "httpError": "Ralat HTTP berlaku"
+    },
+    "chatbot": {
+      "connectionError": "Tidak dapat menyambung ke perkhidmatan chatbot. Sila cuba lagi kemudian.",
+      "otpError": "Gagal menghantar OTP. Sila cuba lagi.",
+      "otpError2": "Gagal mengesahkan OTP. Sila semak dan cuba lagi.",
+      "otpFailed": "Pengesahan OTP gagal. Sila minta OTP baharu.",
+      "sendError": "Gagal menghantar mesej. Sila cuba lagi."
+    }
+  },
+  "warnings": {
+    "fallbackUsed": "Menggunakan data sandaran - kandungan CDN mungkin tidak tersedia",
+    "defaultLabels": "Gagal memuatkan label lalai dari fail, menggunakan objek kosong",
+    "projectsData": "Gagal mendapatkan data projek dari CDN, menggunakan data lalai",
+    "skillsData": "Gagal mendapatkan data kemahiran dari CDN, menggunakan data lalai",
+    "experienceData": "Gagal mendapatkan data pengalaman dari CDN, menggunakan data lalai",
+    "educationData": "Gagal mendapatkan data pendidikan dari CDN, menggunakan data lalai",
+    "sectionNotFound": "Jenis bahagian tidak dijumpai dalam daftar bahagian",
+    "componentNotFound": "Jenis komponen tidak dijumpai dalam peta komponen"
+  },
+  "info": {
+    "processing": "Memproses permintaan anda...",
+    "loading": "Memuatkan data...",
+    "submitting": "Menghantar borang...",
+    "sending": "Menghantar e-mel...",
+    "verifying": "Mengesahkan maklumat..."
+  },
+  "messages": {
+    "success": {
+      "contactForm": "Mesej anda telah berjaya dihantar! Saya akan membalas dalam masa 24-48 jam.",
+      "fileUploaded": "Fail berjaya dimuat naik",
+      "dataLoaded": "Data berjaya dimuatkan",
+      "formSubmitted": "Borang berjaya dihantar"
+    },
+    "error": {
+      "title": "Ralat",
+      "description": "Sesuatu tidak kena"
+    }
+  }
+}

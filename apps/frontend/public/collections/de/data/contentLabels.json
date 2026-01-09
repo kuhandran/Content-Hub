@@ -1,0 +1,12 @@
+{
+  "urls": {
+    "resume": {
+      "download": "https://static.kuhandranchatbot.info/resume/resume.pdf",
+      "view": "https://static.kuhandranchatbot.info/resume/resume.pdf"
+    },
+    "social": {
+      "linkedin": "https://linkedin.com/in/kuhandran-samudrapandiyan",
+      "email": "mailto:skuhandran@yahoo.com"
+    }
+  }
+}

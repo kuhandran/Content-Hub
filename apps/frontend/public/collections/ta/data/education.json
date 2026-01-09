@@ -1,0 +1,30 @@
+[
+  {
+    "degree": "வணிக நிர்வாகத்தில் முதன்மை (MBA)",
+    "institution": "Cardiff Metropolitan University",
+    "duration": "ஏப்ரல் 2022 - ஆகஸ்ட் 2024",
+    "location": "ஐக்கிய இராச்சியம் (தொலைவு)",
+    "focus": "வணிக பகுப்பாய்வு - தொழில்நுட்ப திறமைகளை மூலோபாய வணிக நுண்ணறிவுடன் இணைத்தல்"
+  },
+  {
+    "degree": "அறிவியல் இளங்கலை (BSc)",
+    "institution": "University of Wollongong",
+    "duration": "2014 - 2016",
+    "location": "மலேசியா",
+    "focus": "கணினி மென்பொருள் பொறியியல் மற்றும் டிஜிட்டல் அமைப்பு பாதுகாப்பு"
+  },
+  {
+    "degree": "தகவல் தொழில்நுட்பத்தில் அஸ்திவாரம்",
+    "institution": "INTI College Subang Jaya",
+    "duration": "2013 - 2014",
+    "location": "மலேசியா",
+    "focus": "IT மையமான அடிப்படைகள் மற்றும் நிரலாக்க கொள்கைகள்"
+  },
+  {
+    "degree": "GCE Cambridge Advanced Level",
+    "institution": "Wycherley International School",
+    "duration": "2009 - 2011",
+    "location": "இலங்கை",
+    "focus": "A-Level கல்வி பல்கலைக்கழக கல்வির தயாரிப்பு"
+  }
+]

@@ -1,0 +1,50 @@
+{
+  "frontend": {
+    "name": "تطوير الواجهة الأمامية",
+    "icon": "💻",
+    "skills": [
+      { "name": "React.js", "level": 95, "color": "blue" },
+      { "name": "React Native", "level": 90, "color": "blue" },
+      { "name": "Next.js", "level": 85, "color": "blue" },
+      { "name": "Redux", "level": 90, "color": "blue" },
+      { "name": "Tailwind CSS", "level": 90, "color": "blue" },
+      { "name": "JavaScript/ES6+", "level": 95, "color": "blue" },
+      { "name": "TypeScript", "level": 85, "color": "blue" },
+      { "name": "HTML5/CSS3", "level": 95, "color": "blue" }
+    ]
+  },
+  "backend": {
+    "name": "الواجهة الخلفية وواجهات برمجية",
+    "icon": "⚙️",
+    "skills": [
+      { "name": "تصميم API RESTful", "level": 90, "color": "green" },
+      { "name": "Spring Boot", "level": 85, "color": "green" },
+      { "name": "Spring Cloud", "level": 80, "color": "green" },
+      { "name": "خدمات Java الصغيرة", "level": 85, "color": "green" },
+      { "name": "تكامل API", "level": 90, "color": "green" },
+      { "name": "Node.js", "level": 75, "color": "green" }
+    ]
+  },
+  "data": {
+    "name": "البيانات والتحليلات",
+    "icon": "📊",
+    "skills": [
+      { "name": "Microsoft Power BI", "level": 90, "color": "amber" },
+      { "name": "تصور البيانات", "level": 90, "color": "amber" },
+      { "name": "Google Analytics", "level": 85, "color": "amber" },
+      { "name": "تحليل الأعمال", "level": 85, "color": "amber" },
+      { "name": "SQL", "level": 80, "color": "amber" }
+    ]
+  },
+  "cloud": {
+    "name": "السحابة وDevOps",
+    "icon": "☁️",
+    "skills": [
+      { "name": "AWS", "level": 85, "color": "blue" },
+      { "name": "Git/GitHub", "level": 95, "color": "blue" },
+      { "name": "Agile/Scrum", "level": 90, "color": "blue" },
+      { "name": "CI/CD", "level": 80, "color": "blue" },
+      { "name": "Docker", "level": 75, "color": "blue" }
+    ]
+  }
+}

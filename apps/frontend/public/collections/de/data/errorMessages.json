@@ -1,0 +1,92 @@
+{
+  "errors": {
+    "common": {
+      "unknownError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+      "tryAgain": "Bitte versuchen Sie es später erneut.",
+      "contactDirectly": "Bitte kontaktieren Sie mich direkt."
+    },
+    "network": {
+      "connectionError": "Verbindungsfehler. Bitte überprüfen Sie Ihre Internetverbindung.",
+      "timeout": "Zeitüberschreitung der Anfrage. Bitte versuchen Sie es erneut.",
+      "notFound": "Ressource nicht gefunden.",
+      "httpError": "HTTP-Fehler aufgetreten"
+    },
+    "validation": {
+      "required": "Dieses Feld ist erforderlich",
+      "invalidFormat": "Ungültiges Format",
+      "invalidEmail": "Ungültiges E-Mail-Format",
+      "tooShort": "Eingabe ist zu kurz",
+      "tooLong": "Eingabe ist zu lang"
+    },
+    "file": {
+      "invalidType": "Ungültiger Dateityp. Nur PDF- und DOCX-Dateien sind erlaubt.",
+      "invalidSize": "Dateigröße überschreitet das Maximum (5MB)",
+      "uploadFailed": "Datei-Upload fehlgeschlagen",
+      "noFile": "Keine Datei ausgewählt"
+    },
+    "contact": {
+      "validation": {
+        "missingFields": "Alle Felder sind erforderlich",
+        "invalidEmail": "Ungültiges E-Mail-Format"
+      },
+      "file": {
+        "invalidType": "Nur PDF- und DOCX-Dateien sind erlaubt",
+        "invalidSize": "Dateigröße muss kleiner als 5MB sein"
+      },
+      "submission": {
+        "failed": "Nachricht konnte nicht gesendet werden",
+        "failedWithDetails": "Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es später erneut oder kontaktieren Sie mich direkt.",
+        "success": "Ihre Nachricht wurde erfolgreich gesendet! Ich werde innerhalb von 24-48 Stunden antworten."
+      }
+    },
+    "data": {
+      "loadingFailed": "Daten konnten nicht vom Server geladen werden",
+      "contentLabels": "Inhaltsbeschriftungen konnten nicht geladen werden",
+      "defaultLabels": "Standardbeschriftungen konnten nicht geladen werden",
+      "achievements": "Fehler beim Abrufen der Leistungsdaten",
+      "education": "Fehler beim Abrufen der Bildungsdaten",
+      "experience": "Fehler beim Abrufen der Erfahrungsdaten",
+      "projects": "Fehler beim Abrufen der Projektdaten",
+      "skills": "Fehler beim Abrufen der Kompetenzdaten",
+      "pageLayout": "Fehler beim Abrufen des Seitenlayouts",
+      "apiConfig": "Fehler beim Abrufen der API-Konfiguration",
+      "httpError": "HTTP-Fehler aufgetreten"
+    },
+    "chatbot": {
+      "connectionError": "Verbindung zum Chatbot-Dienst nicht möglich. Bitte versuchen Sie es später erneut.",
+      "otpError": "OTP konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+      "otpError2": "OTP konnte nicht verifiziert werden. Bitte überprüfen und erneut versuchen.",
+      "otpFailed": "OTP-Verifizierung fehlgeschlagen. Bitte fordern Sie ein neues OTP an.",
+      "sendError": "Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+    }
+  },
+  "warnings": {
+    "fallbackUsed": "Ersatzdaten werden verwendet - CDN-Inhalte sind möglicherweise nicht verfügbar",
+    "defaultLabels": "Standardbeschriftungen konnten nicht aus Datei geladen werden, leeres Objekt wird verwendet",
+    "projectsData": "Projektdaten konnten nicht von CDN abgerufen werden, Standarddaten werden verwendet",
+    "skillsData": "Kompetenzdaten konnten nicht von CDN abgerufen werden, Standarddaten werden verwendet",
+    "experienceData": "Erfahrungsdaten konnten nicht von CDN abgerufen werden, Standarddaten werden verwendet",
+    "educationData": "Bildungsdaten konnten nicht von CDN abgerufen werden, Standarddaten werden verwendet",
+    "sectionNotFound": "Abschnittstyp nicht in Abschnittsregister gefunden",
+    "componentNotFound": "Komponententyp nicht in Komponentenkarte gefunden"
+  },
+  "info": {
+    "processing": "Ihre Anfrage wird verarbeitet...",
+    "loading": "Daten werden geladen...",
+    "submitting": "Formular wird übermittelt...",
+    "sending": "E-Mail wird gesendet...",
+    "verifying": "Informationen werden überprüft..."
+  },
+  "messages": {
+    "success": {
+      "contactForm": "Ihre Nachricht wurde erfolgreich gesendet! Ich werde innerhalb von 24-48 Stunden antworten.",
+      "fileUploaded": "Datei erfolgreich hochgeladen",
+      "dataLoaded": "Daten erfolgreich geladen",
+      "formSubmitted": "Formular erfolgreich übermittelt"
+    },
+    "error": {
+      "title": "Fehler",
+      "description": "Etwas ist schief gelaufen"
+    }
+  }
+}

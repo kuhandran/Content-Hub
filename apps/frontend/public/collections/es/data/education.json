@@ -1,0 +1,30 @@
+[
+  {
+    "degree": "Máster en Administración de Empresas (MBA)",
+    "institution": "Cardiff Metropolitan University",
+    "duration": "Abril 2022 - Agosto 2024",
+    "location": "Reino Unido (Remoto)",
+    "focus": "Análisis Empresarial - Vinculación de experiencia técnica con estrategia empresarial"
+  },
+  {
+    "degree": "Licenciado en Ciencias (BSc)",
+    "institution": "University of Wollongong",
+    "duration": "2014 - 2016",
+    "location": "Malasia",
+    "focus": "Ingeniería de Software Informático y Seguridad de Sistemas Digitales"
+  },
+  {
+    "degree": "Fundamentos en Tecnología de la Información",
+    "institution": "INTI College Subang Jaya",
+    "duration": "2013 - 2014",
+    "location": "Malasia",
+    "focus": "Fundamentos de TI principales y principios de programación"
+  },
+  {
+    "degree": "Nivel Avanzado GCE Cambridge",
+    "institution": "Wycherley International School",
+    "duration": "2009 - 2011",
+    "location": "Sri Lanka",
+    "focus": "Educación de nivel A preparando para estudios universitarios"
+  }
+]

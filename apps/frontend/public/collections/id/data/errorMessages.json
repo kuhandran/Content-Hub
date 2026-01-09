@@ -1,0 +1,92 @@
+{
+  "errors": {
+    "common": {
+      "unknownError": "Terjadi kesalahan yang tidak terduga. Silakan coba lagi.",
+      "tryAgain": "Silakan coba lagi nanti.",
+      "contactDirectly": "Silakan hubungi saya secara langsung."
+    },
+    "network": {
+      "connectionError": "Kesalahan koneksi. Silakan periksa koneksi internet Anda.",
+      "timeout": "Waktu permintaan habis. Silakan coba lagi.",
+      "notFound": "Sumber tidak ditemukan.",
+      "httpError": "Terjadi kesalahan HTTP"
+    },
+    "validation": {
+      "required": "Bidang ini wajib diisi",
+      "invalidFormat": "Format tidak valid",
+      "invalidEmail": "Format email tidak valid",
+      "tooShort": "Input terlalu pendek",
+      "tooLong": "Input terlalu panjang"
+    },
+    "file": {
+      "invalidType": "Jenis file tidak valid. Hanya file PDF dan DOCX yang diizinkan.",
+      "invalidSize": "Ukuran file melebihi batas maksimum (5MB)",
+      "uploadFailed": "Gagal mengunggah file",
+      "noFile": "Tidak ada file yang dipilih"
+    },
+    "contact": {
+      "validation": {
+        "missingFields": "Semua bidang wajib diisi",
+        "invalidEmail": "Format email tidak valid"
+      },
+      "file": {
+        "invalidType": "Hanya file PDF dan DOCX yang diizinkan",
+        "invalidSize": "Ukuran file harus kurang dari 5MB"
+      },
+      "submission": {
+        "failed": "Gagal mengirim pesan",
+        "failedWithDetails": "Gagal mengirim pesan. Silakan coba lagi nanti atau hubungi saya secara langsung.",
+        "success": "Pesan Anda telah berhasil dikirim! Saya akan merespons dalam 24-48 jam."
+      }
+    },
+    "data": {
+      "loadingFailed": "Gagal memuat data dari server",
+      "contentLabels": "Gagal memuat label konten",
+      "defaultLabels": "Gagal memuat label default",
+      "achievements": "Kesalahan mengambil data pencapaian",
+      "education": "Kesalahan mengambil data pendidikan",
+      "experience": "Kesalahan mengambil data pengalaman",
+      "projects": "Kesalahan mengambil data proyek",
+      "skills": "Kesalahan mengambil data keterampilan",
+      "pageLayout": "Kesalahan mengambil tata letak halaman",
+      "apiConfig": "Kesalahan mengambil konfigurasi API",
+      "httpError": "Terjadi kesalahan HTTP"
+    },
+    "chatbot": {
+      "connectionError": "Tidak dapat terhubung ke layanan chatbot. Silakan coba lagi nanti.",
+      "otpError": "Gagal mengirim OTP. Silakan coba lagi.",
+      "otpError2": "Gagal memverifikasi OTP. Silakan periksa dan coba lagi.",
+      "otpFailed": "Verifikasi OTP gagal. Silakan minta OTP baru.",
+      "sendError": "Gagal mengirim pesan. Silakan coba lagi."
+    }
+  },
+  "warnings": {
+    "fallbackUsed": "Menggunakan data cadangan - konten CDN mungkin tidak tersedia",
+    "defaultLabels": "Gagal memuat label default dari file, menggunakan objek kosong",
+    "projectsData": "Gagal mengambil data proyek dari CDN, menggunakan data default",
+    "skillsData": "Gagal mengambil data keterampilan dari CDN, menggunakan data default",
+    "experienceData": "Gagal mengambil data pengalaman dari CDN, menggunakan data default",
+    "educationData": "Gagal mengambil data pendidikan dari CDN, menggunakan data default",
+    "sectionNotFound": "Jenis bagian tidak ditemukan dalam registri bagian",
+    "componentNotFound": "Jenis komponen tidak ditemukan dalam peta komponen"
+  },
+  "info": {
+    "processing": "Memproses permintaan Anda...",
+    "loading": "Memuat data...",
+    "submitting": "Mengirim formulir...",
+    "sending": "Mengirim email...",
+    "verifying": "Memverifikasi informasi..."
+  },
+  "messages": {
+    "success": {
+      "contactForm": "Pesan Anda telah berhasil dikirim! Saya akan merespons dalam 24-48 jam.",
+      "fileUploaded": "File berhasil diunggah",
+      "dataLoaded": "Data berhasil dimuat",
+      "formSubmitted": "Formulir berhasil dikirim"
+    },
+    "error": {
+      "title": "Kesalahan",
+      "description": "Terjadi kesalahan"
+    }
+  }
+}

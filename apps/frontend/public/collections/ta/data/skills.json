@@ -1,0 +1,50 @@
+{
+  "frontend": {
+    "name": "முன்பக்க மேம்பாடு",
+    "icon": "💻",
+    "skills": [
+      { "name": "React.js", "level": 95, "color": "blue" },
+      { "name": "React Native", "level": 90, "color": "blue" },
+      { "name": "Next.js", "level": 85, "color": "blue" },
+      { "name": "Redux", "level": 90, "color": "blue" },
+      { "name": "Tailwind CSS", "level": 90, "color": "blue" },
+      { "name": "JavaScript/ES6+", "level": 95, "color": "blue" },
+      { "name": "TypeScript", "level": 85, "color": "blue" },
+      { "name": "HTML5/CSS3", "level": 95, "color": "blue" }
+    ]
+  },
+  "backend": {
+    "name": "பின்பக்க மற்றும் API",
+    "icon": "⚙️",
+    "skills": [
+      { "name": "RESTful API வடிவமைப்பு", "level": 90, "color": "green" },
+      { "name": "Spring Boot", "level": 85, "color": "green" },
+      { "name": "Spring Cloud", "level": 80, "color": "green" },
+      { "name": "Java நுண்ணணு சேவைகள்", "level": 85, "color": "green" },
+      { "name": "API ஒருங்கிணைப்பு", "level": 90, "color": "green" },
+      { "name": "Node.js", "level": 75, "color": "green" }
+    ]
+  },
+  "data": {
+    "name": "தரவு மற்றும் பகுப்பாய்வு",
+    "icon": "📊",
+    "skills": [
+      { "name": "Microsoft Power BI", "level": 90, "color": "amber" },
+      { "name": "தரவு காட்சியாக்கம்", "level": 90, "color": "amber" },
+      { "name": "Google Analytics", "level": 85, "color": "amber" },
+      { "name": "வணிக பகுப்பாய்வு", "level": 85, "color": "amber" },
+      { "name": "SQL", "level": 80, "color": "amber" }
+    ]
+  },
+  "cloud": {
+    "name": "கிளவுட் மற்றும் DevOps",
+    "icon": "☁️",
+    "skills": [
+      { "name": "AWS", "level": 85, "color": "blue" },
+      { "name": "Git/GitHub", "level": 95, "color": "blue" },
+      { "name": "Agile/Scrum", "level": 90, "color": "blue" },
+      { "name": "CI/CD", "level": 80, "color": "blue" },
+      { "name": "Docker", "level": 75, "color": "blue" }
+    ]
+  }
+}

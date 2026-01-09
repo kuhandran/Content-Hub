@@ -1,0 +1,34 @@
+{
+  "awards": [
+    {
+      "name": "Pemenang CodeFest 3.0",
+      "organization": "Hackathon 24 Jam",
+      "year": "2023",
+      "icon": "🏆",
+      "description": "Berkompetisi antara 150 pelajar dalam cabaran pengekodan intensif 24 jam"
+    },
+    {
+      "name": "IFLIX Hack (Jom Hack)",
+      "organization": "IFLIX",
+      "year": "2022",
+      "icon": "💻",
+      "description": "Finalis dalam pertandingan hackathon nasional"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Membangun di AWS",
+      "provider": "Amazon Web Services",
+      "year": "2023",
+      "icon": "☁️",
+      "credentialUrl": "#"
+    },
+    {
+      "name": "Analisis dan Visualisasi Data dengan Microsoft Power BI",
+      "provider": "Microsoft",
+      "year": "2022",
+      "icon": "📊",
+      "credentialUrl": "#"
+    }
+  ]
+}

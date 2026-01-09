@@ -1,0 +1,63 @@
+{
+  "name": "Kuhandran SamudraPandiyan - Technical Delivery Manager",
+  "short_name": "Kuhandran",
+  "description": "Technical Delivery Manager & Full-Stack Engineer with 8+ years in enterprise applications, React Native, and banking solutions. Progressive Web App with offline support.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://static.kuhandranchatbot.infoimage/profile.webp",
+      "sizes": "400x400",
+      "type": "image/webp",
+      "form_factor": "narrow"
+    }
+  ],
+  "categories": ["technology", "business", "productivity"],
+  "screenshots_wide": [
+    {
+      "src": "https://static.kuhandranchatbot.infoimage/profile.webp",
+      "sizes": "1280x720",
+      "type": "image/webp",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "View Portfolio",
+      "short_name": "Portfolio",
+      "description": "View featured projects and case studies",
+      "url": "/?view=portfolio",
+      "icons": [{ "src": "/logo.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Contact Me",
+      "short_name": "Contact",
+      "description": "Get in touch with Kuhandran",
+      "url": "/?view=contact",
+      "icons": [{ "src": "/logo.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}

@@ -1,0 +1,99 @@
+[
+    {
+        "title": "Manajer Proyek Teknis",
+        "company": "FWD Insurance",
+        "duration": "Agustus 2023 - Sekarang",
+        "location": "Kuala Lumpur, Malaysia",
+        "description": [
+            "Memimpin tim pengiriman lintas batas, memastikan keselarasan di seluruh operasi regional",
+            "Mendorong inisiatif perbaikan berkelanjutan, mengurangi tiket insiden lama sebesar 15%",
+            "Mengelola pengembangan aplikasi React Native untuk modul DMS, OWB, dan UnderWrite Me",
+            "Menerapkan metodologi agile untuk mengoptimalkan alur kerja dan beradaptasi dengan permintaan proyek"
+        ],
+        "techStack": [
+            "React Native",
+            "Agile",
+            "Project Management",
+            "Cross-functional Teams"
+        ],
+        "logo": "image/fwd-logo.png"
+    },
+    {
+        "title": "Insinyur Perangkat Lunak Senior",
+        "company": "Maybank",
+        "duration": "Agustus 2021 - Agustus 2023",
+        "location": "Kuala Lumpur, Malaysia",
+        "description": [
+            "Mengembangkan dan memelihara aplikasi React.js, memastikan keselarasan dengan persyaratan bisnis",
+            "Memanfaatkan React Hooks untuk membuat formulir dinamis, mencapai pengurangan biaya dalam pengembangan",
+            "Mengelola basis kode, menyetujui penggabungan, dan mengalokasikan tugas untuk meningkatkan efisiensi tim",
+            "Merancang dan mengimplementasikan API RESTful, meningkatkan fungsionalitas aplikasi"
+        ],
+        "techStack": [
+            "React.js",
+            "Redux",
+            "RESTful APIs",
+            "React Hooks",
+            "Git"
+        ],
+        "logo": "image/maybank-logo.png"
+    },
+    {
+        "title": "Insinyur Perangkat Lunak",
+        "company": "Maybank",
+        "duration": "November 2020 - Agustus 2021",
+        "location": "Kuala Lumpur, Malaysia",
+        "description": [
+            "Mengembangkan komponen React, Redux, Router, dan Axios untuk meningkatkan UI/UX",
+            "Meningkatkan pengalaman pengguna dan kecepatan pemuatan sebesar 15%",
+            "Menerapkan arsitektur aplikasi satu halaman untuk skalabilitas",
+            "Berkolaborasi dari jarak jauh menggunakan metodologi Agile dengan tim global"
+        ],
+        "techStack": [
+            "React",
+            "Redux",
+            "Axios",
+            "SPA Architecture",
+            "Agile"
+        ],
+        "logo": "image/maybank-logo.png"
+    },
+    {
+        "title": "Pengembang UI/UX",
+        "company": "Maybank",
+        "duration": "Januari 2019 - November 2020",
+        "location": "Kuala Lumpur, Malaysia",
+        "description": [
+            "Mengembangkan dan meningkatkan UI/UX menggunakan perpustakaan React, Redux, dan router",
+            "Membuat komponen yang dapat digunakan kembali dan skema data untuk menyederhanakan pengembangan",
+            "Meningkatkan kinerja aplikasi dengan merancang solusi antarmuka umum",
+            "Meningkatkan modularitas proyek melalui arsitektur berbasis komponen"
+        ],
+        "techStack": [
+            "React",
+            "Redux",
+            "UI/UX Design",
+            "Component Architecture"
+        ],
+        "logo": "image/maybank-logo.png"
+    },
+    {
+        "title": "Pengembang Junior",
+        "company": "Maybank",
+        "duration": "Januari 2018 - Januari 2019",
+        "location": "Kuala Lumpur, Malaysia",
+        "description": [
+            "Berkolaborasi dalam SDLC untuk meningkatkan kualitas produk",
+            "Berpartisipasi dalam tinjauan kode, meningkatkan teknik pemrograman",
+            "Mengatasi kerentanan keamanan siber memastikan kepatuhan Bank Negara",
+            "Mendukung integrasi API untuk pembaruan dan pembelian asuransi"
+        ],
+        "techStack": [
+            "Java",
+            "API Integration",
+            "Security",
+            "SDLC"
+        ],
+        "logo": "image/maybank-logo.png"
+    }
+]

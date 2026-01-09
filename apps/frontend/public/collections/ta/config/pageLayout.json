@@ -1,0 +1,45 @@
+{
+  "sections": [
+    {
+      "id": "hero",
+      "type": "Hero",
+      "className": "hero-section",
+      "layout": "custom",
+      "custom": {
+        "renderAsCustom": true
+      }
+    },
+    {
+      "id": "about",
+      "type": "About",
+      "layout": "custom",
+      "custom": {
+        "renderAsCustom": true
+      }
+    },
+    {
+      "id": "skills",
+      "type": "Skills",
+      "layout": "custom",
+      "custom": {
+        "renderAsCustom": true
+      }
+    },
+    {
+      "id": "projects",
+      "type": "Projects",
+      "header": {
+        "subtitle": "போர்ட்ஃபோலியோ",
+        "title": "சிறப்பு திட்டங்கள்",
+        "description": "நிறுவனத்தர மென்பொருள் பயன்பாடுகளில் சக்திশாலி தீர்வுகளை விளக்குதல்"
+      },
+      "backgroundColor": "bg-white",
+      "layout": "grid",
+      "gridCols": "md:grid-cols-2 lg:grid-cols-3",
+      "dataSource": "projects",
+      "custom": {
+        "renderAsCustom": true
+      }
+    }
+  ]
+}
