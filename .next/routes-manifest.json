@@ -35,6 +35,12 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
+      "page": "/api/admin/content",
+      "regex": "^/api/admin/content(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/content(?:/)?$"
+    },
+    {
       "page": "/api/admin/data",
       "regex": "^/api/admin/data(?:/)?$",
       "routeKeys": {},

@@ -16,6 +16,12 @@ export default function Home() {
   const [logs, setLogs] = useState([]);
   const [syncProgress, setSyncProgress] = useState(null);
   const [urlsGenerated, setUrlsGenerated] = useState(null);
+  const [editorTable, setEditorTable] = useState('collections');
+  const [editorLang, setEditorLang] = useState('en');
+  const [editorType, setEditorType] = useState('config');
+  const [editorFilename, setEditorFilename] = useState('pageLayout');
+  const [editorContent, setEditorContent] = useState('');
+  const [editorMessage, setEditorMessage] = useState(null);
 
   useEffect(() => {
     fetchApiStatus();
@@ -181,295 +187,272 @@ export default function Home() {
     }
   };
 
+  const handleSaveContent = async () => {
+    setEditorMessage(null);
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
+      const payload = {
+        table: editorTable,
+        filename: editorFilename,
+        content: editorContent,
+      };
+      if (editorTable === 'collections') {
+        payload.lang = editorLang;
+        payload.type = editorType;
+      }
+      const response = await fetch(`${apiBase}/admin/content`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (data.status === 'error') {
+        setEditorMessage({ type: 'error', text: data.message });
+      } else {
+        setEditorMessage({ type: 'success', text: 'Saved to database' });
+      }
+    } catch (err) {
+      setEditorMessage({ type: 'error', text: err.message });
+    }
+  };
+
   const tablesExist = dbStatus?.tables?.some(t => t.exists);
   const allTablesExist = dbStatus?.tables?.every(t => t.exists);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <nav className="bg-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-bold text-indigo-600">Content Hub</h1>
-          <p className="text-gray-600">Monorepo Application</p>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Frontend Info */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">🎨 Frontend</h2>
-            <ul className="space-y-2 text-gray-700">
-              <li>✅ Running on port 3000</li>
-              <li>✅ Next.js 15.5.9</li>
-              <li>✅ React 19</li>
-              <li>✅ TailwindCSS</li>
-              <li>✅ Connected to Backend API</li>
-            </ul>
+    <div className="min-h-screen bg-slate-50">
+      <div className="flex min-h-screen">
+        <aside className="hidden md:flex w-72 bg-white border-r border-slate-200 flex-col">
+          <div className="px-6 py-6 border-b border-slate-200">
+            <div className="text-2xl font-bold text-slate-800">Content Hub</div>
+            <div className="text-sm text-slate-500">Admin Control Center</div>
           </div>
+          <nav className="flex-1 px-4 py-6 space-y-2 text-sm text-slate-700">
+            <div className="uppercase text-[11px] tracking-[0.2em] text-slate-400 px-2">Overview</div>
+            <div className="px-3 py-2 rounded-lg bg-slate-100 text-slate-900 font-semibold">Dashboard</div>
+            <div className="uppercase text-[11px] tracking-[0.2em] text-slate-400 px-2 mt-4">Operations</div>
+            <div className="grid grid-cols-1 gap-2">
+              <button className="text-left px-3 py-2 rounded-lg hover:bg-slate-100">DB</button>
+              <button className="text-left px-3 py-2 rounded-lg hover:bg-slate-100">Redis Cache</button>
+              <button className="text-left px-3 py-2 rounded-lg hover:bg-slate-100">Sync</button>
+              <button className="text-left px-3 py-2 rounded-lg hover:bg-slate-100">Generate</button>
+            </div>
+            <div className="uppercase text-[11px] tracking-[0.2em] text-slate-400 px-2 mt-4">Content</div>
+            <div className="grid grid-cols-1 gap-2">
+              <button className="text-left px-3 py-2 rounded-lg hover:bg-slate-100">Editor</button>
+              <button className="text-left px-3 py-2 rounded-lg hover:bg-slate-100">Images</button>
+            </div>
+          </nav>
+          <div className="px-6 py-4 border-t border-slate-200 text-xs text-slate-500">v2 • Next.js + Supabase</div>
+        </aside>
 
-          {/* Backend Info */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">⚙️ Backend API</h2>
-            {loading ? (
-              <p className="text-gray-500">Connecting to API...</p>
-            ) : error ? (
-              <p className="text-red-600">❌ {error}</p>
-            ) : (
-              <ul className="space-y-2 text-gray-700">
-                <li>✅ Running on port 3001</li>
-                <li>✅ Next.js API Routes</li>
-                <li>✅ Database: Supabase PostgreSQL</li>
-                <li className="pt-2 text-sm font-mono bg-gray-100 p-2 rounded">
-                  Backend API is running
-                </li>
-              </ul>
+        <main className="flex-1">
+          <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+            <div>
+              <div className="text-sm text-slate-500">Dashboard</div>
+              <div className="text-2xl font-semibold text-slate-800">Control Panel</div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button onClick={fetchApiStatus} className="rounded-full bg-slate-800 text-white px-4 py-2 text-sm font-semibold hover:bg-slate-900">Refresh</button>
+            </div>
+          </header>
+
+          <div className="p-6 space-y-6">
+            {/* KPI cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <KpiCard title="API" value={error ? 'Down' : 'Up'} badge={error ? 'Check' : 'Healthy'} tone={error ? 'red' : 'green'} subtitle={error || 'OK'} />
+              <KpiCard title="DB" value={dbStatus?.tables?.filter(t => t.exists).length || 0} badge="tables" tone="indigo" subtitle="Supabase" />
+              <KpiCard title="Redis" value="Cache" badge="Ops" tone="cyan" subtitle="Cache to Redis" />
+              <KpiCard title="Sync" value="Ready" badge="Files" tone="orange" subtitle="Public → DB" />
+            </div>
+
+            {/* Operations */}
+            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Operations</div>
+                  <div className="text-lg font-semibold text-slate-800">DB, Redis, Sync, Generate</div>
+                </div>
+              </div>
+
+              {operationMessage && (
+                <div className={`mb-4 p-4 rounded-xl border ${operationMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+                  {operationMessage.text}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                <ActionButton label="Generate URLs" onClick={handleGenerateUrls} loading={operationLoading === 'generate-urls'} tone="slate" />
+                <ActionButton label="Cache to Redis" onClick={handleCacheAll} loading={operationLoading === 'cache-all'} tone="cyan" />
+                <ActionButton label="Migrate" onClick={() => handleOperation('migrate')} loading={operationLoading === 'migrate'} tone="amber" />
+                <ActionButton label="DB Status" onClick={() => handleOperation('status')} loading={operationLoading === 'status'} tone="indigo" />
+                <ActionButton label="Create DB" onClick={() => handleOperation('createdb')} disabled={allTablesExist} loading={operationLoading === 'createdb'} tone="emerald" />
+                <ActionButton label="Delete DB" onClick={() => handleOperation('deletedb')} disabled={!tablesExist} loading={operationLoading === 'deletedb'} tone="rose" />
+                <ActionButton label="Pump Data" onClick={() => handleOperation('pumpdata')} disabled={!allTablesExist} loading={operationLoading === 'pumpdata'} tone="orange" />
+                <ActionButton label="Sync Collections" onClick={() => handleSyncTable('collections')} loading={operationLoading === 'collections'} tone="blue" />
+                <ActionButton label="Sync Config" onClick={() => handleSyncTable('config')} loading={operationLoading === 'config'} tone="blue" />
+                <ActionButton label="Sync Data" onClick={() => handleSyncTable('data')} loading={operationLoading === 'data'} tone="blue" />
+                <ActionButton label="Sync Files" onClick={() => handleSyncTable('files')} loading={operationLoading === 'files'} tone="blue" />
+                <ActionButton label="Sync Images" onClick={() => handleSyncTable('image')} loading={operationLoading === 'image'} tone="blue" />
+                <ActionButton label="Sync JS" onClick={() => handleSyncTable('js')} loading={operationLoading === 'js'} tone="blue" />
+                <ActionButton label="Sync Resume" onClick={() => handleSyncTable('resume')} loading={operationLoading === 'resume'} tone="blue" />
+                <ActionButton label={showLogs ? 'Hide Logs' : 'View Logs'} onClick={handleViewLogs} tone="slate" />
+              </div>
+
+              {syncProgress && (
+                <div className="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-200 text-sm">
+                  <div className="font-semibold text-slate-800">{syncProgress.table}</div>
+                  <div className="text-slate-600">Status: {syncProgress.status}{syncProgress.records ? ` • ${syncProgress.records} records` : ''}{syncProgress.message ? ` • ${syncProgress.message}` : ''}</div>
+                </div>
+              )}
+
+              {urlsGenerated && (
+                <div className="mt-4 p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-sm text-indigo-900">
+                  URLs: collections {urlsGenerated.collections.length} • config {urlsGenerated.config.length} • data {urlsGenerated.data.length} • files {urlsGenerated.files.length} • image {urlsGenerated.image.length} • js {urlsGenerated.js.length} • resume {urlsGenerated.resume.length}
+                </div>
+              )}
+            </section>
+
+            {/* Content editor */}
+            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Content Editor</div>
+                  <div className="text-lg font-semibold text-slate-800">Update DB Contents</div>
+                  <div className="text-sm text-slate-500">Edit JSON/text and push to Supabase tables.</div>
+                </div>
+              </div>
+
+              {editorMessage && (
+                <div className={`mb-3 p-3 rounded-xl border ${editorMessage.type === 'error' ? 'bg-rose-50 border-rose-200 text-rose-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+                  {editorMessage.text}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-slate-600">Table</label>
+                  <select value={editorTable} onChange={(e) => setEditorTable(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                    <option value="collections">collections</option>
+                    <option value="config_files">config_files</option>
+                    <option value="data_files">data_files</option>
+                    <option value="static_files">static_files</option>
+                    <option value="javascript_files">javascript_files</option>
+                  </select>
+                </div>
+
+                {editorTable === 'collections' && (
+                  <>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-semibold text-slate-600">Lang</label>
+                      <input value={editorLang} onChange={(e) => setEditorLang(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-semibold text-slate-600">Type</label>
+                      <input value={editorType} onChange={(e) => setEditorType(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+                    </div>
+                  </>
+                )}
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-slate-600">Filename (no extension)</label>
+                  <input value={editorFilename} onChange={(e) => setEditorFilename(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold text-slate-600">Content (JSON or text)</label>
+                <textarea
+                  value={editorContent}
+                  onChange={(e) => setEditorContent(e.target.value)}
+                  rows={8}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 font-mono text-sm"
+                  placeholder={'{\n  "title": "My Page"\n}'}
+                />
+                <div className="flex justify-end">
+                  <button onClick={handleSaveContent} className="rounded-full bg-slate-900 text-white px-4 py-2 text-sm font-semibold hover:bg-black">Save to DB</button>
+                </div>
+              </div>
+            </section>
+
+            {/* Logs */}
+            {showLogs && (
+              <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Logs</div>
+                    <div className="text-lg font-semibold text-slate-800">Latest API Logs</div>
+                  </div>
+                  <button onClick={fetchLogs} className="text-sm text-slate-600 hover:text-slate-900">Refresh</button>
+                </div>
+                <div className="space-y-2 max-h-64 overflow-auto text-sm">
+                  {logs.map((log, idx) => (
+                    <div key={idx} className="border border-slate-200 rounded-xl p-3 bg-slate-50">
+                      <div className="font-mono text-xs text-slate-500">{log.timestamp}</div>
+                      <div className="text-slate-800">{log.message}</div>
+                    </div>
+                  ))}
+                </div>
+              </section>
             )}
           </div>
-        </div>
-
-        {/* DB Operations */}
-        <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">🔧 Quick Actions</h2>
-          
-          {operationMessage && (
-            <div className={`mb-4 p-4 rounded ${
-              operationMessage.type === 'error' 
-                ? 'bg-red-100 text-red-700 border border-red-300' 
-                : 'bg-green-100 text-green-700 border border-green-300'
-            }`}>
-              {operationMessage.text}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <button
-              onClick={handleGenerateUrls}
-              disabled={operationLoading === 'generate-urls'}
-              className="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-            >
-              {operationLoading === 'generate-urls' ? 'Generating...' : 'Generate URLs'}
-            </button>
-
-            <button
-              onClick={handleCacheAll}
-              disabled={operationLoading === 'cache-all'}
-              className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-            >
-              {operationLoading === 'cache-all' ? 'Caching...' : 'Cache to Redis'}
-            </button>
-            <button
-              onClick={fetchApiStatus}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-            >
-              Refresh Status
-            </button>
-            
-            <a
-              href="/api"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-center inline-block"
-            >
-              View API
-            </a>
-
-            <button
-              onClick={() => handleOperation('migrate')}
-              disabled={operationLoading === 'migrate'}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-            >
-              {operationLoading === 'migrate' ? 'Migrating...' : 'Migrate'}
-            </button>
-
-            <button
-              onClick={() => handleOperation('status')}
-              disabled={operationLoading === 'status'}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-            >
-              {operationLoading === 'status' ? 'Loading...' : 'DB Status'}
-            </button>
-
-            <button
-              onClick={() => handleOperation('createdb')}
-              disabled={operationLoading === 'createdb' || allTablesExist}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-              title={allTablesExist ? 'Tables already exist' : 'Create database tables'}
-            >
-              {operationLoading === 'createdb' ? 'Creating...' : 'Create DB'}
-            </button>
-
-            <button
-              onClick={() => handleOperation('deletedb')}
-              disabled={operationLoading === 'deletedb' || !tablesExist}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-              title={!tablesExist ? 'No tables to delete' : 'Delete all tables'}
-            >
-              {operationLoading === 'deletedb' ? 'Deleting...' : 'Delete DB'}
-            </button>
-
-            <button
-              onClick={() => handleOperation('pumpdata')}
-              disabled={operationLoading === 'pumpdata' || !allTablesExist}
-              className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-              title={!allTablesExist ? 'Create tables first' : 'Import data from JSON files'}
-            >
-              {operationLoading === 'pumpdata' ? 'Pumping...' : 'Pump Data'}
-            </button>
-
-            <button
-              onClick={() => handleSyncTable('collections')}
-              disabled={operationLoading === 'collections'}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
-            >
-              {operationLoading === 'collections' ? 'Syncing...' : 'Sync Collections'}
-            </button>
-
-            <button
-              onClick={() => handleSyncTable('config')}
-              disabled={operationLoading === 'config'}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
-            >
-              {operationLoading === 'config' ? 'Syncing...' : 'Sync Config'}
-            </button>
-
-            <button
-              onClick={() => handleSyncTable('data')}
-              disabled={operationLoading === 'data'}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
-            >
-              {operationLoading === 'data' ? 'Syncing...' : 'Sync Data'}
-            </button>
-
-            <button
-              onClick={() => handleSyncTable('files')}
-              disabled={operationLoading === 'files'}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
-            >
-              {operationLoading === 'files' ? 'Syncing...' : 'Sync Files'}
-            </button>
-
-            <button
-              onClick={() => handleSyncTable('image')}
-              disabled={operationLoading === 'image'}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
-            >
-              {operationLoading === 'image' ? 'Syncing...' : 'Sync Image'}
-            </button>
-
-            <button
-              onClick={() => handleSyncTable('js')}
-              disabled={operationLoading === 'js'}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
-            >
-              {operationLoading === 'js' ? 'Syncing...' : 'Sync JS'}
-            </button>
-
-            <button
-              onClick={() => handleSyncTable('resume')}
-              disabled={operationLoading === 'resume'}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 text-sm"
-            >
-              {operationLoading === 'resume' ? 'Syncing...' : 'Sync Resume'}
-            </button>
-
-            <button
-              onClick={handleViewLogs}
-              className={`${showLogs ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-gray-600 hover:bg-gray-700'} text-white font-bold py-2 px-4 rounded`}
-            >
-              {showLogs ? 'Hide Logs' : 'View Logs'}
-            </button>
-          </div>
-
-          {syncProgress && (
-            <div className="mt-4 p-3 bg-blue-50 border-l-4 border-blue-500">
-              <div className="font-semibold">{syncProgress.table}</div>
-              <div className="text-sm text-gray-600">
-                Status: <span className="font-mono">{syncProgress.status}</span>
-                {syncProgress.records && ` - ${syncProgress.records} records`}
-                {syncProgress.message && ` - ${syncProgress.message}`}
-              </div>
-            </div>
-          )}
-
-          {urlsGenerated && (
-            <div className="mt-4 p-3 bg-indigo-50 border-l-4 border-indigo-500">
-              <div className="font-semibold">URLs Generated</div>
-              <div className="text-xs text-gray-700 mt-2">
-                Collections: {urlsGenerated.collections.length} • Config: {urlsGenerated.config.length} • Data: {urlsGenerated.data.length} • Files: {urlsGenerated.files.length} • Image: {urlsGenerated.image.length} • JS: {urlsGenerated.js.length} • Resume: {urlsGenerated.resume.length}
-              </div>
-            </div>
-          )}
-
-          {showLogs && (
-            <div className="mt-4 bg-gray-900 text-gray-100 rounded p-4 font-mono text-xs max-h-96 overflow-y-auto">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-bold">Live Logs ({logs.length})</span>
-                <button 
-                  onClick={fetchLogs}
-                  className="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
-                >
-                  Refresh
-                </button>
-              </div>
-              {logs.length === 0 ? (
-                <div className="text-gray-500">No logs yet...</div>
-              ) : (
-                logs.map((log, idx) => (
-                  <div key={idx} className={`mb-1 ${
-                    log.type === 'ERROR' ? 'text-red-400' :
-                    log.type === 'DATABASE' ? 'text-blue-400' :
-                    log.type === 'RESPONSE' ? 'text-green-400' :
-                    'text-gray-400'
-                  }`}>
-                    [{log.timestamp}] [{log.type}] {log.message || log.operation || log.method}
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-
-          {/* DB Status Display */}
-          {dbStatus?.tables && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Database Tables</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
-                {dbStatus.tables.map(table => (
-                  <div 
-                    key={table.table}
-                    className={`p-3 rounded border-2 ${
-                      table.exists 
-                        ? 'bg-green-50 border-green-300' 
-                        : 'bg-gray-50 border-gray-300'
-                    }`}
-                  >
-                    <div className="font-semibold text-sm">{table.table}</div>
-                    <div className="text-xs text-gray-600">
-                      {table.exists ? `${table.records} records` : 'Not created'}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Documentation */}
-        <div className="mt-8 bg-indigo-50 rounded-lg p-6 border-2 border-indigo-200">
-          <h2 className="text-xl font-bold text-indigo-900 mb-4">📚 Architecture</h2>
-          <pre className="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto text-sm">
-{`monorepo/
-├── apps/
-│   ├── frontend/          (Port 3000 - React UI)
-│   │   ├── pages/
-│   │   └── next.config.js
-│   └── backend/           (Port 3001 - API Routes)
-│       ├── pages/api/
-│       └── next.config.js
-├── package.json           (Workspaces)
-└── vercel.json           (Unified config)`}
-          </pre>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
+  );
+
+  // End of Home component
+}
+
+
+function toneClasses(tone) {
+  switch (tone) {
+    case 'green':
+      return 'bg-emerald-50 text-emerald-800 border-emerald-200';
+    case 'red':
+      return 'bg-rose-50 text-rose-800 border-rose-200';
+    case 'indigo':
+      return 'bg-indigo-50 text-indigo-800 border-indigo-200';
+    case 'cyan':
+      return 'bg-cyan-50 text-cyan-800 border-cyan-200';
+    case 'orange':
+      return 'bg-orange-50 text-orange-800 border-orange-200';
+    default:
+      return 'bg-slate-50 text-slate-800 border-slate-200';
+  }
+}
+
+function KpiCard({ title, value, badge, subtitle, tone = 'slate' }) {
+  return (
+    <div className={`rounded-2xl border ${toneClasses(tone)} p-4 shadow-sm`}> 
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-semibold text-slate-500">{title}</div>
+        <span className="text-xs px-2 py-1 rounded-full bg-white/80 border border-white text-slate-600">{badge}</span>
+      </div>
+      <div className="mt-2 text-2xl font-bold">{value}</div>
+      <div className="text-xs text-slate-500 mt-1">{subtitle}</div>
+    </div>
+  );
+}
+
+function ActionButton({ label, onClick, loading, disabled, tone = 'slate' }) {
+  const tones = {
+    slate: 'bg-slate-900 hover:bg-black text-white',
+    cyan: 'bg-cyan-600 hover:bg-cyan-700 text-white',
+    amber: 'bg-amber-500 hover:bg-amber-600 text-white',
+    indigo: 'bg-indigo-600 hover:bg-indigo-700 text-white',
+    emerald: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+    rose: 'bg-rose-600 hover:bg-rose-700 text-white',
+    orange: 'bg-orange-500 hover:bg-orange-600 text-white',
+    blue: 'bg-sky-600 hover:bg-sky-700 text-white',
+  };
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled || loading}
+      className={`${tones[tone]} rounded-xl px-4 py-3 text-sm font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed`}
+    >
+      {loading ? 'Working...' : label}
+    </button>
   );
 }
