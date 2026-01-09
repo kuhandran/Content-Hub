@@ -25,6 +25,8 @@ export default async function handler(req, res) {
         return await handleCreateDB(res);
       case 'deletedb':
         return await handleDeleteDB(res);
+      case 'migrate':
+        return await handleMigrate(res);
       case 'pumpdata':
         return await handlePumpData(res);
       default:
@@ -403,4 +405,57 @@ async function handlePumpData(res) {
 
   logResponse(200, response);
   return res.status(200).json(response);
+}
+
+async function handleMigrate(res) {
+  logDatabase('OPERATION', 'system', { operation: 'migrate', action: 'start' });
+  
+  const tablesToMigrate = ['image', 'resume'];
+  const migratedTables = [];
+  const errors = [];
+
+  for (const table of tablesToMigrate) {
+    try {
+      // Check if column exists
+      const checkColumn = await sql`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = ${table} 
+        AND column_name = 'is_base64'
+      `;
+
+      if (checkColumn.length === 0) {
+        // Column doesn't exist, add it
+        logDatabase('ALTER', table, { action: 'adding_is_base64_column' });
+        await sql.unsafe(`ALTER TABLE ${table} ADD COLUMN is_base64 BOOLEAN DEFAULT false`);
+        migratedTables.push({ table, status: 'added_column' });
+        console.log(`[MIGRATE] Added is_base64 column to ${table}`);
+      } else {
+        migratedTables.push({ table, status: 'column_exists' });
+        console.log(`[MIGRATE] Column is_base64 already exists on ${table}`);
+      }
+    } catch (error) {
+      errors.push({ table, error: error.message });
+      logError(error, { table, operation: 'migrate' });
+      console.error(`[MIGRATE] Error migrating ${table}:`, error.message);
+    }
+  }
+
+  const response = {
+    status: 'success',
+    message: 'Migration completed',
+    migratedTables,
+    errors,
+    timestamp: new Date().toISOString(),
+  };
+
+  logDatabase('OPERATION', 'system', { 
+    operation: 'migrate', 
+    action: 'complete',
+    tablesProcessed: migratedTables.length
+  });
+
+  logResponse(200, response);
+  return res.status(200).json(response);
+}
 }

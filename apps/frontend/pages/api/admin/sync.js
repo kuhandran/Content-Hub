@@ -265,19 +265,29 @@ async function syncFolder(res, folderName, tableName) {
 
           syncState.currentFile++;
 
-          // Check if table has is_base64 column (image and resume do)
-          const hasBase64Column = ['image', 'resume'].includes(tableName);
-          
-          if (hasBase64Column) {
-            await sql`
-              INSERT INTO ${sql(tableName)} (filename, filecontent, is_base64)
-              VALUES (${file}, ${filecontent}, ${isBase64})
-            `;
-          } else {
-            await sql`
-              INSERT INTO ${sql(tableName)} (filename, filecontent)
-              VALUES (${file}, ${filecontent})
-            `;
+          // Try to insert with is_base64 column first (for image and resume)
+          try {
+            if (['image', 'resume'].includes(tableName)) {
+              await sql`
+                INSERT INTO ${sql(tableName)} (filename, filecontent, is_base64)
+                VALUES (${file}, ${filecontent}, ${isBase64})
+              `;
+            } else {
+              await sql`
+                INSERT INTO ${sql(tableName)} (filename, filecontent)
+                VALUES (${file}, ${filecontent})
+              `;
+            }
+          } catch (error) {
+            // If is_base64 column doesn't exist, try without it
+            if (error.message.includes('is_base64')) {
+              await sql`
+                INSERT INTO ${sql(tableName)} (filename, filecontent)
+                VALUES (${file}, ${filecontent})
+              `;
+            } else {
+              throw error;
+            }
           }
 
           totalInserted++;

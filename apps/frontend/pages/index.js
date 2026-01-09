@@ -217,6 +217,14 @@ export default function Home() {
             </a>
 
             <button
+              onClick={() => handleOperation('migrate')}
+              disabled={operationLoading === 'migrate'}
+              className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+            >
+              {operationLoading === 'migrate' ? 'Migrating...' : 'Migrate'}
+            </button>
+
+            <button
               onClick={() => handleOperation('status')}
               disabled={operationLoading === 'status'}
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
