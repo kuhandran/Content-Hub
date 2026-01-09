@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 
 export default function Home() {
+    const [activeTab, setActiveTab] = useState('dashboard');
   const [apiStatus, setApiStatus] = useState(null);
   const [dbStatus, setDbStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,6 +28,7 @@ export default function Home() {
     fetchApiStatus();
     fetchDbStatus();
   }, []);
+
 
   const fetchApiStatus = async () => {
     try {
@@ -54,6 +56,17 @@ export default function Home() {
       setLoading(false);
     }
   };
+// TabButton component for sidebar (must be outside Home)
+function TabButton({ label, active, onClick }) {
+  return (
+    <button
+      className={`w-full text-left px-3 py-2 rounded-lg font-semibold transition-colors ${active ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'}`}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  );
+}
 
   const fetchDbStatus = async () => {
     try {
@@ -309,79 +322,83 @@ export default function Home() {
               )}
             </section>
 
-// TabButton component for sidebar (move above Home)
-function TabButton({ label, active, onClick }) {
+
+
+
+
+
+  // ...existing code...
+
   return (
-    <button
-      className={`w-full text-left px-3 py-2 rounded-lg font-semibold transition-colors ${active ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'}`}
-      onClick={onClick}
-    >
-      {label}
-    </button>
+    <div className="min-h-screen bg-slate-50">
+      {/* ...existing layout code... */}
+      <div className="p-6 space-y-6">
+        {/* ...existing KPI and operations code... */}
+
+        {/* Content editor */}
+        <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Content Editor</div>
+              <div className="text-lg font-semibold text-slate-800">Update DB Contents</div>
+              <div className="text-sm text-slate-500">Edit JSON/text and push to Supabase tables.</div>
+            </div>
+          </div>
+
+          {editorMessage && (
+            <div className={`mb-3 p-3 rounded-xl border ${editorMessage.type === 'error' ? 'bg-rose-50 border-rose-200 text-rose-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+              {editorMessage.text}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-600">Table</label>
+              <select value={editorTable} onChange={(e) => setEditorTable(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                <option value="collections">collections</option>
+                <option value="config_files">config_files</option>
+                <option value="data_files">data_files</option>
+                <option value="static_files">static_files</option>
+                <option value="javascript_files">javascript_files</option>
+              </select>
+            </div>
+
+            {editorTable === 'collections' && (
+              <>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-slate-600">Lang</label>
+                  <input value={editorLang} onChange={(e) => setEditorLang(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-slate-600">Type</label>
+                  <input value={editorType} onChange={(e) => setEditorType(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+                </div>
+              </>
+            )}
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-600">Filename (no extension)</label>
+              <input value={editorFilename} onChange={(e) => setEditorFilename(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-semibold text-slate-600">Content (JSON or text)</label>
+            <textarea
+              value={editorContent}
+              onChange={(e) => setEditorContent(e.target.value)}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm min-h-[120px] font-mono"
+            />
+          </div>
+
+          <div className="mt-4 flex gap-2">
+            <button onClick={handleSaveContent} className="rounded-lg bg-emerald-600 text-white px-4 py-2 font-semibold hover:bg-emerald-700">Save</button>
+          </div>
+        </section>
+      </div>
+    </div>
   );
-}
 
-            {/* Content editor */}
-            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Content Editor</div>
-                  <div className="text-lg font-semibold text-slate-800">Update DB Contents</div>
-                  <div className="text-sm text-slate-500">Edit JSON/text and push to Supabase tables.</div>
-                </div>
-              </div>
-
-              {editorMessage && (
-                <div className={`mb-3 p-3 rounded-xl border ${editorMessage.type === 'error' ? 'bg-rose-50 border-rose-200 text-rose-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
-                  {editorMessage.text}
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Table</label>
-                  <select value={editorTable} onChange={(e) => setEditorTable(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
-                    <option value="collections">collections</option>
-                    <option value="config_files">config_files</option>
-                    <option value="data_files">data_files</option>
-                    <option value="static_files">static_files</option>
-                    <option value="javascript_files">javascript_files</option>
-                  </select>
-                </div>
-
-                {editorTable === 'collections' && (
-                  <>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs font-semibold text-slate-600">Lang</label>
-                      <input value={editorLang} onChange={(e) => setEditorLang(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs font-semibold text-slate-600">Type</label>
-                      <input value={editorType} onChange={(e) => setEditorType(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
-                    </div>
-                  </>
-                )}
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Filename (no extension)</label>
-                  <input value={editorFilename} onChange={(e) => setEditorFilename(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold text-slate-600">Content (JSON or text)</label>
-                <textarea
-                  value={editorContent}
-                  onChange={(e) => setEditorContent(e.target.value)}
-                  rows={8}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 font-mono text-sm"
-                  placeholder={'{\n  "title": "My Page"\n}'}
-                />
-                <div className="flex justify-end">
-                  <button onClick={handleSaveContent} className="rounded-full bg-slate-900 text-white px-4 py-2 text-sm font-semibold hover:bg-black">Save to DB</button>
-                </div>
-              </div>
-            </section>
 
             {/* Logs */}
             {showLogs && (
