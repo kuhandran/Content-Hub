@@ -261,7 +261,8 @@ function TabButton({ label, active, onClick }) {
               <KpiCard title="Sync" value="Ready" badge="Files" tone="orange" subtitle="Public → DB" />
             </div>
 
-            {/* Operations as tabs */}
+            {/* Operations: show per active tab (Dashboard shows all) */}
+            {['dashboard','db','redis','sync','generate'].includes(activeTab) && (
             <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -276,49 +277,53 @@ function TabButton({ label, active, onClick }) {
                 </div>
               )}
 
-              {/* Grouped operations into cards instead of a single button row */}
+              {/* Grouped operations into cards; render per tab */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Generate */}
-                <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Generate</div>
-                  <div className="flex flex-wrap gap-2">
-                    <ActionButton label="Generate URLs" onClick={handleGenerateUrls} loading={operationLoading === 'generate-urls'} tone="slate" />
+                {(activeTab === 'generate' || activeTab === 'dashboard') && (
+                  <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+                    <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Generate</div>
+                    <div className="flex flex-wrap gap-2">
+                      <ActionButton label="Generate URLs" onClick={handleGenerateUrls} loading={operationLoading === 'generate-urls'} tone="slate" />
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Redis */}
-                <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Redis</div>
-                  <div className="flex flex-wrap gap-2">
-                    <ActionButton label="Cache to Redis" onClick={handleCacheAll} loading={operationLoading === 'cache-all'} tone="cyan" />
+                {(activeTab === 'redis' || activeTab === 'dashboard') && (
+                  <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+                    <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Redis</div>
+                    <div className="flex flex-wrap gap-2">
+                      <ActionButton label="Cache to Redis" onClick={handleCacheAll} loading={operationLoading === 'cache-all'} tone="cyan" />
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Database */}
-                <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Database</div>
-                  <div className="flex flex-wrap gap-2">
-                    <ActionButton label="Migrate" onClick={() => handleOperation('migrate')} loading={operationLoading === 'migrate'} tone="amber" />
-                    <ActionButton label="DB Status" onClick={() => handleOperation('status')} loading={operationLoading === 'status'} tone="indigo" />
-                    <ActionButton label="Create DB" onClick={() => handleOperation('createdb')} disabled={allTablesExist} loading={operationLoading === 'createdb'} tone="emerald" />
-                    <ActionButton label="Delete DB" onClick={() => handleOperation('deletedb')} disabled={!tablesExist} loading={operationLoading === 'deletedb'} tone="rose" />
-                    <ActionButton label="Pump Data" onClick={() => handleOperation('pumpdata')} disabled={!allTablesExist} loading={operationLoading === 'pumpdata'} tone="orange" />
+                {(activeTab === 'db' || activeTab === 'dashboard') && (
+                  <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+                    <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Database</div>
+                    <div className="flex flex-wrap gap-2">
+                      <ActionButton label="Migrate" onClick={() => handleOperation('migrate')} loading={operationLoading === 'migrate'} tone="amber" />
+                      <ActionButton label="DB Status" onClick={() => handleOperation('status')} loading={operationLoading === 'status'} tone="indigo" />
+                      <ActionButton label="Create DB" onClick={() => handleOperation('createdb')} disabled={allTablesExist} loading={operationLoading === 'createdb'} tone="emerald" />
+                      <ActionButton label="Delete DB" onClick={() => handleOperation('deletedb')} disabled={!tablesExist} loading={operationLoading === 'deletedb'} tone="rose" />
+                      <ActionButton label="Pump Data" onClick={() => handleOperation('pumpdata')} disabled={!allTablesExist} loading={operationLoading === 'pumpdata'} tone="orange" />
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Sync */}
-                <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Sync</div>
-                  <div className="flex flex-wrap gap-2">
-                    <ActionButton label="Collections" onClick={() => handleSyncTable('collections')} loading={operationLoading === 'collections'} tone="blue" />
-                    <ActionButton label="Config" onClick={() => handleSyncTable('config')} loading={operationLoading === 'config'} tone="blue" />
-                    <ActionButton label="Data" onClick={() => handleSyncTable('data')} loading={operationLoading === 'data'} tone="blue" />
-                    <ActionButton label="Files" onClick={() => handleSyncTable('files')} loading={operationLoading === 'files'} tone="blue" />
-                    <ActionButton label="Images" onClick={() => handleSyncTable('image')} loading={operationLoading === 'image'} tone="blue" />
-                    <ActionButton label="JS" onClick={() => handleSyncTable('js')} loading={operationLoading === 'js'} tone="blue" />
-                    <ActionButton label="Resume" onClick={() => handleSyncTable('resume')} loading={operationLoading === 'resume'} tone="blue" />
+                {(activeTab === 'sync' || activeTab === 'dashboard') && (
+                  <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+                    <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Sync</div>
+                    <div className="flex flex-wrap gap-2">
+                      <ActionButton label="Collections" onClick={() => handleSyncTable('collections')} loading={operationLoading === 'collections'} tone="blue" />
+                      <ActionButton label="Config" onClick={() => handleSyncTable('config')} loading={operationLoading === 'config'} tone="blue" />
+                      <ActionButton label="Data" onClick={() => handleSyncTable('data')} loading={operationLoading === 'data'} tone="blue" />
+                      <ActionButton label="Files" onClick={() => handleSyncTable('files')} loading={operationLoading === 'files'} tone="blue" />
+                      <ActionButton label="Images" onClick={() => handleSyncTable('image')} loading={operationLoading === 'image'} tone="blue" />
+                      <ActionButton label="JS" onClick={() => handleSyncTable('js')} loading={operationLoading === 'js'} tone="blue" />
+                      <ActionButton label="Resume" onClick={() => handleSyncTable('resume')} loading={operationLoading === 'resume'} tone="blue" />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {syncProgress && (
@@ -334,109 +339,109 @@ function TabButton({ label, active, onClick }) {
                 </div>
               )}
             </section>
-
-
-
-
-
-
-  // ...existing code...
-
-  return (
-    <div className="min-h-screen bg-slate-50">
-      {/* ...existing layout code... */}
-      <div className="p-6 space-y-6">
-        {/* ...existing KPI and operations code... */}
-
-        {/* Content editor */}
-        <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Content Editor</div>
-              <div className="text-lg font-semibold text-slate-800">Update DB Contents</div>
-              <div className="text-sm text-slate-500">Edit JSON/text and push to Supabase tables.</div>
-            </div>
-          </div>
-
-          {editorMessage && (
-            <div className={`mb-3 p-3 rounded-xl border ${editorMessage.type === 'error' ? 'bg-rose-50 border-rose-200 text-rose-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
-              {editorMessage.text}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-slate-600">Table</label>
-              <select value={editorTable} onChange={(e) => setEditorTable(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
-                <option value="collections">collections</option>
-                <option value="config_files">config_files</option>
-                <option value="data_files">data_files</option>
-                <option value="static_files">static_files</option>
-                <option value="javascript_files">javascript_files</option>
-              </select>
-            </div>
-
-            {editorTable === 'collections' && (
-              <>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Lang</label>
-                  <input value={editorLang} onChange={(e) => setEditorLang(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Type</label>
-                  <input value={editorType} onChange={(e) => setEditorType(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
-                </div>
-              </>
             )}
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-slate-600">Filename (no extension)</label>
-              <input value={editorFilename} onChange={(e) => setEditorFilename(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold text-slate-600">Content (JSON or text)</label>
-            <textarea
-              value={editorContent}
-              onChange={(e) => setEditorContent(e.target.value)}
-              className="rounded-lg border border-slate-200 px-3 py-2 text-sm min-h-[120px] font-mono"
-            />
-          </div>
-
-          <div className="mt-4 flex gap-2">
-            <button onClick={handleSaveContent} className="rounded-lg bg-emerald-600 text-white px-4 py-2 font-semibold hover:bg-emerald-700">Save</button>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-
-
-            {/* Logs */}
+            {/* Content editor: only on Editor tab */}
+            {activeTab === 'editor' && (
             <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Logs</div>
-                  <div className="text-lg font-semibold text-slate-800">Latest API Logs</div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Content Editor</div>
+                  <div className="text-lg font-semibold text-slate-800">Update DB Contents</div>
+                  <div className="text-sm text-slate-500">Edit JSON/text and push to Supabase tables.</div>
                 </div>
-                <button onClick={handleViewLogs} className="text-sm text-slate-600 hover:text-slate-900">{showLogs ? 'Hide' : 'View Logs'}</button>
               </div>
-              {showLogs && (
-                <div className="space-y-2 max-h-64 overflow-auto text-sm">
-                  <button onClick={fetchLogs} className="text-xs text-slate-600 hover:text-slate-900 mb-2">Refresh Logs</button>
-                  <JsonViewer data={logs} />
+
+              {editorMessage && (
+                <div className={`mb-3 p-3 rounded-xl border ${editorMessage.type === 'error' ? 'bg-rose-50 border-rose-200 text-rose-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+                  {editorMessage.text}
                 </div>
               )}
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-slate-600">Table</label>
+                  <select value={editorTable} onChange={(e) => setEditorTable(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                    <option value="collections">collections</option>
+                    <option value="config_files">config_files</option>
+                    <option value="data_files">data_files</option>
+                    <option value="static_files">static_files</option>
+                    <option value="javascript_files">javascript_files</option>
+                  </select>
+                </div>
+
+                {editorTable === 'collections' && (
+                  <>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-semibold text-slate-600">Lang</label>
+                      <input value={editorLang} onChange={(e) => setEditorLang(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-semibold text-slate-600">Type</label>
+                      <input value={editorType} onChange={(e) => setEditorType(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+                    </div>
+                  </>
+                )}
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-slate-600">Filename (no extension)</label>
+                  <input value={editorFilename} onChange={(e) => setEditorFilename(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold text-slate-600">Content (JSON or text)</label>
+                <textarea
+                  value={editorContent}
+                  onChange={(e) => setEditorContent(e.target.value)}
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm min-h-[120px] font-mono"
+                />
+              </div>
+
+              <div className="mt-4 flex gap-2">
+                <button onClick={handleSaveContent} className="rounded-lg bg-emerald-600 text-white px-4 py-2 font-semibold hover:bg-emerald-700">Save</button>
+              </div>
             </section>
+            )}
+
+            {/* Images tab panel */}
+            {activeTab === 'images' && (
+              <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Images</div>
+                <div className="text-lg font-semibold text-slate-800 mb-2">Manage Images</div>
+                <p className="text-sm text-slate-600 mb-4">Use Sync → Images to populate the `images` table. Future image tools will appear here.</p>
+                <ActionButton label="Sync Images" onClick={() => handleSyncTable('image')} loading={operationLoading === 'image'} tone="blue" />
+              </section>
+            )}
+
+            {/* Logs: only on Dashboard */}
+            {activeTab === 'dashboard' && (
+              <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Logs</div>
+                    <div className="text-lg font-semibold text-slate-800">Latest API Logs</div>
+                  </div>
+                  <button onClick={handleViewLogs} className="text-sm text-slate-600 hover:text-slate-900">{showLogs ? 'Hide' : 'View Logs'}</button>
+                </div>
+                {showLogs && (
+                  <div className="space-y-2 max-h-64 overflow-auto text-sm">
+                    <button onClick={fetchLogs} className="text-xs text-slate-600 hover:text-slate-900 mb-2">Refresh Logs</button>
+                    <JsonViewer data={logs} />
+                  </div>
+                )}
+              </section>
+            )}
+
           </div>
         </main>
       </div>
     </div>
   );
-
-  // End of Home component
 }
+
+
+
 
 
 function toneClasses(tone) {

@@ -13,7 +13,11 @@ export async function POST(req) {
       return new Response(JSON.stringify({ status: 'error', error: msg }), { status: 500 });
     }
 
-    if (action === 'cache' && key && value) {
+    if (action === 'status') {
+      const pong = typeof redis.ping === 'function' ? await redis.ping() : 'PONG';
+      logResponse(200, { action: 'status', pong });
+      return new Response(JSON.stringify({ status: 'success', action: 'status', pong }), { status: 200 });
+    } else if (action === 'cache' && key && value) {
       await redis.set(key, JSON.stringify(value));
       logResponse(200, { action: 'cache', key });
       return new Response(JSON.stringify({ status: 'success', action: 'cache', key }), { status: 200 });

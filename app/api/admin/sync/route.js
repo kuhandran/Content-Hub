@@ -32,6 +32,15 @@ const crypto = require('crypto');
 const { NextResponse } = require('next/server');
 const { createClient } = require('@supabase/supabase-js');
 
+function getSupabaseClient() {
+  const url = process.env.SUPABASE_URL || '';
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  if (!url || !key) {
+    throw new Error('Supabase configuration missing: set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
+  }
+  return createClient(url, key);
+}
+
 // Utility functions
 function calculateHash(content) {
   return crypto.createHash('sha256').update(content).digest('hex');
@@ -120,12 +129,21 @@ async function scanForChanges(supabase) {
 
   try {
     // Get sync manifest from database
-    const { data: manifest, error } = await supabase
+    let manifest = [];
+    const res = await supabase
       .from('sync_manifest')
       .select('*');
 
-    if (error) {
-      throw new Error(`Failed to fetch sync_manifest: ${error.message}`);
+    if (res.error) {
+      const msg = res.error.message || 'Unknown Supabase error';
+      // Gracefully handle missing table
+      if (msg.includes('does not exist') || msg.includes('relation') && msg.includes('does not exist')) {
+        manifest = [];
+      } else {
+        throw new Error(`Failed to fetch sync_manifest: ${msg}`);
+      }
+    } else {
+      manifest = res.data || [];
     }
 
     const manifestMap = new Map(manifest?.map(m => [m.file_path, m]) || []);
@@ -291,16 +309,13 @@ async function pullChangesToDatabase(supabase, changes) {
 }
 
 // Main POST handler
-async function POST(request) {
+export async function POST(request) {
   try {
     const body = await request.json();
     const mode = body.mode || 'scan';
 
     // Initialize Supabase client
-    const supabase = createClient(
-      process.env.SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
+    const supabase = getSupabaseClient();
 
     const timestamp = new Date().toISOString();
 
@@ -354,7 +369,7 @@ async function POST(request) {
 }
 
 // GET endpoint to check sync status
-async function GET(request) {
+export async function GET(request) {
   return NextResponse.json({
     status: 'success',
     message: 'Sync endpoint is active',
@@ -364,4 +379,3 @@ async function GET(request) {
   });
 }
 
-module.exports = { POST, GET };

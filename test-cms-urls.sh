@@ -50,10 +50,14 @@ curl_json "/api/health"
 curl_json "/api/admin/data"
 curl_json "/api/admin/operations"
 curl_json "/api/admin/urls"
-blue "POST /api/admin/cache {\"action\":\"status\"}"
-curl -sS $AUTH_HEADER -w "\nHTTP_STATUS:%{http_code}\n" -X POST -H "Content-Type: application/json" -d '{"action":"status"}' "$DOMAIN/api/admin/cache" | head -c 1400; echo
-blue "POST /api/admin/cache {\"action\":\"cache-all\"}"
-curl -sS $AUTH_HEADER -w "\nHTTP_STATUS:%{http_code}\n" -X POST -H "Content-Type: application/json" -d '{"action":"cache-all"}' "$DOMAIN/api/admin/cache" | head -c 1400; echo
+blue "POST /api/admin/cache {\"action\":\"clearAll\"}"
+curl -sS $AUTH_HEADER -w "\nHTTP_STATUS:%{http_code}\n" -X POST -H "Content-Type: application/json" -d '{"action":"clearAll"}' "$DOMAIN/api/admin/cache" | head -c 1400; echo
+blue "POST /api/admin/cache {\"action\":\"cache\", \"key\":\"cms:ping\", \"value\":{\"ok\":true}}"
+curl -sS $AUTH_HEADER -w "\nHTTP_STATUS:%{http_code}\n" -X POST -H "Content-Type: application/json" -d '{"action":"cache","key":"cms:ping","value":{"ok":true}}' "$DOMAIN/api/admin/cache" | head -c 1400; echo
+blue "POST /api/admin/cache {\"action\":\"check\", \"key\":\"cms:ping\"}"
+curl -sS $AUTH_HEADER -w "\nHTTP_STATUS:%{http_code}\n" -X POST -H "Content-Type: application/json" -d '{"action":"check","key":"cms:ping"}' "$DOMAIN/api/admin/cache" | head -c 1400; echo
+blue "POST /api/admin/cache {\"action\":\"clear\", \"key\":\"cms:ping\"}"
+curl -sS $AUTH_HEADER -w "\nHTTP_STATUS:%{http_code}\n" -X POST -H "Content-Type: application/json" -d '{"action":"clear","key":"cms:ping"}' "$DOMAIN/api/admin/cache" | head -c 1400; echo
 curl_json "/api/admin/logs?limit=10"
 
 # Sync endpoints
