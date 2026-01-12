@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 const qrcode = require('qrcode');
-const { verifySession } = require('../../../../lib/session');
-const { generateTotpSecret } = require('../../../../lib/mfa');
-const users = require('../../../../lib/users');
+const { verifySession } = require('../../../../../lib/session');
+const { generateTotpSecret } = require('../../../../../lib/mfa');
+const users = require('../../../../../lib/users');
 
 export async function POST(request) {
   try {
