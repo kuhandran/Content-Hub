@@ -12,6 +12,14 @@ export default function LoginPage() {
 
   async function handleLogin(e) {
     e.preventDefault();
+    if (!username.trim()) {
+      setError("Username is required");
+      return;
+    }
+    if (!password.trim()) {
+      setError("Password is required");
+      return;
+    }
     setError("");
     setLoading(true);
 
@@ -24,13 +32,19 @@ export default function LoginPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Login failed");
+        setError(data.error || "Invalid credentials");
         setLoading(false);
         return;
       }
 
-      setSessionToken(data.sessionToken || data.session_token);
-      setStep("mfa");
+      // Check if MFA is required
+      if (data.requiresMfa && data.sessionToken) {
+        setSessionToken(data.sessionToken);
+        setStep("mfa");
+      } else {
+        // No MFA required, redirect to dashboard
+        window.location.href = "/dashboard";
+      }
     } catch (err) {
       setError("An error occurred. Please try again.");
     } finally {
@@ -55,7 +69,7 @@ export default function LoginPage() {
 
     const fullCode = code.join("");
     if (fullCode.length !== 6) {
-      setError("Please enter a valid 6-digit code");
+      setError("Please enter all 6 digits");
       setLoading(false);
       return;
     }
@@ -64,16 +78,13 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/mfa/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionToken,
-          code: fullCode,
-        }),
+        body: JSON.stringify({ sessionToken, code: fullCode }),
         credentials: "include",
       });
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "MFA verification failed");
+        setError(data.error || "Verification failed");
         setLoading(false);
         return;
       }
@@ -87,176 +98,141 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        {/* Main Card */}
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-          {/* Header Section */}
-          <div className="px-6 pt-8 pb-6 sm:px-8 sm:pt-10 sm:pb-8">
-            <div className="flex flex-col items-center">
-              {/* Logo Icon */}
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                </svg>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)", padding: "20px", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif" }}>
+      <div style={{ width: "100%", maxWidth: "360px" }}>
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: "40px" }}>
+          <div style={{ fontSize: "32px", fontWeight: "400", color: "#1565c0", letterSpacing: "-0.5px", marginBottom: "8px" }}>
+            Content Hub
+          </div>
+          <div style={{ fontSize: "13px", color: "#0d47a1", letterSpacing: "0.2px" }}>
+            Sign in to your account
+          </div>
+        </div>
+
+        {/* Login Card */}
+        {step === "login" && (
+          <div style={{ background: "#fff", borderRadius: "8px", padding: "32px 24px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+            <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              {error && (
+                <div style={{ padding: "12px 16px", background: "#ffebee", border: "1px solid #ffcdd2", borderRadius: "8px", fontSize: "13px", color: "#c62828", lineHeight: "1.4" }}>
+                  {error}
+                </div>
+              )}
+
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#1565c0", marginBottom: "12px", letterSpacing: "0.3px" }}>
+                  USERNAME
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter username"
+                  autoFocus
+                  disabled={loading}
+                  style={{ width: "100%", padding: "14px 12px", border: "1px solid #90caf9", borderRadius: "4px", fontSize: "15px", background: "#fff", boxSizing: "border-box", outline: "none", transition: "border-color 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
+                  onFocus={(e) => { e.target.style.borderColor = "#1565c0"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05), inset 0 0 0 1px #1565c0"; }}
+                  onBlur={(e) => { e.target.style.borderColor = "#90caf9"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)"; }}
+                />
               </div>
-              
-              <h1 className="text-2xl font-bold text-gray-900 mt-4">Content Hub</h1>
-              <p className="text-gray-500 text-sm mt-2">
-                {step === "login" ? "Sign in to your account" : "Verify your identity"}
-              </p>
+
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#1565c0", marginBottom: "12px", letterSpacing: "0.3px" }}>
+                  PASSWORD
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  disabled={loading}
+                  style={{ width: "100%", padding: "14px 12px", border: "1px solid #90caf9", borderRadius: "4px", fontSize: "15px", background: "#fff", boxSizing: "border-box", outline: "none", transition: "border-color 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
+                  onFocus={(e) => { e.target.style.borderColor = "#1565c0"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05), inset 0 0 0 1px #1565c0"; }}
+                  onBlur={(e) => { e.target.style.borderColor = "#90caf9"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)"; }}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{ padding: "12px 24px", background: "#1976d2", color: "#fff", border: "none", borderRadius: "4px", fontSize: "15px", fontWeight: "500", cursor: loading ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: loading ? 0.8 : 1, boxShadow: "0 2px 4px rgba(25, 118, 210, 0.3)" }}
+                onMouseEnter={(e) => !loading && (e.target.style.background = "#1565c0", e.target.style.boxShadow = "0 4px 8px rgba(25, 118, 210, 0.4)")}
+                onMouseLeave={(e) => !loading && (e.target.style.background = "#1976d2", e.target.style.boxShadow = "0 2px 4px rgba(25, 118, 210, 0.3)")}
+              >
+                {loading ? "Signing in..." : "Next"}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* MFA Card */}
+        {step === "mfa" && (
+          <div style={{ background: "#fff", borderRadius: "8px", padding: "32px 24px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+            <div style={{ fontSize: "13px", color: "#0d47a1", marginBottom: "24px", lineHeight: "1.5" }}>
+              We sent a 6-digit code to your authenticator app
             </div>
+
+            <form onSubmit={handleMfaVerify} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+              {error && (
+                <div style={{ padding: "12px 16px", background: "#ffebee", border: "1px solid #ffcdd2", borderRadius: "8px", fontSize: "13px", color: "#c62828", lineHeight: "1.4" }}>
+                  {error}
+                </div>
+              )}
+
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#1565c0", marginBottom: "16px", letterSpacing: "0.3px" }}>
+                  VERIFICATION CODE
+                </label>
+                <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                  {code.map((digit, index) => (
+                    <input
+                      key={index}
+                      id={`code-${index}`}
+                      type="text"
+                      value={digit}
+                      onChange={(e) => handleCodeChange(index, e.target.value)}
+                      maxLength="1"
+                      placeholder="0"
+                      disabled={loading}
+                      style={{ width: "44px", height: "44px", textAlign: "center", border: "1px solid #90caf9", borderRadius: "4px", fontSize: "20px", fontWeight: "600", color: "#1565c0", background: "#fff", outline: "none", transition: "border-color 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
+                      onFocus={(e) => { e.target.style.borderColor = "#1565c0"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05), inset 0 0 0 1px #1565c0"; }}
+                      onBlur={(e) => { e.target.style.borderColor = "#90caf9"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)"; }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{ padding: "12px 24px", background: "#1976d2", color: "#fff", border: "none", borderRadius: "4px", fontSize: "15px", fontWeight: "500", cursor: loading ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: loading ? 0.8 : 1, boxShadow: "0 2px 4px rgba(25, 118, 210, 0.3)" }}
+                onMouseEnter={(e) => !loading && (e.target.style.background = "#1565c0", e.target.style.boxShadow = "0 4px 8px rgba(25, 118, 210, 0.4)")}
+                onMouseLeave={(e) => !loading && (e.target.style.background = "#1976d2", e.target.style.boxShadow = "0 2px 4px rgba(25, 118, 210, 0.3)")}
+              >
+                {loading ? "Verifying..." : "Verify"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { setStep("login"); setError(""); }}
+                disabled={loading}
+                style={{ padding: "10px 24px", background: "#fff", color: "#1976d2", border: "1px solid #90caf9", borderRadius: "4px", fontSize: "14px", fontWeight: "500", cursor: "pointer", transition: "all 0.2s" }}
+                onMouseEnter={(e) => { e.target.style.background = "#e3f2fd"; e.target.style.borderColor = "#1565c0"; }}
+                onMouseLeave={(e) => { e.target.style.background = "#fff"; e.target.style.borderColor = "#90caf9"; }}
+              >
+                Back
+              </button>
+            </form>
           </div>
+        )}
 
-          {/* Form Section */}
-          <div className="px-6 pb-8 sm:px-8 sm:pb-10">
-            {step === "login" ? (
-              <form onSubmit={handleLogin} className="space-y-4">
-                {/* Error Message */}
-                {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-3">
-                    <div className="text-red-600 mt-0.5">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <p className="text-red-700 text-sm font-medium">{error}</p>
-                  </div>
-                )}
-
-                {/* Username Field */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="admin"
-                    disabled={loading}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  />
-                </div>
-
-                {/* Password Field */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    disabled={loading}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  />
-                </div>
-
-                {/* Sign In Button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full mt-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg transition duration-200 shadow-lg hover:shadow-xl disabled:shadow-none"
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Signing in...
-                    </span>
-                  ) : (
-                    "Sign In"
-                  )}
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={handleMfaVerify} className="space-y-6">
-                {/* Error Message */}
-                {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-3">
-                    <div className="text-red-600 mt-0.5">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <p className="text-red-700 text-sm font-medium">{error}</p>
-                  </div>
-                )}
-
-                {/* Info Text */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-blue-800 text-sm">
-                    Enter the 6-digit code from your authenticator app
-                  </p>
-                </div>
-
-                {/* Code Input Fields */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-4">
-                    Verification Code
-                  </label>
-                  <div className="flex gap-2 justify-center">
-                    {code.map((digit, index) => (
-                      <input
-                        key={index}
-                        id={`code-${index}`}
-                        type="text"
-                        value={digit}
-                        onChange={(e) => handleCodeChange(index, e.target.value)}
-                        maxLength="1"
-                        placeholder="0"
-                        disabled={loading}
-                        className="w-12 h-12 text-center bg-gray-50 border-2 border-gray-300 rounded-lg text-xl font-bold text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Verify Button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg transition duration-200 shadow-lg hover:shadow-xl disabled:shadow-none"
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Verifying...
-                    </span>
-                  ) : (
-                    "Verify"
-                  )}
-                </button>
-
-                {/* Back Button */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStep("login");
-                    setCode(["", "", "", "", "", ""]);
-                    setError("");
-                  }}
-                  disabled={loading}
-                  className="w-full py-2 text-gray-700 hover:text-gray-900 font-semibold text-sm transition duration-200"
-                >
-                  ← Back to Login
-                </button>
-              </form>
-            )}
-          </div>
-
-          {/* Footer */}
-          <div className="border-t border-gray-200 px-6 py-4 sm:px-8 bg-gray-50">
-            <p className="text-gray-500 text-xs text-center">
-              © 2026 Content Hub. All rights reserved.
-            </p>
+        {/* Footer */}
+        <div style={{ marginTop: "40px", textAlign: "center", fontSize: "12px", color: "#0d47a1" }}>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
+            <a href="#" style={{ color: "#1976d2", textDecoration: "none", fontSize: "12px" }}>Help</a>
+            <a href="#" style={{ color: "#1976d2", textDecoration: "none", fontSize: "12px" }}>Privacy</a>
+            <a href="#" style={{ color: "#1976d2", textDecoration: "none", fontSize: "12px" }}>Terms</a>
           </div>
         </div>
       </div>
