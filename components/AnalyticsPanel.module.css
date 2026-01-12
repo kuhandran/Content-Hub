@@ -1,0 +1,256 @@
+.analyticsContainer {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.analyticsContainer h2 {
+  color: #0078d4;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+/* KPI Section */
+.kpiSection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.kpiCard {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.2);
+  transition: transform 0.2s;
+}
+
+.kpiCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 120, 212, 0.3);
+}
+
+.kpiIcon {
+  font-size: 32px;
+}
+
+.kpiContent {
+  flex: 1;
+}
+
+.kpiLabel {
+  font-size: 12px;
+  opacity: 0.9;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.kpiValue {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+/* Sections */
+.section {
+  background: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.section h3 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.section p {
+  color: #666;
+  margin-bottom: 15px;
+}
+
+/* Type Charts */
+.typeCharts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.typeBar {
+  background: white;
+  padding: 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.typeLabel {
+  width: 100px;
+  font-weight: 500;
+  color: #333;
+}
+
+.barContainer {
+  flex: 1;
+  height: 30px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: linear-gradient(90deg, #0078d4, #107c10);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  min-width: 30px;
+}
+
+/* Growth Chart */
+.growthChart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.growthEntry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.growthDate {
+  width: 80px;
+  font-size: 12px;
+  color: #666;
+}
+
+.growthBar {
+  flex: 1;
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.growthFill {
+  height: 100%;
+  background: linear-gradient(90deg, #0078d4, #50e6ff);
+}
+
+.growthValue {
+  width: 80px;
+  text-align: right;
+  font-weight: 500;
+  color: #333;
+  font-size: 12px;
+}
+
+/* Activity Log */
+.activityLog {
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.activityItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.activityItem:last-child {
+  border-bottom: none;
+}
+
+.activityTime {
+  width: 80px;
+  font-size: 12px;
+  color: #999;
+  font-family: monospace;
+}
+
+.activityType {
+  background: #0078d4;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: bold;
+  width: 70px;
+  text-align: center;
+}
+
+.activityMessage {
+  flex: 1;
+  color: #333;
+  font-size: 13px;
+}
+
+/* Refresh Button */
+.refreshButton {
+  background: #0078d4;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.refreshButton:hover {
+  background: #005a9e;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .kpiSection {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .typeLabel {
+    width: 80px;
+  }
+
+  .growthDate,
+  .growthValue {
+    width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .analyticsContainer {
+    padding: 10px;
+  }
+
+  .kpiSection {
+    grid-template-columns: 1fr;
+  }
+
+  .kpiCard {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .kpiIcon {
+    font-size: 24px;
+  }
+
+  .kpiValue {
+    font-size: 20px;
+  }
+}

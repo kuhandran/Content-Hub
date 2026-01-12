@@ -1,0 +1,191 @@
+.viewer {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #3e3e42;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: #252526;
+  border-bottom: 1px solid #3e3e42;
+  flex-wrap: wrap;
+}
+
+.header h3 {
+  margin: 0;
+  color: #0078d4;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.search {
+  flex: 1;
+  min-width: 150px;
+  padding: 6px 10px;
+  background: #3c3c3c;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #d4d4d4;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.search:focus {
+  outline: none;
+  border-color: #0078d4;
+  background: #2d2d30;
+}
+
+.expandBtn,
+.collapseBtn {
+  padding: 6px 12px;
+  border: 1px solid #555;
+  background: #3c3c3c;
+  color: #0078d4;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.expandBtn:hover,
+.collapseBtn:hover {
+  background: #0078d4;
+  color: white;
+  border-color: #0078d4;
+}
+
+.content {
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  max-height: 600px;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* Value Types */
+.null {
+  color: #c586c0;
+}
+
+.boolean {
+  color: #569cd6;
+}
+
+.number {
+  color: #b5cea8;
+}
+
+.string {
+  color: #ce9178;
+}
+
+/* Objects & Arrays */
+.objectContainer,
+.arrayContainer {
+  margin: 4px 0;
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  color: #0078d4;
+  cursor: pointer;
+  padding: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.toggleBtn:hover {
+  color: #50d4ff;
+}
+
+.objectContent {
+  margin-left: 16px;
+  padding-left: 8px;
+  border-left: 2px solid #3e3e42;
+}
+
+.objectProperty {
+  margin: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.key {
+  color: #9cdcfe;
+  font-weight: 500;
+}
+
+.propertyValue {
+  margin-left: 16px;
+}
+
+.arrayItems {
+  margin-left: 16px;
+  padding-left: 8px;
+  border-left: 2px solid #3e3e42;
+}
+
+.arrayItem {
+  margin: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.arrayIndex {
+  color: #857f42;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search {
+    flex: none;
+  }
+
+  .expandBtn,
+  .collapseBtn {
+    flex: 1;
+  }
+
+  .content {
+    max-height: 400px;
+    font-size: 11px;
+  }
+}
