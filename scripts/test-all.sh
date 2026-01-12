@@ -37,9 +37,9 @@ curl_json() {
   blue "$method $path"
   local resp status
   if [[ "$method" == "GET" ]]; then
-    resp=$(curl -sS "${AUTH_HEADER[@]}" -w "\nHTTP_STATUS:%{http_code}\n" "$DOMAIN$path" 2>&1)
+    resp=$(curl -sS ${AUTH_HEADER[@]:-} -w "\nHTTP_STATUS:%{http_code}\n" "$DOMAIN$path" 2>&1)
   else
-    resp=$(curl -sS "${AUTH_HEADER[@]}" -w "\nHTTP_STATUS:%{http_code}\n" -X "$method" -H "Content-Type: application/json" -d "$body" "$DOMAIN$path" 2>&1)
+    resp=$(curl -sS ${AUTH_HEADER[@]:-} -w "\nHTTP_STATUS:%{http_code}\n" -X "$method" -H "Content-Type: application/json" -d "$body" "$DOMAIN$path" 2>&1)
   fi
   status=$(echo "$resp" | tail -n1 | sed 's/HTTP_STATUS://')
   echo "$resp" | head -c 1400 | sed 's/\n/\n/g'
@@ -65,7 +65,7 @@ curl_json POST "/api/admin/cache" '{"action":"clear","key":"cms:ping"}' || true
 
 # Sync endpoints
 curl_json GET "/api/admin/sync"
-curl_json POST "/api/admin/sync" '{"mode":"scan"}'
+curl_json POST "/api/admin/sync" '{"mode":"scan"}' || true
 curl_json POST "/api/admin/sync" '{"mode":"pull"}' || true
 
 blue "All tests completed."

@@ -1,9 +1,13 @@
 {
   "/_global-error/page": "app/_global-error/page.js",
   "/_not-found/page": "app/_not-found/page.js",
+  "/api/admin/cache/route": "app/api/admin/cache/route.js",
   "/api/admin/content/route": "app/api/admin/content/route.js",
   "/api/admin/data/route": "app/api/admin/data/route.js",
   "/api/admin/db/route": "app/api/admin/db/route.js",
+  "/api/admin/logs/route": "app/api/admin/logs/route.js",
   "/api/admin/operations/route": "app/api/admin/operations/route.js",
-  "/api/admin/sync/route": "app/api/admin/sync/route.js"
+  "/api/admin/sync/route": "app/api/admin/sync/route.js",
+  "/api/admin/urls/route": "app/api/admin/urls/route.js",
+  "/api/health/route": "app/api/health/route.js"
 }

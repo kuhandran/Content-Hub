@@ -35,6 +35,12 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
+      "page": "/api/admin/cache",
+      "regex": "^/api/admin/cache(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/cache(?:/)?$"
+    },
+    {
       "page": "/api/admin/content",
       "regex": "^/api/admin/content(?:/)?$",
       "routeKeys": {},
@@ -53,6 +59,12 @@
       "namedRegex": "^/api/admin/db(?:/)?$"
     },
     {
+      "page": "/api/admin/logs",
+      "regex": "^/api/admin/logs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/logs(?:/)?$"
+    },
+    {
       "page": "/api/admin/operations",
       "regex": "^/api/admin/operations(?:/)?$",
       "routeKeys": {},
@@ -63,6 +75,18 @@
       "regex": "^/api/admin/sync(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/admin/sync(?:/)?$"
+    },
+    {
+      "page": "/api/admin/urls",
+      "regex": "^/api/admin/urls(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/urls(?:/)?$"
+    },
+    {
+      "page": "/api/health",
+      "regex": "^/api/health(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/health(?:/)?$"
     }
   ],
   "dataRoutes": [],

@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      SMOKE_TEST_DOMAIN: ${{ secrets.SMOKE_TEST_DOMAIN }}
+      SMOKE_TEST_TOKEN: ${{ secrets.SMOKE_TEST_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Optional API smoke tests
+        if: env.SMOKE_TEST_DOMAIN != ''
+        run: |
+          chmod +x scripts/test-all.sh
+          DOMAIN="$SMOKE_TEST_DOMAIN" TOKEN="$SMOKE_TEST_TOKEN" ./scripts/test-all.sh
