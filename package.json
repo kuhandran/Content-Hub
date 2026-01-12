@@ -12,7 +12,11 @@
     "build": "next build",
     "start": "next start --port 3000",
     "lint": "next lint",
-    "test": "echo 'Tests placeholder'"
+    "test": "echo 'Tests placeholder'",
+    "db:drop-images": "node scripts/drop-image-tables.js",
+    "db:clear-images": "node scripts/drop-image-tables.js --clear",
+    "db:drop": "node scripts/drop-database.js --yes",
+    "db:reset": "node scripts/drop-database.js --reset"
   },
   "keywords": [
     "cms",
