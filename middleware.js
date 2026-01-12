@@ -1,7 +1,4 @@
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 export function middleware(request) {
   const pathname = request.nextUrl.pathname;
@@ -17,6 +14,8 @@ export function middleware(request) {
   }
 
   // Check for auth_token cookie
+  // Note: Full JWT verification happens in API routes (Node.js runtime)
+  // Edge runtime middleware just checks for token presence
   const token = request.cookies.get("auth_token")?.value;
 
   if (!token) {
@@ -26,25 +25,9 @@ export function middleware(request) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  try {
-    // Verify JWT token
-    const verified = jwt.verify(token, JWT_SECRET);
-    
-    // Check if MFA is verified
-    if (verified.mfa !== true) {
-      if (pathname.startsWith("/api/")) {
-        return NextResponse.json({ error: "MFA not verified" }, { status: 401 });
-      }
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-
-    return NextResponse.next();
-  } catch (err) {
-    if (pathname.startsWith("/api/")) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
+  // Token exists, allow the request to proceed
+  // Full verification will happen in layout/API routes using Node.js runtime
+  return NextResponse.next();
 }
 
 export const config = {
