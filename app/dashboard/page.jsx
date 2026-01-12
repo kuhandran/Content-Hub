@@ -4,6 +4,381 @@ import { useSearchParams } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
+const pageStyles = `
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-title {
+    font-size: 32px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+    color: rgba(226, 232, 240, 0.6);
+  }
+
+  /* OVERVIEW CARDS */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 12px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+  }
+
+  .card:hover {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%);
+    border-color: rgba(148, 163, 184, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.1);
+  }
+
+  .card-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.95);
+    margin-bottom: 8px;
+  }
+
+  .card-value {
+    font-size: 32px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+
+  .card-status {
+    font-size: 12px;
+    color: rgba(226, 232, 240, 0.5);
+  }
+
+  .card-status.online {
+    color: #10b981;
+  }
+
+  .card-status.offline {
+    color: #ef4444;
+  }
+
+  /* FILE BROWSER */
+  .browser-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    height: 100%;
+  }
+
+  .file-list-panel {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+
+  .panel-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    background: rgba(15, 23, 42, 0.6);
+  }
+
+  .panel-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(226, 232, 240, 0.6);
+    letter-spacing: 0.5px;
+  }
+
+  .file-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  .file-item {
+    padding: 10px 12px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+    color: rgba(226, 232, 240, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-left: 3px solid transparent;
+  }
+
+  .file-item:hover {
+    background: rgba(148, 163, 184, 0.1);
+    color: rgba(226, 232, 240, 0.9);
+  }
+
+  .file-item.selected {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.2), transparent);
+    color: #60a5fa;
+    border-left-color: #3b82f6;
+  }
+
+  .file-icon {
+    font-size: 14px;
+    min-width: 14px;
+  }
+
+  /* EDITOR PANEL */
+  .editor-panel {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+
+  .editor-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    background: rgba(15, 23, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .editor-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.95);
+  }
+
+  .editor-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn {
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  }
+
+  .btn-secondary {
+    background: rgba(148, 163, 184, 0.1);
+    color: rgba(226, 232, 240, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(148, 163, 184, 0.15);
+    border-color: rgba(148, 163, 184, 0.3);
+  }
+
+  .btn-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .btn-danger:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.5);
+  }
+
+  .editor-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+
+  .editor-textarea {
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.8);
+    color: #e2e8f0;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+  }
+
+  .editor-textarea:focus {
+    border-color: rgba(59, 130, 246, 0.5);
+  }
+
+  .code-viewer {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 6px;
+    padding: 12px;
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #cbd5e1;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(226, 232, 240, 0.4);
+    text-align: center;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  .empty-text {
+    font-size: 14px;
+  }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(226, 232, 240, 0.6);
+  }
+
+  .spinner {
+    border: 2px solid rgba(148, 163, 184, 0.2);
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    animation: spin 0.8s linear infinite;
+    margin-right: 12px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-top: 32px;
+  }
+
+  .action-btn {
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.05));
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 10px;
+    color: rgba(226, 232, 240, 0.9);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .action-btn:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.1));
+    border-color: rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.15);
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.8);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 6px;
+    color: rgba(226, 232, 240, 0.95);
+    font-size: 13px;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
 function DashboardContent() {
   const searchParams = useSearchParams();
   const [files, setFiles] = useState([]);
@@ -13,6 +388,7 @@ function DashboardContent() {
   const [editing, setEditing] = useState(false);
   const [newFileName, setNewFileName] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [serviceStatus, setServiceStatus] = useState({});
 
   const type = searchParams.get('type') || 'overview';
   const lang = searchParams.get('lang');
@@ -21,8 +397,22 @@ function DashboardContent() {
   useEffect(() => {
     if (type !== 'overview') {
       fetchFiles();
+    } else {
+      fetchServiceStatus();
     }
   }, [type, lang, subtype]);
+
+  async function fetchServiceStatus() {
+    try {
+      const res = await fetch('/api/dashboard/status');
+      const data = await res.json();
+      if (data.status === 'success') {
+        setServiceStatus(data.services);
+      }
+    } catch (err) {
+      console.error('Failed to fetch service status:', err);
+    }
+  }
 
   async function fetchFiles() {
     setLoading(true);
@@ -53,7 +443,10 @@ function DashboardContent() {
     }
 
     try {
-      const params = new URLSearchParams({ type, file: file.name });
+      const params = new URLSearchParams({
+        type,
+        file: file.name,
+      });
       if (lang) params.append('lang', lang);
       if (subtype) params.append('subtype', subtype);
 
@@ -61,12 +454,11 @@ function DashboardContent() {
       const data = await res.json();
       if (data.status === 'success') {
         setSelectedFile(file);
-        // Format JSON for display
-        setFileContent(data.parsed ? JSON.stringify(data.parsed, null, 2) : data.content);
+        setFileContent(data.raw || JSON.stringify(data.content, null, 2));
         setEditing(false);
       }
     } catch (err) {
-      console.error('Failed to load file content:', err);
+      console.error('Failed to load file:', err);
     }
   }
 
@@ -81,56 +473,53 @@ function DashboardContent() {
           type,
           lang,
           subtype,
-          filename: selectedFile.name,
-          content: fileContent
-        })
+          file: selectedFile.name,
+          content: fileContent,
+        }),
       });
 
       const data = await res.json();
       if (data.status === 'success') {
         setEditing(false);
-        fetchFiles();
-        alert('File saved successfully!');
-      } else {
-        alert('Error: ' + data.error);
       }
     } catch (err) {
-      alert('Failed to save file: ' + err.message);
+      console.error('Failed to save file:', err);
     }
   }
 
-  async function deleteFile(file) {
-    if (!confirm(`Delete ${file.name}?`)) return;
+  async function deleteFile() {
+    if (!selectedFile) return;
+
+    if (!confirm(`Delete ${selectedFile.name}?`)) return;
 
     try {
-      const params = new URLSearchParams({ type, file: file.name });
+      const params = new URLSearchParams({
+        type,
+        file: selectedFile.name,
+        confirm: 'true',
+      });
       if (lang) params.append('lang', lang);
       if (subtype) params.append('subtype', subtype);
 
       const res = await fetch(`/api/dashboard/file-content?${params}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       });
 
       const data = await res.json();
       if (data.status === 'success') {
+        setSelectedFile(null);
+        setFileContent('');
         fetchFiles();
-        alert('File deleted successfully!');
-      } else {
-        alert('Error: ' + data.error);
       }
     } catch (err) {
-      alert('Failed to delete file: ' + err.message);
+      console.error('Failed to delete file:', err);
     }
   }
 
-  async function createNewFile() {
-    if (!newFileName.trim()) {
-      alert('Please enter a filename');
-      return;
-    }
+  async function createFile() {
+    if (!newFileName.trim()) return;
 
     try {
-      const initialContent = newFileName.endsWith('.json') ? '{}' : '';
       const res = await fetch('/api/dashboard/file-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -138,9 +527,9 @@ function DashboardContent() {
           type,
           lang,
           subtype,
-          filename: newFileName,
-          content: initialContent
-        })
+          file: newFileName,
+          content: '{}',
+        }),
       });
 
       const data = await res.json();
@@ -148,248 +537,228 @@ function DashboardContent() {
         setNewFileName('');
         setShowCreateForm(false);
         fetchFiles();
-        alert('File created successfully!');
-      } else {
-        alert('Error: ' + data.error);
       }
     } catch (err) {
-      alert('Failed to create file: ' + err.message);
+      console.error('Failed to create file:', err);
     }
   }
+
+  const getPageTitle = () => {
+    if (type === 'overview') return 'Overview';
+    if (type === 'collections' && lang) {
+      const subtypeLabel = subtype === 'config' ? 'Configuration' : 'Data';
+      return `${lang.toUpperCase()} ${subtypeLabel}`;
+    }
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  };
 
   // Overview page
   if (type === 'overview') {
     return (
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
-          <h1 className="text-2xl font-bold text-gray-800">Overview</h1>
-          <p className="text-sm text-gray-500">Dashboard & System Status</p>
+      <>
+        <style>{pageStyles}</style>
+        <div className="page-header">
+          <h1 className="page-title">📊 Dashboard</h1>
+          <p className="page-subtitle">Monitor your content hub and manage resources</p>
         </div>
-        <div className="flex-1 overflow-auto p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-semibold">Database</p>
-                  <p className="text-2xl font-bold text-blue-600 mt-2">Supabase</p>
-                  <p className="text-sm text-gray-600 mt-1">PostgreSQL connected</p>
-                </div>
-                <span className="text-4xl">🗄️</span>
-              </div>
-            </div>
 
-            <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-semibold">Cache</p>
-                  <p className="text-2xl font-bold text-purple-600 mt-2">Redis</p>
-                  <p className="text-sm text-gray-600 mt-1">KV store configured</p>
-                </div>
-                <span className="text-4xl">⚡</span>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-semibold">API</p>
-                  <p className="text-2xl font-bold text-green-600 mt-2">Active</p>
-                  <p className="text-sm text-gray-600 mt-1">All endpoints operational</p>
-                </div>
-                <span className="text-4xl">🚀</span>
-              </div>
+        <div className="cards-grid">
+          <div className="card">
+            <div className="card-icon">🗄️</div>
+            <div className="card-title">Database</div>
+            <div className="card-value">Supabase</div>
+            <div className={`card-status ${serviceStatus.supabase?.status === 'online' ? 'online' : 'offline'}`}>
+              {serviceStatus.supabase?.status === 'online' ? '🟢 Connected' : '🔴 Offline'}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="font-bold text-gray-800 mb-4">Quick Actions</h3>
-              <div className="space-y-2">
-                <button className="w-full px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 font-medium text-sm transition">
-                  📚 Manage Collections
-                </button>
-                <button className="w-full px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 font-medium text-sm transition">
-                  🔄 Sync All Data
-                </button>
-                <button className="w-full px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 font-medium text-sm transition">
-                  💾 Backup Now
-                </button>
-              </div>
+          <div className="card">
+            <div className="card-icon">⚡</div>
+            <div className="card-title">Cache</div>
+            <div className="card-value">Redis</div>
+            <div className={`card-status ${serviceStatus.redis?.status === 'online' ? 'online' : 'offline'}`}>
+              {serviceStatus.redis?.status === 'online' ? '🟢 Connected' : '🔴 Offline'}
             </div>
+          </div>
 
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="font-bold text-gray-800 mb-4">System Info</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Version:</span>
-                  <span className="font-medium">1.0.0</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Environment:</span>
-                  <span className="font-medium">Development</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Last Updated:</span>
-                  <span className="font-medium">{new Date().toLocaleDateString()}</span>
-                </div>
-              </div>
+          <div className="card">
+            <div className="card-icon">🚀</div>
+            <div className="card-title">API</div>
+            <div className="card-value">Active</div>
+            <div className={`card-status ${serviceStatus.api?.status === 'online' ? 'online' : 'offline'}`}>
+              {serviceStatus.api?.status === 'online' ? '🟢 Operational' : '🔴 Down'}
             </div>
           </div>
         </div>
-      </div>
+
+        <div className="page-header" style={{ marginTop: '48px' }}>
+          <h2 className="page-title" style={{ fontSize: '24px' }}>⚡ Quick Actions</h2>
+        </div>
+
+        <div className="quick-actions">
+          <div className="action-btn">📁 Manage Collections</div>
+          <div className="action-btn">⚙️ Configure Settings</div>
+          <div className="action-btn">📊 View Analytics</div>
+          <div className="action-btn">🔄 Sync Data</div>
+        </div>
+
+        <div className="page-header" style={{ marginTop: '48px' }}>
+          <h2 className="page-title" style={{ fontSize: '24px' }}>ℹ️ System Information</h2>
+        </div>
+
+        <div className="cards-grid">
+          <div className="card">
+            <div className="card-title">Version</div>
+            <div style={{ fontSize: '18px', color: 'rgba(226, 232, 240, 0.8)', marginTop: '8px' }}>1.0.0</div>
+          </div>
+          <div className="card">
+            <div className="card-title">Environment</div>
+            <div style={{ fontSize: '18px', color: 'rgba(226, 232, 240, 0.8)', marginTop: '8px' }}>Development</div>
+          </div>
+          <div className="card">
+            <div className="card-title">Last Updated</div>
+            <div style={{ fontSize: '18px', color: 'rgba(226, 232, 240, 0.8)', marginTop: '8px' }}>12/01/2026</div>
+          </div>
+        </div>
+      </>
     );
   }
 
-  // File browser page
+  // File browser
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-800">
-            {type.charAt(0).toUpperCase() + type.slice(1)}
-            {lang ? ` / ${lang.toUpperCase()}` : ''}
-            {subtype ? ` / ${subtype.toUpperCase()}` : ''}
-          </h1>
-          <p className="text-sm text-gray-500">Manage files and configurations</p>
-        </div>
-        {!editing && (
-          <button
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition"
-          >
-            ➕ New File
-          </button>
-        )}
+    <>
+      <style>{pageStyles}</style>
+      <div className="page-header">
+        <h1 className="page-title">{getPageTitle()}</h1>
+        <p className="page-subtitle">Browse and manage your files</p>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Files List */}
-        <div className="w-80 border-r border-gray-200 overflow-y-auto bg-white">
-          {showCreateForm && (
-            <div className="border-b border-gray-200 p-4 space-y-2">
-              <input
-                type="text"
-                placeholder="filename.json"
-                value={newFileName}
-                onChange={(e) => setNewFileName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={createNewFile}
-                  className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
-                >
-                  Create
-                </button>
-                <button
-                  onClick={() => setShowCreateForm(false)}
-                  className="flex-1 px-3 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm font-medium"
-                >
-                  Cancel
+      {loading ? (
+        <div className="loading">
+          <div className="spinner"></div>
+          Loading files...
+        </div>
+      ) : (
+        <div className="browser-container">
+          {/* File List */}
+          <div className="file-list-panel">
+            <div className="panel-header">
+              <div className="panel-title">📄 Files</div>
+            </div>
+            <div className="file-items">
+              {files.length === 0 ? (
+                <div style={{ padding: '16px', textAlign: 'center', color: 'rgba(226, 232, 240, 0.4)', fontSize: '12px' }}>
+                  No files found
+                </div>
+              ) : (
+                files.map((file) => (
+                  <div
+                    key={file.name}
+                    className={`file-item ${selectedFile?.name === file.name ? 'selected' : ''}`}
+                    onClick={() => loadFileContent(file)}
+                  >
+                    <span className="file-icon">{file.isJson ? '📋' : file.isImage ? '🖼️' : '📄'}</span>
+                    <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {file.name}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+            {type !== 'overview' && (
+              <div style={{ padding: '12px', borderTop: '1px solid rgba(148, 163, 184, 0.1)' }}>
+                <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => setShowCreateForm(true)}>
+                  + New File
                 </button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {loading ? (
-            <div className="p-4 text-sm text-gray-500">Loading files...</div>
-          ) : files.length === 0 ? (
-            <div className="p-4 text-sm text-gray-500">No files found</div>
-          ) : (
-            <div className="space-y-1 p-3">
-              {files.map(file => (
-                <button
-                  key={file.name}
-                  onClick={() => loadFileContent(file)}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition text-sm flex items-center gap-2 ${
-                    selectedFile?.name === file.name
-                      ? 'bg-blue-50 text-blue-700 font-semibold'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  {file.type === 'directory' ? '📁' : file.isJson ? '📄' : file.isImage ? '🖼️' : '📃'}
-                  <span className="flex-1 truncate">{file.name}</span>
-                  {file.size && <span className="text-xs text-gray-400">{(file.size / 1024).toFixed(1)}K</span>}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* File Editor */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {selectedFile ? (
-            <>
-              <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                <h2 className="font-bold text-gray-800">{selectedFile.name}</h2>
-                <div className="flex gap-2">
-                  {selectedFile.isJson && !editing && (
-                    <button
-                      onClick={() => setEditing(true)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
-                    >
-                      ✏️ Edit
+          {/* Editor */}
+          <div className="editor-panel">
+            {selectedFile ? (
+              <>
+                <div className="editor-header">
+                  <div className="editor-title">{selectedFile.name}</div>
+                  <div className="editor-actions">
+                    {selectedFile.isJson && (
+                      <>
+                        {!editing ? (
+                          <button className="btn btn-primary" onClick={() => setEditing(true)}>
+                            ✏️ Edit
+                          </button>
+                        ) : (
+                          <>
+                            <button className="btn btn-primary" onClick={saveFile}>
+                              💾 Save
+                            </button>
+                            <button className="btn btn-secondary" onClick={() => setEditing(false)}>
+                              ✕ Cancel
+                            </button>
+                          </>
+                        )}
+                      </>
+                    )}
+                    <button className="btn btn-danger" onClick={deleteFile}>
+                      🗑️ Delete
                     </button>
+                  </div>
+                </div>
+                <div className="editor-content">
+                  {editing ? (
+                    <textarea
+                      className="editor-textarea"
+                      value={fileContent}
+                      onChange={(e) => setFileContent(e.target.value)}
+                    />
+                  ) : (
+                    <div className="code-viewer">{fileContent}</div>
                   )}
-                  {editing && (
-                    <>
-                      <button
-                        onClick={saveFile}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
-                      >
-                        💾 Save
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEditing(false);
-                          loadFileContent(selectedFile);
-                        }}
-                        className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm font-medium"
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  )}
-                  <button
-                    onClick={() => deleteFile(selectedFile)}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium"
-                  >
-                    🗑️ Delete
-                  </button>
+                </div>
+              </>
+            ) : showCreateForm ? (
+              <div className="editor-content" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div style={{ maxWidth: '400px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'rgba(226, 232, 240, 0.95)', marginBottom: '20px' }}>
+                    Create New File
+                  </h3>
+                  <div className="form-group">
+                    <label className="form-label">File Name</label>
+                    <input
+                      className="form-input"
+                      type="text"
+                      placeholder="example.json"
+                      value={newFileName}
+                      onChange={(e) => setNewFileName(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && createFile()}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="btn btn-primary" onClick={createFile}>
+                      Create
+                    </button>
+                    <button className="btn btn-secondary" onClick={() => setShowCreateForm(false)}>
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               </div>
-
-              <div className="flex-1 overflow-hidden">
-                {editing ? (
-                  <textarea
-                    value={fileContent}
-                    onChange={(e) => setFileContent(e.target.value)}
-                    className="w-full h-full p-4 font-mono text-sm border-none focus:outline-none resize-none bg-white"
-                    spellCheck="false"
-                  />
-                ) : (
-                  <pre className="w-full h-full p-4 font-mono text-sm overflow-auto bg-white text-gray-800">
-                    {fileContent}
-                  </pre>
-                )}
+            ) : (
+              <div className="empty-state">
+                <div className="empty-icon">📂</div>
+                <div className="empty-text">Select a file to view</div>
               </div>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-gray-500">
-              <p>Select a file to view or edit</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="flex-1 flex items-center justify-center">Loading dashboard...</div>}>
+    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#e2e8f0' }}>Loading...</div>}>
       <DashboardContent />
     </Suspense>
   );
