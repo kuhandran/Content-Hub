@@ -5,6 +5,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import authMod from '../../../../lib/auth';
 import supabaseModule from '../../../../lib/supabase';
 import sql from '../../../../lib/postgres';
 const { getSupabase } = supabaseModule;
@@ -29,6 +30,10 @@ function validateRequest(body) {
 export async function POST(request) {
   // --- VERBOSE LOGGING FOR DEBUG ---
   console.log('[ADMIN CONTENT] POST request received');
+  const auth = authMod?.isAuthorized ? authMod.isAuthorized(request) : { ok: true };
+  if (!auth.ok) {
+    return NextResponse.json({ status: 'error', message: auth.message || 'Unauthorized' }, { status: auth.status || 401 });
+  }
   try {
     const body = await request.json();
     console.log('[ADMIN CONTENT] Request body:', body);

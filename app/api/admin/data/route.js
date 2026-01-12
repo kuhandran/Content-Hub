@@ -10,6 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import authMod from '../../../../lib/auth';
 import dbopModule from '../../../../lib/dbop';
 import supabaseModule from '../../../../lib/supabase';
 import syncConfigModule from '../../../../lib/sync-config';
@@ -65,6 +66,10 @@ function scanPublicFolder() {
 
 export async function POST(request) {
   logRequest(request);
+  const auth = authMod?.isAuthorized ? authMod.isAuthorized(request) : { ok: true };
+  if (!auth.ok) {
+    return NextResponse.json({ status: 'error', error: auth.message || 'Unauthorized' }, { status: auth.status || 401 });
+  }
   try {
     const { action, table, payload, id } = await request.json();
     if (action === 'pump') {
@@ -229,7 +234,11 @@ export async function POST(request) {
 }
 
 
-export async function GET() {
+export async function GET(request) {
+  const auth = authMod?.isAuthorized ? authMod.isAuthorized(request) : { ok: true };
+  if (!auth.ok) {
+    return NextResponse.json({ status: 'error', error: auth.message || 'Unauthorized' }, { status: auth.status || 401 });
+  }
   try {
     const files = scanPublicFolder();
     const byType = {};

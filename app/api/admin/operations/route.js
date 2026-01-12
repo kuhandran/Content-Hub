@@ -16,6 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { NextResponse } = require('next/server');
+const { isAuthorized } = require('../../../../lib/auth');
 const dbop = require('../../../../lib/dbop');
 const { mapFileToTable, getFileExtension, ALLOWED_EXTENSIONS, IGNORED_DIRS, getPublicDir } = require('../../../../lib/sync-config');
 
@@ -429,6 +430,10 @@ async function getStatus(supabase) {
 
 // Main handler
 export async function POST(request) {
+  const auth = isAuthorized(request);
+  if (!auth.ok) {
+    return NextResponse.json({ status: 'error', error: auth.message || 'Unauthorized' }, { status: auth.status || 401 });
+  }
   console.log('[ADMIN OPERATIONS] POST request received');
   try {
     const vercelId = request.headers?.get?.('x-vercel-id');
@@ -522,7 +527,11 @@ export async function POST(request) {
   }
 }
 
-export async function GET() {
+export async function GET(request) {
+  const auth = isAuthorized(request);
+  if (!auth.ok) {
+    return NextResponse.json({ status: 'error', error: auth.message || 'Unauthorized' }, { status: auth.status || 401 });
+  }
   return NextResponse.json({
     status: 'success',
     message: 'Admin Operations API',

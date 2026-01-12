@@ -41,6 +41,7 @@ REDIS_URL="redis://default:PASSWORD@HOST:PORT"
 
 # Auth (optional)
 JWT_SECRET="<random-strong-secret>"
+ADMIN_TOKEN="<set-to-enable-admin-API-auth>"
 ```
 
 Guidelines:

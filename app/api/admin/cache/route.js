@@ -1,9 +1,14 @@
 // /api/admin/cache - cache/clear/check
 import { getRedis } from '../../../../lib/redis';
 import { logRequest, logResponse, logError } from '../../../../lib/logger';
+import authMod from '../../../../lib/auth';
 
 export async function POST(req) {
   logRequest(req);
+  const auth = authMod?.isAuthorized ? authMod.isAuthorized(req) : { ok: true };
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ status: 'error', error: auth.message || 'Unauthorized' }), { status: auth.status || 401 });
+  }
   try {
     const { action, key, value } = await req.json();
     const redis = getRedis();

@@ -30,6 +30,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { NextResponse } = require('next/server');
+const { isAuthorized } = require('../../../../lib/auth');
 const { getSupabase } = require('../../../../lib/supabase');
 const { mapFileToTable, getFileExtension, ALLOWED_EXTENSIONS, IGNORED_DIRS, getPublicDir } = require('../../../../lib/sync-config');
 const sql = require('../../../../lib/postgres');
@@ -409,6 +410,10 @@ async function pullChangesToDatabasePg(sqlClient, changes) {
 
 // Main POST handler
 export async function POST(request) {
+  const auth = isAuthorized(request);
+  if (!auth.ok) {
+    return NextResponse.json({ status: 'error', error: auth.message || 'Unauthorized' }, { status: auth.status || 401 });
+  }
   try {
     const body = await request.json();
     const mode = body.mode || 'scan';
@@ -497,6 +502,10 @@ export async function POST(request) {
 
 // GET endpoint to check sync status
 export async function GET(request) {
+  const auth = isAuthorized(request);
+  if (!auth.ok) {
+    return NextResponse.json({ status: 'error', error: auth.message || 'Unauthorized' }, { status: auth.status || 401 });
+  }
   console.log('[SYNC] GET status', {
     vercelId: request.headers?.get?.('x-vercel-id'),
     region: process.env.VERCEL_REGION || 'unknown-region',

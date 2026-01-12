@@ -8,6 +8,7 @@
 
 
 import { NextResponse } from 'next/server';
+import authMod from '../../../../lib/auth';
 import { logRequest, logResponse, logDatabase, logError } from '../../../../lib/logger';
 import dbopModule from '../../../../lib/dbop';
 import supabaseModule from '../../../../lib/supabase';
@@ -16,6 +17,10 @@ const { getSupabase } = supabaseModule;
 
 export async function POST(request) {
   logRequest(request);
+  const auth = authMod?.isAuthorized ? authMod.isAuthorized(request) : { ok: true };
+  if (!auth.ok) {
+    return NextResponse.json({ status: 'error', error: auth.message || 'Unauthorized' }, { status: auth.status || 401 });
+  }
   try {
     const { action, table } = await request.json();
 
@@ -67,7 +72,11 @@ export async function POST(request) {
 }
 
 
-export async function GET() {
+export async function GET(request) {
+  const auth = authMod?.isAuthorized ? authMod.isAuthorized(request) : { ok: true };
+  if (!auth.ok) {
+    return NextResponse.json({ status: 'error', error: auth.message || 'Unauthorized' }, { status: auth.status || 401 });
+  }
   try {
     const stats = {};
     for (const t of dbopModule.TABLES) {
