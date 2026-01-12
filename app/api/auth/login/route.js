@@ -39,6 +39,7 @@ export async function POST(request) {
 
     // Find user in database
     const user = await users.findUser(username);
+    
     if (!user) {
       return NextResponse.json(
         { status: 'error', error: 'Invalid username or password' },
