@@ -7,7 +7,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [sessionToken, setSessionToken] = useState("");
-  const [qrCode, setQrCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +30,6 @@ export default function LoginPage() {
       }
 
       setSessionToken(data.sessionToken || data.session_token);
-      setQrCode(data.qrCode || data.qr_code);
       setStep("mfa");
     } catch (err) {
       setError("An error occurred. Please try again.");
@@ -89,114 +87,178 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 md:p-10">
-        {/* Icon and Title */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-6 shadow-lg">
-            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 1C6.48 1 2 5.48 2 11v9c0 .55.45 1 1 1h2v4c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-4h6v4c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-4h2c.55 0 1-.45 1-1v-9c0-5.52-4.48-10-10-10zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-            </svg>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+        {/* Main Card */}
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+          {/* Header Section */}
+          <div className="px-6 pt-8 pb-6 sm:px-8 sm:pt-10 sm:pb-8">
+            <div className="flex flex-col items-center">
+              {/* Logo Icon */}
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+              </div>
+              
+              <h1 className="text-2xl font-bold text-gray-900 mt-4">Content Hub</h1>
+              <p className="text-gray-500 text-sm mt-2">
+                {step === "login" ? "Sign in to your account" : "Verify your identity"}
+              </p>
+            </div>
           </div>
-          <h1 className="text-4xl font-bold text-blue-900 mb-2">Content Hub</h1>
-          <p className="text-blue-600 text-base font-medium">Sign in to your admin account</p>
-        </div>
 
-        {step === "login" ? (
-          <form onSubmit={handleLogin} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                <p className="text-red-700 text-sm font-medium">{error}</p>
-              </div>
-            )}
+          {/* Form Section */}
+          <div className="px-6 pb-8 sm:px-8 sm:pb-10">
+            {step === "login" ? (
+              <form onSubmit={handleLogin} className="space-y-4">
+                {/* Error Message */}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-3">
+                    <div className="text-red-600 mt-0.5">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="text-red-700 text-sm font-medium">{error}</p>
+                  </div>
+                )}
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-3">Username</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username"
-                disabled={loading}
-                className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-0 placeholder-blue-300 text-gray-800 transition duration-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-3">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                disabled={loading}
-                className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-0 placeholder-blue-300 text-gray-800 transition duration-200"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-lg hover:shadow-xl"
-            >
-              {loading ? "Signing in..." : "Continue to MFA"}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleMfaVerify} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                <p className="text-red-700 text-sm font-medium">{error}</p>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-4">Enter 6-digit code</label>
-              <div className="flex gap-2 justify-center mb-6">
-                {code.map((digit, index) => (
+                {/* Username Field */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Username
+                  </label>
                   <input
-                    key={index}
-                    id={`code-${index}`}
                     type="text"
-                    value={digit}
-                    onChange={(e) => handleCodeChange(index, e.target.value)}
-                    maxLength="1"
-                    placeholder="•"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="admin"
                     disabled={loading}
-                    className="w-14 h-14 text-center border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-0 text-2xl font-bold text-gray-800 placeholder-blue-300 transition duration-200"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   />
-                ))}
-              </div>
-            </div>
+                </div>
 
-            {qrCode && (
-              <div className="text-center p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <img src={qrCode} alt="QR Code" className="w-32 h-32 mx-auto" />
-              </div>
+                {/* Password Field */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    disabled={loading}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  />
+                </div>
+
+                {/* Sign In Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full mt-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg transition duration-200 shadow-lg hover:shadow-xl disabled:shadow-none"
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Signing in...
+                    </span>
+                  ) : (
+                    "Sign In"
+                  )}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleMfaVerify} className="space-y-6">
+                {/* Error Message */}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-3">
+                    <div className="text-red-600 mt-0.5">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="text-red-700 text-sm font-medium">{error}</p>
+                  </div>
+                )}
+
+                {/* Info Text */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-blue-800 text-sm">
+                    Enter the 6-digit code from your authenticator app
+                  </p>
+                </div>
+
+                {/* Code Input Fields */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-4">
+                    Verification Code
+                  </label>
+                  <div className="flex gap-2 justify-center">
+                    {code.map((digit, index) => (
+                      <input
+                        key={index}
+                        id={`code-${index}`}
+                        type="text"
+                        value={digit}
+                        onChange={(e) => handleCodeChange(index, e.target.value)}
+                        maxLength="1"
+                        placeholder="0"
+                        disabled={loading}
+                        className="w-12 h-12 text-center bg-gray-50 border-2 border-gray-300 rounded-lg text-xl font-bold text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Verify Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg transition duration-200 shadow-lg hover:shadow-xl disabled:shadow-none"
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Verifying...
+                    </span>
+                  ) : (
+                    "Verify"
+                  )}
+                </button>
+
+                {/* Back Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("login");
+                    setCode(["", "", "", "", "", ""]);
+                    setError("");
+                  }}
+                  disabled={loading}
+                  className="w-full py-2 text-gray-700 hover:text-gray-900 font-semibold text-sm transition duration-200"
+                >
+                  ← Back to Login
+                </button>
+              </form>
             )}
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-lg hover:shadow-xl"
-            >
-              {loading ? "Verifying..." : "Verify"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setStep("login");
-                setCode(["", "", "", "", "", ""]);
-                setError("");
-              }}
-              disabled={loading}
-              className="w-full text-blue-600 hover:text-blue-700 font-semibold py-2 transition duration-200"
-            >
-              Back to Login
-            </button>
-          </form>
-        )}
+          {/* Footer */}
+          <div className="border-t border-gray-200 px-6 py-4 sm:px-8 bg-gray-50">
+            <p className="text-gray-500 text-xs text-center">
+              © 2026 Content Hub. All rights reserved.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
