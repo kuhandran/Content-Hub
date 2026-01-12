@@ -1,148 +1,156 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import Link from "next/link";
 
 export default function CollectionsPage() {
-  const [langs, setLangs] = useState(["EN", "FR", "ES", "DE", "HI", "ID", "MY", "SI", "TA", "TH", "AR"]);
-  const [selected, setSelected] = useState("EN");
-  const [config, setConfig] = useState([]);
-  const [data, setData] = useState([]);
-  const [editor, setEditor] = useState(null);
-  const [content, setContent] = useState("");
+  const [selectedLang, setSelectedLang] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [fileContent, setFileContent] = useState("");
 
-  useEffect(() => {
-    fetchCollection(selected);
-  }, [selected]);
+  const languages = [
+    { code: "EN", name: "English", config: 2, data: 3 },
+    { code: "FR", name: "French", config: 2, data: 3 },
+    { code: "ES", name: "Spanish", config: 1, data: 1 },
+    { code: "DE", name: "German", config: 2, data: 3 },
+    { code: "HI", name: "Hindi", config: 2, data: 3 },
+    { code: "ID", name: "Indonesian", config: 2, data: 3 },
+    { code: "MY", name: "Myanmar", config: 2, data: 3 },
+    { code: "SI", name: "Sinhala", config: 2, data: 3 },
+    { code: "TA", name: "Tamil", config: 2, data: 3 },
+    { code: "TH", name: "Thai", config: 2, data: 3 },
+    { code: "AR", name: "Arabic", config: 2, data: 3 },
+  ];
 
-  async function fetchCollection(lang) {
-    const res = await fetch("/api/admin/data?action=read");
-    const result = await res.json();
-    // Mock: filter by language (in real app, use lang parameter)
-    setConfig([
-      { name: "settings.json", path: `collections/${lang}/config/settings.json` },
-      { name: "routes.json", path: `collections/${lang}/config/routes.json` },
-    ]);
-    setData([
-      { name: "articles.json", path: `collections/${lang}/data/articles.json` },
-      { name: "users.json", path: `collections/${lang}/data/users.json` },
-      { name: "products.json", path: `collections/${lang}/data/products.json` },
-    ]);
-  }
+  const configFiles = [
+    "settings.json",
+    "routes.json",
+  ];
 
-  async function openFile(file) {
-    // Mock: fetch file content
-    setEditor(file);
-    setContent(JSON.stringify({ theme: "dark", language: file.name }, null, 2));
-  }
+  const dataFiles = [
+    "articles.json",
+    "users.json",
+    "products.json",
+  ];
 
-  async function saveFile() {
-    if (!editor) return;
-    try {
-      const payload = JSON.parse(content);
-      const res = await fetch("/api/admin/data", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "create",
-          table: "config_files",
-          payload: { filename: editor.name, file_type: "json", file_content: payload },
-        }),
-      });
-      if (res.ok) alert("Saved!");
-    } catch (e) {
-      alert("Error: " + e.message);
-    }
+  function openFile(fileName, type) {
+    setSelectedFile({ name: fileName, type });
+    setFileContent(
+      JSON.stringify({ fileName, type, content: "sample" }, null, 2)
+    );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Language Tabs */}
-      <div className="flex gap-2 flex-wrap">
-        {langs.map((lang) => (
+    <>
+      {/* Language Grid */}
+      {!selectedLang ? (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {languages.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => setSelectedLang(lang.code)}
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-md transition text-left"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-blue-600 text-white rounded flex items-center justify-center font-bold text-sm">
+                    {lang.code}
+                  </div>
+                  <h3 className="font-semibold text-gray-800">{lang.name}</h3>
+                </div>
+                <div className="flex gap-4 text-xs text-gray-600">
+                  <span>● {lang.config} config</span>
+                  <span>● {lang.data} data</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        // File View
+        <div className="space-y-6">
+          {/* Back Button */}
           <button
-            key={lang}
-            onClick={() => setSelected(lang)}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              selected === lang
-                ? "bg-blue-600 text-white"
-                : "bg-white text-gray-600 border border-gray-200 hover:border-blue-600"
-            }`}
+            onClick={() => setSelectedLang(null)}
+            className="text-blue-600 hover:text-blue-800 font-medium text-sm"
           >
-            {lang}
+            ← Back to Languages
           </button>
-        ))}
-      </div>
 
-      {/* Content Grid */}
-      <div className="grid grid-cols-2 gap-6">
-        {/* Config Files */}
-        <div className="bg-white rounded-lg p-6 shadow">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-2xl">⚙️</span>
-            <h2 className="text-lg font-bold text-gray-800">Config Files</h2>
-          </div>
-          <div className="space-y-2">
-            {config.map((file) => (
-              <button
-                key={file.path}
-                onClick={() => openFile(file)}
-                className="w-full p-3 rounded-lg bg-gray-900 text-yellow-400 text-left font-mono text-sm hover:bg-gray-800 transition"
-              >
-                📁 {file.name}
-              </button>
-            ))}
-          </div>
-        </div>
+          {/* File Sections */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Config Files */}
+            <div className="bg-gray-900 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-orange-400">●</span>
+                <h3 className="font-bold text-white">Config Files</h3>
+              </div>
+              <div className="space-y-2">
+                {configFiles.map((file) => (
+                  <button
+                    key={file}
+                    onClick={() => openFile(file, "config")}
+                    className="w-full p-3 bg-gray-800 text-yellow-400 rounded text-left text-sm hover:bg-gray-700 transition"
+                  >
+                    📁 {file}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        {/* Data Files */}
-        <div className="bg-white rounded-lg p-6 shadow">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-2xl">📊</span>
-            <h2 className="text-lg font-bold text-gray-800">Data Files</h2>
-          </div>
-          <div className="space-y-2">
-            {data.map((file) => (
-              <button
-                key={file.path}
-                onClick={() => openFile(file)}
-                className="w-full p-3 rounded-lg bg-gray-900 text-green-400 text-left font-mono text-sm hover:bg-gray-800 transition"
-              >
-                📊 {file.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Editor Modal */}
-      {editor && (
-        <div className="bg-white rounded-lg p-6 shadow">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-gray-800">{editor.name}</h3>
-            <div className="space-x-2">
-              <button
-                onClick={() => setContent("")}
-                className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
-              >
-                Clear Cache
-              </button>
-              <button onClick={saveFile} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                Save Changes
-              </button>
-              <button
-                onClick={() => setEditor(null)}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-              >
-                Close
-              </button>
+            {/* Data Files */}
+            <div className="bg-gray-900 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-green-400">●</span>
+                <h3 className="font-bold text-white">Data Files</h3>
+              </div>
+              <div className="space-y-2">
+                {dataFiles.map((file) => (
+                  <button
+                    key={file}
+                    onClick={() => openFile(file, "data")}
+                    className="w-full p-3 bg-gray-800 text-green-400 rounded text-left text-sm hover:bg-gray-700 transition"
+                  >
+                    📊 {file}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full h-96 font-mono text-sm p-4 border border-gray-300 rounded bg-gray-900 text-green-400"
-          />
+
+          {/* Editor */}
+          {selectedFile && (
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-800">
+                  {selectedLang} / {selectedFile.type} / {selectedFile.name}
+                </h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setFileContent("")}
+                    className="px-4 py-2 bg-orange-500 text-white text-sm rounded hover:bg-orange-600"
+                  >
+                    Clear Cache
+                  </button>
+                  <button className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                    Save Changes
+                  </button>
+                  <button
+                    onClick={() => setSelectedFile(null)}
+                    className="px-4 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+              <textarea
+                value={fileContent}
+                onChange={(e) => setFileContent(e.target.value)}
+                className="w-full h-96 p-4 bg-gray-900 text-green-400 font-mono text-sm rounded border border-gray-700 focus:border-blue-500"
+              />
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </>
   );
 }
