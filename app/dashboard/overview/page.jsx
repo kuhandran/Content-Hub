@@ -3,152 +3,137 @@ import { useState, useEffect } from "react";
 
 export default function OverviewPage() {
   const [health, setHealth] = useState(null);
-  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchStatus() {
-      const healthRes = await fetch("/api/health");
-      const statsRes = await fetch("/api/admin/db");
-      setHealth(await healthRes.json());
-      setStats(await statsRes.json());
-    }
     fetchStatus();
   }, []);
 
+  async function fetchStatus() {
+    try {
+      const res = await fetch("/api/health");
+      if (res.ok) {
+        const data = await res.json();
+        setHealth(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch health status");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">System Overview</h1>
+      {/* Title */}
+      <h1 className="text-xl font-bold text-gray-800">Overview</h1>
 
       {/* Status Cards */}
-      <div className="grid grid-cols-3 gap-6">
-        {/* Supabase */}
-        <div className="bg-white rounded-lg p-6 shadow">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600 text-xl">✓</div>
-            <div>
-              <h3 className="font-bold text-gray-800">Supabase</h3>
-              <p className="text-xs text-green-600">● Healthy</p>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Supabase Card */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-gray-800">Database</h3>
+            <span className="text-2xl">🗄️</span>
           </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-gray-600">
-              <span>Connections</span>
-              <span className="font-bold">42</span>
-            </div>
-            <div className="flex justify-between text-gray-600">
-              <span>Queries</span>
-              <span className="font-bold">1247</span>
-            </div>
-            <div className="flex justify-between text-gray-600">
-              <span>Latency</span>
-              <span className="font-bold">12ms</span>
-            </div>
+          <div className="text-sm text-gray-600 space-y-2">
+            <p>Status: <span className="text-green-600 font-semibold">● Connected</span></p>
+            <p>Connections: <span className="font-bold">42</span></p>
+            <p>Latency: <span className="font-bold">12ms</span></p>
           </div>
         </div>
 
-        {/* Redis */}
-        <div className="bg-white rounded-lg p-6 shadow">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center text-red-600 text-xl">⚠️</div>
-            <div>
-              <h3 className="font-bold text-gray-800">Redis</h3>
-              <p className="text-xs text-red-600">● Healthy</p>
-            </div>
+        {/* Redis Card */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-gray-800">Cache</h3>
+            <span className="text-2xl">⚡</span>
           </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-gray-600">
-              <span>Memory</span>
-              <span className="font-bold">128MB</span>
-            </div>
-            <div className="flex justify-between text-gray-600">
-              <span>Keys</span>
-              <span className="font-bold">3421</span>
-            </div>
-            <div className="flex justify-between text-gray-600">
-              <span>Usage</span>
-              <span className="font-bold">94.5%</span>
-            </div>
+          <div className="text-sm text-gray-600 space-y-2">
+            <p>Status: <span className="text-green-600 font-semibold">● Healthy</span></p>
+            <p>Memory: <span className="font-bold">128MB</span></p>
+            <p>Keys: <span className="font-bold">3,421</span></p>
           </div>
         </div>
 
-        {/* API */}
-        <div className="bg-white rounded-lg p-6 shadow">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xl">🔌</div>
-            <div>
-              <h3 className="font-bold text-gray-800">API</h3>
-              <p className="text-xs text-blue-600">● Healthy</p>
-            </div>
+        {/* API Card */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-gray-800">API</h3>
+            <span className="text-2xl">🔌</span>
           </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-gray-600">
-              <span>Requests</span>
-              <span className="font-bold">8934</span>
-            </div>
-            <div className="flex justify-between text-gray-600">
-              <span>Errors</span>
-              <span className="font-bold">12</span>
-            </div>
-            <div className="flex justify-between text-gray-600">
-              <span>Uptime</span>
-              <span className="font-bold">99.98%</span>
-            </div>
+          <div className="text-sm text-gray-600 space-y-2">
+            <p>Status: <span className="text-green-600 font-semibold">● Online</span></p>
+            <p>Requests: <span className="font-bold">8,934</span></p>
+            <p>Uptime: <span className="font-bold">99.98%</span></p>
           </div>
         </div>
       </div>
 
       {/* Cache Management */}
-      <div className="bg-white rounded-lg p-6 shadow">
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-800">⚡ Cache Management</h2>
-          <div className="space-x-2">
-            <button className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600">Clear All Cache</button>
-            <button className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">Create Cache</button>
+          <h2 className="font-semibold text-gray-800">⚡ Cache Management</h2>
+          <div className="flex gap-2">
+            <button className="text-sm px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600">
+              Clear All
+            </button>
+            <button className="text-sm px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              Refresh
+            </button>
           </div>
         </div>
+
         <div className="space-y-3">
           {[
             { key: "api:articles:list", size: "2.4KB", ttl: "3600s", hits: 847 },
             { key: "api:users:auth", size: "1.1KB", ttl: "1800s", hits: 2341 },
             { key: "api:products:featured", size: "4.8KB", ttl: "7200s", hits: 523 },
-            { key: "api:config:global", size: "0.8KB", ttl: "86400s", hits: 166 },
           ].map((item) => (
-            <div key={item.key} className="flex items-center justify-between p-3 bg-gray-50 rounded">
-              <div className="font-mono text-sm text-blue-600">{item.key}</div>
-              <div className="flex gap-6 text-sm text-gray-600">
+            <div key={item.key} className="flex items-center justify-between p-3 bg-gray-50 rounded text-sm">
+              <code className="text-blue-600 font-mono">{item.key}</code>
+              <div className="flex gap-6 text-gray-600">
                 <span>{item.size}</span>
                 <span>{item.ttl}</span>
-                <span>{item.hits}</span>
+                <span className="font-semibold">{item.hits} hits</span>
               </div>
-              <button className="text-red-600 hover:text-red-800 text-sm font-medium">Clear</button>
+              <button className="text-red-600 hover:text-red-800 text-xs">Clear</button>
             </div>
           ))}
         </div>
       </div>
 
-      {/* DB Operations */}
-      <div className="grid grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg p-6 shadow">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">🗄️ Supabase Operations</h2>
+      {/* Database Operations */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Database Ops */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <h2 className="font-semibold text-gray-800 mb-4">🗄️ Database Operations</h2>
           <div className="space-y-2">
-            <button className="w-full p-3 bg-green-600 text-white rounded hover:bg-green-700 flex items-center justify-center gap-2">
-              ✓ Create Database
+            <button className="w-full p-3 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition">
+              ✓ Backup Database
             </button>
-            <button className="w-full p-3 bg-red-600 text-white rounded hover:bg-red-700 flex items-center justify-center gap-2">
-              🗑️ Delete Database
-            </button>
-            <button className="w-full p-3 bg-gray-600 text-white rounded hover:bg-gray-700 flex items-center justify-center gap-2">
+            <button className="w-full p-3 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition">
               🔄 Sync Database
+            </button>
+            <button className="w-full p-3 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition">
+              🗑️ Clear Database
             </button>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-6 shadow">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">⚙️ Redis Operations</h2>
+        {/* Cache Operations */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <h2 className="font-semibold text-gray-800 mb-4">⚡ Cache Operations</h2>
           <div className="space-y-2">
-            <button className="w-full p-3 bg-red-600 text-white rounded hover:bg-red-700">🗑️ Clear All Cache</button>
-            <button className="w-full p-3 bg-orange-500 text-white rounded hover:bg-orange-600">🔄 Flush Expired Keys</button>
-            <button className="w-full p-3 bg-blue-600 text-white rounded hover:bg-blue-700">🌡️ Warm Cache</button>
+            <button className="w-full p-3 text-sm bg-orange-500 text-white rounded hover:bg-orange-600 transition">
+              🗑️ Clear All Cache
+            </button>
+            <button className="w-full p-3 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 transition">
+              🔥 Flush Expired
+            </button>
+            <button className="w-full p-3 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+              🌡️ Warm Cache
+            </button>
           </div>
         </div>
       </div>
