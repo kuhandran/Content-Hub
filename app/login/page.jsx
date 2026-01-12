@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [step, setStep] = useState("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -43,7 +45,10 @@ export default function LoginPage() {
         setStep("mfa");
       } else {
         // No MFA required, redirect to dashboard
-        window.location.href = "/dashboard";
+        // Small delay to ensure cookie is set before navigation
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 100);
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
@@ -89,7 +94,10 @@ export default function LoginPage() {
         return;
       }
 
-      window.location.href = "/dashboard";
+      // Redirect to dashboard after successful MFA verification
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 100);
     } catch (err) {
       setError("An error occurred. Please try again.");
     } finally {
