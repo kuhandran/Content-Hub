@@ -38,17 +38,17 @@ export async function GET(request) {
     // Enhance collections menu with language submenus
     const enhancedMenus = menus.map(menu => {
       if (menu.menu_name === 'collections' && menu.folder_path) {
-        const collectionsPath = path.join(process.cwd(), 'public', 'collections');
-        const languages = fs.readdirSync(collectionsPath)
-          .filter(f => fs.statSync(path.join(collectionsPath, f)).isDirectory())
-          .map(lang => ({
-            label: lang.toUpperCase(),
-            value: lang,
-            subItems: [
-              { label: 'Config', value: `${lang}-config`, type: 'config' },
-              { label: 'Data', value: `${lang}-data`, type: 'data' }
-            ]
-          }));
+        // Hardcoded languages list (supports both local and Vercel environments)
+        const languages = [
+          'en', 'es', 'fr', 'de', 'ar-AE', 'hi', 'id', 'my', 'si', 'ta', 'th'
+        ].map(lang => ({
+          label: lang.toUpperCase(),
+          value: lang,
+          subItems: [
+            { label: 'Config', value: `${lang}-config`, type: 'config' },
+            { label: 'Data', value: `${lang}-data`, type: 'data' }
+          ]
+        }));
 
         return {
           ...menu,
@@ -62,7 +62,8 @@ export async function GET(request) {
 
     return NextResponse.json({
       status: 'success',
-      menus: enhancedMenus
+      menus: enhancedMenus,
+      source: 'database'
     });
   } catch (err) {
     console.error('[API_DASHBOARD_MENUS_ERROR]', err);
@@ -84,17 +85,17 @@ export async function GET(request) {
       // Enhance collections menu with language submenus
       const enhancedMenus = menus.map(menu => {
         if (menu.menu_name === 'collections' && menu.folder_path) {
-          const collectionsPath = path.join(process.cwd(), 'public', 'collections');
-          const languages = fs.readdirSync(collectionsPath)
-            .filter(f => fs.statSync(path.join(collectionsPath, f)).isDirectory())
-            .map(lang => ({
-              label: lang.toUpperCase(),
-              value: lang,
-              subItems: [
-                { label: 'Config', value: `${lang}-config`, type: 'config' },
-                { label: 'Data', value: `${lang}-data`, type: 'data' }
-              ]
-            }));
+          // Hardcoded languages list (works in both local and Vercel environments)
+          const languages = [
+            'en', 'es', 'fr', 'de', 'ar-AE', 'hi', 'id', 'my', 'si', 'ta', 'th'
+          ].map(lang => ({
+            label: lang.toUpperCase(),
+            value: lang,
+            subItems: [
+              { label: 'Config', value: `${lang}-config`, type: 'config' },
+              { label: 'Data', value: `${lang}-data`, type: 'data' }
+            ]
+          }));
 
           return {
             ...menu,
@@ -107,7 +108,7 @@ export async function GET(request) {
       return NextResponse.json({
         status: 'success',
         menus: enhancedMenus,
-        source: 'filesystem' // Indicate we're using fallback
+        source: 'hardcoded_fallback'
       });
     } catch (fallbackErr) {
       console.error('[API_DASHBOARD_MENUS_FALLBACK_ERROR]', fallbackErr);
