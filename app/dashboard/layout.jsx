@@ -18,8 +18,29 @@ const dashboardStyles = `
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+    background: linear-gradient(135deg, #1a2847 0%, #243559 100%);
     color: #e2e8f0;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.05);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+    border-radius: 10px;
+    border: 2px solid rgba(226, 232, 240, 0.05);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #93c5fd 0%, #60a5fa 100%);
+    border-color: rgba(226, 232, 240, 0.1);
   }
 
   .dashboard-wrapper {
@@ -46,12 +67,16 @@ const dashboardStyles = `
   }
 
   .sidebar::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(226, 232, 240, 0.05);
   }
 
   .sidebar::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.15);
+    background: linear-gradient(180deg, rgba(96, 165, 250, 0.4) 0%, rgba(59, 130, 246, 0.3) 100%);
     border-radius: 3px;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(96, 165, 250, 0.6) 0%, rgba(59, 130, 246, 0.5) 100%);
   }
 
   .sidebar-header {
@@ -363,7 +388,7 @@ const dashboardStyles = `
     flex: 1;
     overflow-y: auto;
     padding: 32px;
-    background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+    background: linear-gradient(135deg, #1a2847 0%, #243559 100%);
   }
 
   .content-main::-webkit-scrollbar {
@@ -371,16 +396,16 @@ const dashboardStyles = `
   }
 
   .content-main::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(226, 232, 240, 0.05);
   }
 
   .content-main::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.2);
+    background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
     border-radius: 4px;
   }
 
   .content-main::-webkit-scrollbar-thumb:hover {
-    background: rgba(148, 163, 184, 0.3);
+    background: linear-gradient(180deg, #93c5fd 0%, #60a5fa 100%);
   }
 `;
 

@@ -33,8 +33,8 @@ const pageStyles = `
   }
 
   .card {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.8) 100%);
-    border: 1px solid rgba(148, 163, 184, 0.15);
+    background: linear-gradient(135deg, rgba(36, 53, 89, 0.6) 0%, rgba(26, 40, 71, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.2);
     border-radius: 12px;
     padding: 24px;
     transition: all 0.3s ease;
@@ -55,10 +55,10 @@ const pageStyles = `
   }
 
   .card:hover {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%);
-    border-color: rgba(148, 163, 184, 0.3);
+    background: linear-gradient(135deg, rgba(36, 53, 89, 0.8) 0%, rgba(26, 40, 71, 1) 100%);
+    border-color: rgba(148, 163, 184, 0.4);
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.15);
   }
 
   .card-icon {
@@ -105,8 +105,8 @@ const pageStyles = `
   }
 
   .file-list-panel {
-    background: rgba(30, 41, 59, 0.4);
-    border: 1px solid rgba(148, 163, 184, 0.1);
+    background: rgba(36, 53, 89, 0.4);
+    border: 1px solid rgba(148, 163, 184, 0.15);
     border-radius: 12px;
     display: flex;
     flex-direction: column;
@@ -117,7 +117,7 @@ const pageStyles = `
   .panel-header {
     padding: 16px;
     border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(26, 40, 71, 0.6);
   }
 
   .panel-title {
@@ -132,6 +132,23 @@ const pageStyles = `
     flex: 1;
     overflow-y: auto;
     padding: 8px;
+  }
+
+  .file-items::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .file-items::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.05);
+  }
+
+  .file-items::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(96, 165, 250, 0.3) 0%, rgba(59, 130, 246, 0.2) 100%);
+    border-radius: 3px;
+  }
+
+  .file-items::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(96, 165, 250, 0.5) 0%, rgba(59, 130, 246, 0.4) 100%);
   }
 
   .file-item {
@@ -166,8 +183,8 @@ const pageStyles = `
 
   /* EDITOR PANEL */
   .editor-panel {
-    background: rgba(30, 41, 59, 0.4);
-    border: 1px solid rgba(148, 163, 184, 0.1);
+    background: rgba(36, 53, 89, 0.4);
+    border: 1px solid rgba(148, 163, 184, 0.15);
     border-radius: 12px;
     display: flex;
     flex-direction: column;
@@ -178,7 +195,7 @@ const pageStyles = `
   .editor-header {
     padding: 16px;
     border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(26, 40, 71, 0.6);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -249,7 +266,7 @@ const pageStyles = `
   .editor-textarea {
     width: 100%;
     height: 100%;
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(26, 40, 71, 0.8);
     color: #e2e8f0;
     border: none;
     padding: 12px;
@@ -259,7 +276,24 @@ const pageStyles = `
     line-height: 1.6;
     resize: none;
     outline: none;
-    border: 1px solid rgba(148, 163, 184, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+  }
+
+  .editor-textarea::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .editor-textarea::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.05);
+  }
+
+  .editor-textarea::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(96, 165, 250, 0.3) 0%, rgba(59, 130, 246, 0.2) 100%);
+    border-radius: 4px;
+  }
+
+  .editor-textarea::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(96, 165, 250, 0.5) 0%, rgba(59, 130, 246, 0.4) 100%);
   }
 
   .editor-textarea:focus {
@@ -267,8 +301,8 @@ const pageStyles = `
   }
 
   .code-viewer {
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid rgba(148, 163, 184, 0.1);
+    background: rgba(26, 40, 71, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.15);
     border-radius: 6px;
     padding: 12px;
     font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
@@ -278,6 +312,24 @@ const pageStyles = `
     overflow-x: auto;
     white-space: pre-wrap;
     word-wrap: break-word;
+  }
+
+  .code-viewer::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .code-viewer::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.05);
+  }
+
+  .code-viewer::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(96, 165, 250, 0.3) 0%, rgba(59, 130, 246, 0.2) 100%);
+    border-radius: 4px;
+  }
+
+  .code-viewer::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(96, 165, 250, 0.5) 0%, rgba(59, 130, 246, 0.4) 100%);
   }
 
   .empty-state {
