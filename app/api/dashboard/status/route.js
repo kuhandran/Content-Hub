@@ -14,10 +14,22 @@ export async function GET(request) {
 
   // Check Supabase (Database)
   try {
-    const client = new pg.Client({
+    // Determine if we need SSL based on connection string
+    const isLocalDb = connectionString && (
+      connectionString.includes('localhost') || 
+      connectionString.includes('127.0.0.1')
+    );
+    
+    const clientConfig = {
       connectionString,
-      ssl: { rejectUnauthorized: false },
-    });
+    };
+    
+    // Only use SSL for remote databases
+    if (!isLocalDb && connectionString) {
+      clientConfig.ssl = { rejectUnauthorized: false };
+    }
+    
+    const client = new pg.Client(clientConfig);
     const startTime = Date.now();
     await client.connect();
     const responseTime = Date.now() - startTime;
