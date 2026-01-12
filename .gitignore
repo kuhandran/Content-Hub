@@ -1,3 +1,9 @@
 .vercel
-.env*.local
 node_modules
+
+# Prevent committing secrets
+.env
+.env.*
+.env.local
+.env.production
+.env.development
