@@ -18,7 +18,9 @@ export default function DataManager() {
   const fetchDatabaseStats = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/database-stats');
+      const response = await fetch('/api/admin/database-stats', {
+        credentials: 'include',
+      });
       if (!response.ok) {
         console.error(`[DataManager] API error: ${response.status} ${response.statusText}`);
         throw new Error(`HTTP ${response.status}`);
@@ -38,7 +40,9 @@ export default function DataManager() {
   // Monitor pump operation
   const monitorPump = async () => {
     try {
-      const response = await fetch('/api/admin/pump-monitor');
+      const response = await fetch('/api/admin/pump-monitor', {
+        credentials: 'include',
+      });
       if (!response.ok) {
         console.error(`[DataManager] Pump API error: ${response.status} ${response.statusText}`);
         throw new Error(`HTTP ${response.status}`);
@@ -83,6 +87,7 @@ export default function DataManager() {
     try {
       const response = await fetch('/api/admin/sync', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'pump_all_data' }),
       });
