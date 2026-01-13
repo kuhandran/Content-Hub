@@ -1,8 +1,39 @@
 import { getClient } from '../../../../lib/postgres';
 
-export async function GET() {
+export async function GET(request) {
+  const startTime = Date.now();
+  const requestId = `pump-monitor-${Date.now()}`;
+  
   try {
+    console.log(`[${requestId}] Starting pump-monitor request...`);
+    console.log(`[${requestId}] Environment: ${process.env.NODE_ENV}`);
+    
     const client = await getClient();
+
+    if (!client) {
+      console.error(`[${requestId}] Failed to connect to database`);
+      return Response.json(
+        {
+          status: 'error',
+          progress: 0,
+          filesProcessed: 0,
+          recordsCreated: 0,
+          message: 'Database connection failed',
+          lastRun: null,
+          statistics: {
+            totalOperations: 0,
+            successfulOperations: 0,
+            failedOperations: 0,
+            totalFilesProcessed: 0,
+          },
+          timestamp: new Date().toISOString(),
+          requestId,
+        },
+        { status: 503 }
+      );
+    }
+
+    console.log(`[${requestId}] Connected to database successfully`);
 
     // Get the latest pump operation from sync_manifest
     const syncResult = await client.query(
@@ -24,6 +55,7 @@ export async function GET() {
     );
 
     const latestSync = syncResult.rows[0];
+    console.log(`[${requestId}] Latest sync: ${latestSync ? `${latestSync.status} (${latestSync.files_count} files)` : 'None found'}`);
 
     let pumpStatus = 'idle';
     let progress = 0;
@@ -67,6 +99,9 @@ export async function GET() {
 
     const stats = statsResult.rows[0] || {};
 
+    const duration = Date.now() - startTime;
+    console.log(`[${requestId}] Success - Status: ${pumpStatus}, Progress: ${progress}%, Operations: ${stats.total_operations || 0} (${duration}ms)`);
+
     return Response.json({
       status: pumpStatus,
       progress,
@@ -81,9 +116,12 @@ export async function GET() {
         totalFilesProcessed: parseInt(stats.total_files_processed) || 0,
       },
       timestamp: new Date().toISOString(),
+      requestId,
+      duration,
     });
   } catch (error) {
-    console.error('Pump monitor error:', error);
+    const duration = Date.now() - startTime;
+    console.error(`[${requestId}] Error: ${error.message}`, error);
 
     return Response.json(
       {
@@ -100,6 +138,8 @@ export async function GET() {
           totalFilesProcessed: 0,
         },
         timestamp: new Date().toISOString(),
+        requestId,
+        duration,
       },
       { status: 500 }
     );

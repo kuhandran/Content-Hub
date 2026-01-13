@@ -1,8 +1,35 @@
 import { getClient } from '../../../../lib/postgres';
 
-export async function GET() {
+export async function GET(request) {
+  const startTime = Date.now();
+  const requestId = `db-stats-${Date.now()}`;
+  
   try {
+    console.log(`[${requestId}] Starting database-stats request...`);
+    console.log(`[${requestId}] Environment: ${process.env.NODE_ENV}`);
+    console.log(`[${requestId}] Database URL configured: ${process.env.DATABASE_URL ? 'YES' : 'NO'}`);
+    
     const client = await getClient();
+    
+    if (!client) {
+      console.error(`[${requestId}] Failed to connect to database`);
+      return Response.json(
+        {
+          success: false,
+          error: 'Database connection failed',
+          tables: [],
+          summary: {
+            totalTables: 0,
+            totalRecords: 0,
+            totalSize: 0,
+            lastUpdated: new Date().toLocaleString(),
+          },
+        },
+        { status: 503 }
+      );
+    }
+
+    console.log(`[${requestId}] Connected to database successfully`);
 
     // Get all tables and their record counts
     const tablesQuery = `
@@ -26,8 +53,11 @@ export async function GET() {
       ORDER BY table_name;
     `;
 
+    console.log(`[${requestId}] Executing tables query...`);
     const tablesResult = await client.query(tablesQuery);
     const tableNames = tablesResult.rows.map(row => row.table_name);
+    console.log(`[${requestId}] Found ${tableNames.length} tables: ${tableNames.join(', ')}`);
+
 
     // Get record counts for each table
     const tables = [];
@@ -110,13 +140,19 @@ export async function GET() {
       health: totalRecords > 0 ? 'healthy' : 'empty',
     };
 
+    const duration = Date.now() - startTime;
+    console.log(`[${requestId}] Success - ${summary.totalTables} tables, ${summary.totalRecords} records, ${(summary.totalSize / 1024 / 1024).toFixed(2)} MB (${duration}ms)`);
+
     return Response.json({
       success: true,
       summary,
       tables,
+      requestId,
+      duration,
     });
   } catch (error) {
-    console.error('Database stats error:', error);
+    const duration = Date.now() - startTime;
+    console.error(`[${requestId}] Error: ${error.message}`, error);
     return Response.json(
       {
         success: false,
@@ -128,6 +164,8 @@ export async function GET() {
           totalSize: 0,
           lastUpdated: new Date().toLocaleString(),
         },
+        requestId,
+        duration,
       },
       { status: 500 }
     );
