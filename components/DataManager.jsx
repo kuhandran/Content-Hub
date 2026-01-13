@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import styles from './DataManager.module.css';
 
 export default function DataManager() {
+  console.log('[🔵 DataManager] Component mounted');
+  
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pumpStatus, setPumpStatus] = useState(null);
@@ -16,21 +18,27 @@ export default function DataManager() {
 
   // Fetch database statistics and table info
   const fetchDatabaseStats = async () => {
+    console.log('[📊 DataManager] fetchDatabaseStats() starting...');
     setLoading(true);
     try {
+      console.log('[📊 DataManager] → Fetching /api/admin/database-stats');
       const response = await fetch('/api/admin/database-stats', {
         credentials: 'include',
       });
+      console.log(`[📊 DataManager] ← Response: status=${response.status}, ok=${response.ok}`);
+      
       if (!response.ok) {
-        console.error(`[DataManager] API error: ${response.status} ${response.statusText}`);
         throw new Error(`HTTP ${response.status}`);
       }
+      
       const data = await response.json();
-      console.log('[DataManager] Database stats loaded:', data);
+      console.log('[📊 DataManager] ✅ Parsed JSON:', { tables: data.tables?.length, summary: data.summary });
+      
       setTables(data.tables || []);
       setStats(data.summary);
+      console.log('[📊 DataManager] ✅ State updated');
     } catch (error) {
-      console.error('[DataManager] Failed to fetch database stats:', error);
+      console.error('[📊 DataManager] ❌ Error:', error.message);
       setStats({ error: error.message });
     } finally {
       setLoading(false);
@@ -39,35 +47,51 @@ export default function DataManager() {
 
   // Monitor pump operation
   const monitorPump = async () => {
+    console.log('[🔄 DataManager] monitorPump() starting...');
     try {
+      console.log('[🔄 DataManager] → Fetching /api/admin/pump-monitor');
       const response = await fetch('/api/admin/pump-monitor', {
         credentials: 'include',
       });
+      console.log(`[🔄 DataManager] ← Response: status=${response.status}, ok=${response.ok}`);
+      
       if (!response.ok) {
-        console.error(`[DataManager] Pump API error: ${response.status} ${response.statusText}`);
         throw new Error(`HTTP ${response.status}`);
       }
+      
       const data = await response.json();
-      console.log('[DataManager] Pump status loaded:', data);
+      console.log('[🔄 DataManager] ✅ Parsed JSON:', { status: data.status, progress: data.progress });
+      
       setPumpStatus(data);
       setPumpProgress(data.progress || 0);
       setIsPumping(data.status === 'in-progress');
+      console.log('[🔄 DataManager] ✅ Pump state updated');
     } catch (error) {
-      console.error('[DataManager] Failed to fetch pump status:', error);
+      console.error('[🔄 DataManager] ❌ Error:', error.message);
       setPumpStatus({ status: 'error', message: error.message });
     }
   };
 
   // Load data on mount and set up polling
   useEffect(() => {
+    console.log('[⏱️ DataManager] useEffect mount - initializing data load');
+    
     fetchDatabaseStats();
     monitorPump();
 
     // Poll for updates every 5 seconds
-    const statsInterval = setInterval(fetchDatabaseStats, 5000);
-    const pumpInterval = setInterval(monitorPump, 2000);
+    const statsInterval = setInterval(() => {
+      console.log('[⏱️ DataManager] POLL: fetchDatabaseStats');
+      fetchDatabaseStats();
+    }, 5000);
+    
+    const pumpInterval = setInterval(() => {
+      console.log('[⏱️ DataManager] POLL: monitorPump');
+      monitorPump();
+    }, 2000);
 
     return () => {
+      console.log('[⏱️ DataManager] useEffect cleanup - clearing intervals');
       clearInterval(statsInterval);
       clearInterval(pumpInterval);
     };
@@ -112,8 +136,8 @@ export default function DataManager() {
   };
 
   return (
-    <div className={styles.dataManager}>
-      {/* Header */}
+    <div className={styles.dataManager}>      {console.log('[🎨 DataManager] RENDERING:', { loading, pumpStatus: pumpStatus?.status, stats: stats?.totalTables, tablesCount: tables.length })}
+            {/* Header */}
       <div className={styles.header}>
         <h2>� Data Manager</h2>
         <p>Pump Data • Monitor Operations • Analyze Database</p>

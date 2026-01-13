@@ -16,6 +16,8 @@ const TABLES = [
 ];
 
 export default function ControlPanel() {
+  console.log('[🎛️ ControlPanel] Component loaded');
+  
   const [selectedTable, setSelectedTable] = useState('collections');
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -25,32 +27,42 @@ export default function ControlPanel() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    console.log('[🎛️ ControlPanel] 📋 useEffect triggered: selectedTable:', selectedTable, 'mode:', mode);
     if (mode === 'view') {
+      console.log('[🎛️ ControlPanel] 🔄 Loading table data for mode=view');
       loadTableData();
     }
   }, [selectedTable, mode]);
 
   const loadTableData = async () => {
+    console.log('[🎛️ ControlPanel] 🔄 loadTableData() starting for table:', selectedTable);
     try {
       setLoading(true);
       setError(null);
+      console.log('[🎛️ ControlPanel] 📤 Fetching /api/admin/table/' + selectedTable);
       const response = await fetch(`/api/admin/table/${selectedTable}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
+      console.log('[🎛️ ControlPanel] 📥 Response status:', response.status);
       const data = await response.json();
+      console.log('[🎛️ ControlPanel] ✅ JSON parsed, records count:', data.records?.length || 0);
       if (data.status === 'success') {
         setRecords(data.records || []);
+        console.log('[🎛️ ControlPanel] ✅ Records loaded successfully:', data.records?.length || 0);
       } else {
-        setError(data.error || 'Failed to load records');
+        const errorMsg = data.error || 'Failed to load records';
+        setError(errorMsg);
+        console.error('[🎛️ ControlPanel] ❌ Error:', errorMsg);
         setRecords([]);
       }
     } catch (error) {
-      console.error('Error loading table:', error);
+      console.error('[🎛️ ControlPanel] ❌ Exception in loadTableData:', error.message, error);
       setError(error.message);
       setRecords([]);
     } finally {
       setLoading(false);
+      console.log('[🎛️ ControlPanel] ✅ loadTableData() completed');
     }
   };
 
@@ -130,6 +142,7 @@ export default function ControlPanel() {
             key={table.id}
             className={`${styles.tableButton} ${selectedTable === table.id ? styles.active : ''}`}
             onClick={() => {
+              console.log('[🎛️ ControlPanel] 📚 Table selected:', table.id, '(' + table.label + ')');
               setSelectedTable(table.id);
               setMode('view');
             }}
@@ -144,6 +157,7 @@ export default function ControlPanel() {
         <button 
           className={styles.btn}
           onClick={() => {
+            console.log('[🎛️ ControlPanel] ➕ Create New Record button clicked');
             setMode('create');
             setFormData({});
           }}

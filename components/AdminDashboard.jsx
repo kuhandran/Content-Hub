@@ -1,12 +1,29 @@
 /**
  * components/AdminDashboard.jsx
  * 
- * Admin Dashboard with 10-tab structure
+ * Admin Dashboard with 12-tab structure
  * - Overview: Load Primary Data + Quick Actions
  * - Collections: Language picker + Type selector + Sync Data
  * - Analytics: KPIs, Charts, Activity Log
  * - Control Panel: CRUD operations for all tables
+ * - Data Manager: Pump monitor, database analytics
  * - Config, Data, Files, Images, JavaScript, Resume: File browser + Sync Data
+ * 
+ * 📋 DEBUG CHECKLIST - Console Logging Points:
+ * ✅ [📱 AdminDashboard] Component mounted
+ * ✅ [📱 AdminDashboard] useEffect mount - reading URL params
+ * ✅ [📱 AdminDashboard] URL param ?type=...
+ * ✅ [📱 AdminDashboard] Setting activeTab to: ...
+ * ✅ [📱 AdminDashboard] 🔘 TAB CLICKED: ...
+ * ✅ [📱 AdminDashboard] 🎨 RENDERING TAB: ...
+ * ✅ [📱 AdminDashboard] ✅ Rendering ... TAB
+ * ✅ [📈 AnalyticsPanel] Component loaded
+ * ✅ [📈 AnalyticsPanel] useEffect mount - loading analytics
+ * ✅ [🎛️ ControlPanel] Component loaded
+ * ✅ [💾 DataManager] Component loaded
+ * ✅ [💾 DataManager] 🎨 RENDERING: ...
+ * ✅ [📊 DataManager] fetchDatabaseStats() starting...
+ * ✅ [🔄 DataManager] monitorPump() starting...
  */
 
 'use client';
@@ -35,6 +52,8 @@ const LANGUAGES = ['en', 'es', 'fr', 'de', 'ar-AE', 'hi', 'id', 'my', 'si', 'ta'
 const COLLECTION_TYPES = ['config', 'data'];
 
 export default function AdminDashboard() {
+  console.log('[📱 AdminDashboard] Component mounted');
+  
   const [activeTab, setActiveTab] = useState('overview');
   const [activeLanguage, setActiveLanguage] = useState('en');
   const [activeCollectionType, setActiveCollectionType] = useState('config');
@@ -45,10 +64,13 @@ export default function AdminDashboard() {
 
   // Read query parameter from URL on mount
   useEffect(() => {
+    console.log('[📱 AdminDashboard] useEffect mount - reading URL params');
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const typeParam = params.get('type');
+      console.log(`[📱 AdminDashboard] URL param ?type=${typeParam}`);
       if (typeParam && Object.keys(TABLES).includes(typeParam)) {
+        console.log(`[📱 AdminDashboard] ✅ Setting activeTab to: ${typeParam}`);
         setActiveTab(typeParam);
       }
     }
@@ -129,7 +151,9 @@ export default function AdminDashboard() {
   }
 
   // Overview Tab
-  const renderOverviewTab = () => (
+  const renderOverviewTab = () => {
+    console.log('[📱 AdminDashboard] 🎨 renderOverviewTab() - rendering overview with', Object.keys(dataCounts).length, 'tables');
+    return (
     <div className={styles.tabContent}>
       <h2>📊 Overview</h2>
       
@@ -138,7 +162,10 @@ export default function AdminDashboard() {
         <p>Scan /public folder and pump all files to database tables</p>
         <button 
           className={styles.primaryButton}
-          onClick={handleLoadPrimaryData}
+          onClick={() => {
+            console.log('[📱 AdminDashboard] 🚀 Load Primary Data button clicked');
+            handleLoadPrimaryData();
+          }}
           disabled={loadingData}
         >
           {loadingData ? '⏳ Loading...' : '🚀 Load Primary Data'}
@@ -180,16 +207,22 @@ export default function AdminDashboard() {
               .catch(e => alert('❌ Error: ' + e.message));
             }
           }}>🗑️ Clear All Data</button>
-          <button className={styles.actionButton} onClick={() => loadDataStatistics()}>🔄 Refresh Statistics</button>
-          <button className={styles.actionButton}>📋 View Sync Manifest</button>
-          <button className={styles.actionButton}>📊 Database Health Check</button>
+          <button className={styles.actionButton} onClick={() => {
+            console.log('[📱 AdminDashboard] 🔄 Refresh Statistics clicked');
+            loadDataStatistics();
+          }}>🔄 Refresh Statistics</button>
+          <button className={styles.actionButton} onClick={() => console.log('[📱 AdminDashboard] 📋 View Sync Manifest clicked')}>📋 View Sync Manifest</button>
+          <button className={styles.actionButton} onClick={() => console.log('[📱 AdminDashboard] 📊 Database Health Check clicked')}>📊 Database Health Check</button>
         </div>
       </section>
     </div>
-  );
+    );
+  };
 
   // Collections Tab
-  const renderCollectionsTab = () => (
+  const renderCollectionsTab = () => {
+    console.log('[📱 AdminDashboard] 🎨 renderCollectionsTab() - rendering collections with language:', activeLanguage, 'type:', activeCollectionType);
+    return (
     <div className={styles.tabContent}>
       <h2>📚 Collections</h2>
       
@@ -198,7 +231,10 @@ export default function AdminDashboard() {
           <label>Language:</label>
           <select 
             value={activeLanguage}
-            onChange={(e) => setActiveLanguage(e.target.value)}
+            onChange={(e) => {
+              console.log('[📱 AdminDashboard] 🌐 Language changed to:', e.target.value);
+              setActiveLanguage(e.target.value);
+            }}
             className={styles.select}
           >
             {LANGUAGES.map(lang => (
@@ -211,7 +247,10 @@ export default function AdminDashboard() {
           <label>Type:</label>
           <select 
             value={activeCollectionType}
-            onChange={(e) => setActiveCollectionType(e.target.value)}
+            onChange={(e) => {
+              console.log('[📱 AdminDashboard] 📂 Collection type changed to:', e.target.value);
+              setActiveCollectionType(e.target.value);
+            }}
             className={styles.select}
           >
             {COLLECTION_TYPES.map(type => (
@@ -226,7 +265,10 @@ export default function AdminDashboard() {
           <h3>Files: {activeLanguage} / {activeCollectionType}</h3>
           <button 
             className={styles.syncButton}
-            onClick={() => handleSyncData('collections')}
+            onClick={() => {
+              console.log('[📱 AdminDashboard] 🔄 Sync collections clicked');
+              handleSyncData('collections');
+            }}
             disabled={syncLoading}
           >
             {syncLoading ? '⏳ Syncing...' : '🔄 Sync Data'}
@@ -236,12 +278,15 @@ export default function AdminDashboard() {
         {renderSyncResults()}
       </section>
     </div>
-  );
+    );
+  };
 
   // Generic Tab (Config, Data, Files, etc.)
   const renderGenericTab = (tabKey) => {
+    console.log(`[📱 AdminDashboard] 🎨 renderGenericTab() called for: ${tabKey}`);
     const tabInfo = TABLES[tabKey];
     const tableName = tabInfo.table;
+    console.log(`[📱 AdminDashboard] 📋 Tab Info: label="${tabInfo.label}", table="${tableName}"`);
 
     return (
       <div className={styles.tabContent}>
@@ -252,7 +297,10 @@ export default function AdminDashboard() {
             <h3>Files</h3>
             <button 
               className={styles.syncButton}
-              onClick={() => handleSyncData(tableName)}
+              onClick={() => {
+                console.log(`[📱 AdminDashboard] 🔄 Sync button clicked for: ${tabKey}`);
+                handleSyncData(tableName);
+              }}
               disabled={syncLoading}
             >
               {syncLoading ? '⏳ Syncing...' : '🔄 Sync Data'}
@@ -351,6 +399,7 @@ export default function AdminDashboard() {
               key={key}
               className={`${styles.navItem} ${activeTab === key ? styles.active : ''}`}
               onClick={() => {
+                console.log(`[📱 AdminDashboard] 🔘 TAB CLICKED: ${key} (${tab.label})`);
                 setActiveTab(key);
                 setSyncData(null);
               }}
@@ -362,11 +411,38 @@ export default function AdminDashboard() {
       </div>
 
       <div className={styles.main}>
-        {activeTab === 'overview' && renderOverviewTab()}
-        {activeTab === 'collections' && renderCollectionsTab()}
-        {activeTab === 'analytics' && <AnalyticsPanel />}
-        {activeTab === 'control' && <ControlPanel />}
-        {activeTab === 'datamanager' && <DataManager />}
+        {console.log(`[📱 AdminDashboard] 🎨 RENDERING TAB: ${activeTab}`)}
+        
+        {activeTab === 'overview' && (
+          <>
+            {console.log('[📱 AdminDashboard] ✅ Rendering OVERVIEW tab')}
+            {renderOverviewTab()}
+          </>
+        )}
+        {activeTab === 'collections' && (
+          <>
+            {console.log('[📱 AdminDashboard] ✅ Rendering COLLECTIONS tab')}
+            {renderCollectionsTab()}
+          </>
+        )}
+        {activeTab === 'analytics' && (
+          <>
+            {console.log('[📱 AdminDashboard] ✅ Rendering ANALYTICS tab')}
+            <AnalyticsPanel />
+          </>
+        )}
+        {activeTab === 'control' && (
+          <>
+            {console.log('[📱 AdminDashboard] ✅ Rendering CONTROL PANEL tab')}
+            <ControlPanel />
+          </>
+        )}
+        {activeTab === 'datamanager' && (
+          <>
+            {console.log('[📱 AdminDashboard] ✅ Rendering DATA MANAGER tab')}
+            <DataManager />
+          </>
+        )}
         {['config', 'data', 'files', 'images', 'javascript', 'resume'].includes(activeTab) && 
           renderGenericTab(activeTab)
         }

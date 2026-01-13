@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import styles from './AnalyticsPanel.module.css';
 
 export default function AnalyticsPanel() {
+  console.log('[📈 AnalyticsPanel] Component loaded');
+  
   const [stats, setStats] = useState({
     totalFiles: 0,
     totalTables: 0,
@@ -17,6 +19,7 @@ export default function AnalyticsPanel() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('[📈 AnalyticsPanel] useEffect mount - loading analytics');
     loadAnalytics();
   }, []);
 
