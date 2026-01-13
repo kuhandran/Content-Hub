@@ -12,6 +12,7 @@ export default function DataManager() {
   const [selectedTable, setSelectedTable] = useState(null);
   const [stats, setStats] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [pumpLoading, setPumpLoading] = useState(false);
 
   // Fetch database statistics and table info
   const fetchDatabaseStats = async () => {
@@ -62,6 +63,35 @@ export default function DataManager() {
     await fetchDatabaseStats();
     await monitorPump();
     setRefreshing(false);
+  };
+
+  // Pump data from /public into database
+  const handlePumpData = async () => {
+    setPumpLoading(true);
+    try {
+      const response = await fetch('/api/admin/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'pump_all_data' }),
+      });
+      
+      if (response.ok) {
+        // Start monitoring pump immediately
+        monitorPump();
+        // Refresh stats frequently while pumping
+        const pumpInterval = setInterval(async () => {
+          await monitorPump();
+          await fetchDatabaseStats();
+        }, 1000);
+        
+        // Stop monitoring after 30 seconds
+        setTimeout(() => clearInterval(pumpInterval), 30000);
+      }
+    } catch (error) {
+      console.error('Pump operation failed:', error);
+    } finally {
+      setPumpLoading(false);
+    }
   };
 
   return (
@@ -164,14 +194,24 @@ export default function DataManager() {
         </div>
       )}
 
-      {/* Refresh Button */}
-      <button
-        className={styles.refreshBtn}
-        onClick={handleRefresh}
-        disabled={refreshing}
-      >
-        {refreshing ? '🔄 Refreshing...' : '🔄 Refresh Data'}
-      </button>
+      {/* Action Buttons */}
+      <div className={styles.actionButtons}>
+        <button
+          className={styles.pumpBtn}
+          onClick={handlePumpData}
+          disabled={pumpLoading || isPumping}
+        >
+          {pumpLoading || isPumping ? '⏳ Pumping...' : '🚀 Load Primary Data'}
+        </button>
+
+        <button
+          className={styles.refreshBtn}
+          onClick={handleRefresh}
+          disabled={refreshing}
+        >
+          {refreshing ? '🔄 Refreshing...' : '🔄 Refresh Data'}
+        </button>
+      </div>
 
       {/* Tables Analysis */}
       <div className={styles.tablesContainer}>
