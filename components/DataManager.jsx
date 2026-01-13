@@ -19,11 +19,17 @@ export default function DataManager() {
     setLoading(true);
     try {
       const response = await fetch('/api/admin/database-stats');
+      if (!response.ok) {
+        console.error(`[DataManager] API error: ${response.status} ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}`);
+      }
       const data = await response.json();
+      console.log('[DataManager] Database stats loaded:', data);
       setTables(data.tables || []);
       setStats(data.summary);
     } catch (error) {
-      console.error('Failed to fetch database stats:', error);
+      console.error('[DataManager] Failed to fetch database stats:', error);
+      setStats({ error: error.message });
     } finally {
       setLoading(false);
     }
@@ -33,12 +39,18 @@ export default function DataManager() {
   const monitorPump = async () => {
     try {
       const response = await fetch('/api/admin/pump-monitor');
+      if (!response.ok) {
+        console.error(`[DataManager] Pump API error: ${response.status} ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}`);
+      }
       const data = await response.json();
+      console.log('[DataManager] Pump status loaded:', data);
       setPumpStatus(data);
       setPumpProgress(data.progress || 0);
       setIsPumping(data.status === 'in-progress');
     } catch (error) {
-      console.error('Failed to fetch pump status:', error);
+      console.error('[DataManager] Failed to fetch pump status:', error);
+      setPumpStatus({ status: 'error', message: error.message });
     }
   };
 
@@ -101,6 +113,25 @@ export default function DataManager() {
         <h2>� Data Manager</h2>
         <p>Pump Data • Monitor Operations • Analyze Database</p>
       </div>
+
+      {/* Error Display */}
+      {stats?.error && (
+        <div className={styles.errorContainer}>
+          <p className={styles.errorText}>⚠️ Error loading database stats: {stats.error}</p>
+          <button onClick={handleRefresh} className={styles.retryButton}>
+            Retry
+          </button>
+        </div>
+      )}
+
+      {pumpStatus?.message === 'Error: ' && (
+        <div className={styles.errorContainer}>
+          <p className={styles.errorText}>⚠️ Error loading pump monitor: {pumpStatus.message}</p>
+          <button onClick={handleRefresh} className={styles.retryButton}>
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Loading State */}
       {loading && !stats && (
