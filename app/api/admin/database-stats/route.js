@@ -42,9 +42,9 @@ export async function GET(request) {
         ) as column_count,
         (
           SELECT count(*)::int
-          FROM information_schema.statistics
-          WHERE table_schema = 'public'
-          AND table_name = t.table_name
+          FROM pg_indexes
+          WHERE schemaname = 'public'
+          AND tablename = t.table_name
         ) as index_count
       FROM information_schema.tables t
       WHERE table_schema = 'public'
