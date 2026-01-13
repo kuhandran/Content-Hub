@@ -1,4 +1,4 @@
-import { getClient } from '../../../../lib/postgres';
+import sql from '../../../../lib/postgres';
 
 export async function GET(request) {
   const startTime = Date.now();
@@ -8,9 +8,7 @@ export async function GET(request) {
     console.log(`[${requestId}] Starting pump-monitor request...`);
     console.log(`[${requestId}] Environment: ${process.env.NODE_ENV}`);
     
-    const client = await getClient();
-
-    if (!client) {
+    if (!sql) {
       console.error(`[${requestId}] Failed to connect to database`);
       return Response.json(
         {
@@ -36,25 +34,23 @@ export async function GET(request) {
     console.log(`[${requestId}] Connected to database successfully`);
 
     // Get the latest pump operation from sync_manifest
-    const syncResult = await client.query(
-      `
-        SELECT
-          id,
-          table_name,
-          status,
-          message,
-          files_count,
-          metadata,
-          created_at,
-          updated_at
-        FROM sync_manifest
-        WHERE table_name = 'all' OR table_name LIKE 'pump%'
-        ORDER BY created_at DESC
-        LIMIT 1
-      `
-    );
+    const syncResult = await sql`
+      SELECT
+        id,
+        table_name,
+        status,
+        message,
+        files_count,
+        metadata,
+        created_at,
+        updated_at
+      FROM sync_manifest
+      WHERE table_name = 'all' OR table_name LIKE 'pump%'
+      ORDER BY created_at DESC
+      LIMIT 1
+    `;
 
-    const latestSync = syncResult.rows[0];
+    const latestSync = syncResult[0];
     console.log(`[${requestId}] Latest sync: ${latestSync ? `${latestSync.status} (${latestSync.files_count} files)` : 'None found'}`);
 
     let pumpStatus = 'idle';

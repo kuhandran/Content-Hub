@@ -43,6 +43,17 @@ export default function AdminDashboard() {
   const [dataCounts, setDataCounts] = useState({});
   const [loadingData, setLoadingData] = useState(false);
 
+  // Read query parameter from URL on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const typeParam = params.get('type');
+      if (typeParam && Object.keys(TABLES).includes(typeParam)) {
+        setActiveTab(typeParam);
+      }
+    }
+  }, []);
+
   // Load data statistics
   useEffect(() => {
     loadDataStatistics();

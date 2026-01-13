@@ -1,4 +1,4 @@
-import { getClient } from '../../../../lib/postgres';
+import sql from '../../../../lib/postgres';
 
 export async function GET(request) {
   const startTime = Date.now();
@@ -9,9 +9,7 @@ export async function GET(request) {
     console.log(`[${requestId}] Environment: ${process.env.NODE_ENV}`);
     console.log(`[${requestId}] Database URL configured: ${process.env.DATABASE_URL ? 'YES' : 'NO'}`);
     
-    const client = await getClient();
-    
-    if (!client) {
+    if (!sql) {
       console.error(`[${requestId}] Failed to connect to database`);
       return Response.json(
         {
@@ -32,7 +30,8 @@ export async function GET(request) {
     console.log(`[${requestId}] Connected to database successfully`);
 
     // Get all tables and their record counts
-    const tablesQuery = `
+    console.log(`[${requestId}] Executing tables query...`);
+    const tablesResult = await sql`
       SELECT
         table_name,
         (
@@ -50,12 +49,9 @@ export async function GET(request) {
       FROM information_schema.tables t
       WHERE table_schema = 'public'
       AND table_type = 'BASE TABLE'
-      ORDER BY table_name;
+      ORDER BY table_name
     `;
-
-    console.log(`[${requestId}] Executing tables query...`);
-    const tablesResult = await client.query(tablesQuery);
-    const tableNames = tablesResult.rows.map(row => row.table_name);
+    const tableNames = tablesResult.map(row => row.table_name);
     console.log(`[${requestId}] Found ${tableNames.length} tables: ${tableNames.join(', ')}`);
 
 
@@ -67,33 +63,27 @@ export async function GET(request) {
     for (const tableName of tableNames) {
       try {
         // Get record count
-        const countResult = await client.query(
-          `SELECT COUNT(*)::int as count FROM "${tableName}"`
-        );
-        const recordCount = countResult.rows[0]?.count || 0;
+        const countResult = await sql`SELECT COUNT(*)::int as count FROM ${ sql(tableName) }`;
+        const recordCount = countResult[0]?.count || 0;
 
         // Get table size
-        const sizeResult = await client.query(
-          `SELECT pg_total_relation_size('${tableName}')::bigint as size`
-        );
-        const size = sizeResult.rows[0]?.size || 0;
+        const sizeResult = await sql`SELECT pg_total_relation_size(${ tableName })::bigint as size`;
+        const size = sizeResult[0]?.size || 0;
 
         // Get created/updated timestamps
-        const statsResult = await client.query(
-          `
-            SELECT
-              MIN(created_at) as created_at,
-              MAX(updated_at) as updated_at
-            FROM "${tableName}"
-            WHERE created_at IS NOT NULL
-          `
-        );
+        const statsResult = await sql`
+          SELECT
+            MIN(created_at) as created_at,
+            MAX(updated_at) as updated_at
+          FROM ${ sql(tableName) }
+          WHERE created_at IS NOT NULL
+        `;
 
-        const createdAt = statsResult.rows[0]?.created_at;
-        const updatedAt = statsResult.rows[0]?.updated_at;
+        const createdAt = statsResult[0]?.created_at;
+        const updatedAt = statsResult[0]?.updated_at;
 
         // Get column and index info
-        const tableInfo = tablesResult.rows.find(r => r.table_name === tableName);
+        const tableInfo = tablesResult.find(r => r.table_name === tableName);
 
         // Determine icon based on table name
         const iconMap = {
