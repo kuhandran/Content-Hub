@@ -98,9 +98,17 @@ export default function DataManager() {
     <div className={styles.dataManager}>
       {/* Header */}
       <div className={styles.header}>
-        <h2>📊 Data Manager</h2>
-        <p>Database Analysis & Pump Monitor</p>
+        <h2>� Data Manager</h2>
+        <p>Pump Data • Monitor Operations • Analyze Database</p>
       </div>
+
+      {/* Loading State */}
+      {loading && !stats && (
+        <div className={styles.loadingContainer}>
+          <div className={styles.spinner}></div>
+          <p>Loading database statistics...</p>
+        </div>
+      )}
 
       {/* Pump Monitor Card */}
       {pumpStatus && (
