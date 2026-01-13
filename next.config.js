@@ -46,6 +46,9 @@ const nextConfig = {
   // Middleware configuration (modern approach)
   // The middleware.js file uses Edge Runtime for request handling
   // This is the standard way in Next.js 16+ instead of the deprecated convention
+  
+  // Empty turbopack config for Next.js 16+ (no custom webpack config needed for console logs)
+  turbopack: {},
 };
 
 module.exports = nextConfig;

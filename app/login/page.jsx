@@ -155,6 +155,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter password"
                   disabled={loading}
+                  autoComplete="current-password"
                   style={{ width: "100%", padding: "14px 12px", border: "1px solid #90caf9", borderRadius: "4px", fontSize: "15px", background: "#fff", boxSizing: "border-box", outline: "none", transition: "border-color 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
                   onFocus={(e) => { e.target.style.borderColor = "#1565c0"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05), inset 0 0 0 1px #1565c0"; }}
                   onBlur={(e) => { e.target.style.borderColor = "#90caf9"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)"; }}

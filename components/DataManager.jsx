@@ -79,16 +79,16 @@ export default function DataManager() {
     fetchDatabaseStats();
     monitorPump();
 
-    // Poll for updates every 5 seconds
+    // Poll for updates every 10 seconds for stats, 15 seconds for pump
     const statsInterval = setInterval(() => {
       console.log('[⏱️ DataManager] POLL: fetchDatabaseStats');
       fetchDatabaseStats();
-    }, 5000);
+    }, 10000);
     
     const pumpInterval = setInterval(() => {
       console.log('[⏱️ DataManager] POLL: monitorPump');
       monitorPump();
-    }, 2000);
+    }, 15000);
 
     return () => {
       console.log('[⏱️ DataManager] useEffect cleanup - clearing intervals');
