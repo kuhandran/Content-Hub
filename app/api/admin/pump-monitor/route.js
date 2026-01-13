@@ -82,18 +82,16 @@ export async function GET(request) {
     }
 
     // Get aggregate stats from all sync operations
-    const statsResult = await client.query(
-      `
-        SELECT
-          COUNT(*) as total_operations,
-          SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as successful,
-          SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END) as failed,
-          SUM(files_count) as total_files_processed
-        FROM sync_manifest
-      `
-    );
+    const statsResult = await sql`
+      SELECT
+        COUNT(*) as total_operations,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as successful,
+        SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END) as failed,
+        SUM(files_count) as total_files_processed
+      FROM sync_manifest
+    `;
 
-    const stats = statsResult.rows[0] || {};
+    const stats = statsResult[0] || {};
 
     const duration = Date.now() - startTime;
     console.log(`[${requestId}] Success - Status: ${pumpStatus}, Progress: ${progress}%, Operations: ${stats.total_operations || 0} (${duration}ms)`);
