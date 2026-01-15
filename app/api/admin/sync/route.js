@@ -36,6 +36,10 @@ const { getSupabase } = require('../../../../lib/supabase');
 const { mapFileToTable, getFileExtension, ALLOWED_EXTENSIONS, IGNORED_DIRS, getPublicDir } = require('../../../../lib/sync-config');
 const sql = require('../../../../lib/postgres');
 
+// Force Next.js file tracing to include public folder
+// This is a workaround to ensure the public folder is bundled with the serverless function
+const PUBLIC_DIR_MARKER = path.join(process.cwd(), 'public');
+
 /**
  * Verify JWT token from Authorization header
  */

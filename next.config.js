@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const path = require('path');
+
 const nextConfig = {
   // React strict mode for development warnings
   reactStrictMode: true,
@@ -7,10 +9,14 @@ const nextConfig = {
   pageExtensions: ['js', 'jsx'],
   
   // Output file tracing - include public folder in serverless functions
+  // Use multiple path formats for compatibility
   outputFileTracingIncludes: {
-    '/api/admin/sync': ['./public/**/*'],
-    '/api/admin/data': ['./public/**/*'],
+    '/api/admin/sync': ['public/**/*', './public/**/*', 'public/**'],
+    '/api/admin/data': ['public/**/*', './public/**/*', 'public/**'],
   },
+  
+  // Explicitly set the tracing root
+  outputFileTracingRoot: path.join(__dirname, './'),
   
   // Modern Next.js features
   experimental: {
