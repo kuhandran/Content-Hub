@@ -138,7 +138,7 @@ function scanPublicFolder() {
   
   if (!fs.existsSync(scanPath)) {
     console.warn('[SYNC] ⚠️ No valid public folder found. On Vercel, /public is not available to serverless functions.');
-    console.warn('[SYNC] ⚠️ Consider using Vercel Blob Storage or including files via vercel.json');
+    console.warn('[SYNC] ⚠️ Will use CDN-based manifest sync instead.');
     return fileMap;
   }
 
@@ -189,6 +189,77 @@ function scanPublicFolder() {
   console.log('[SYNC]   - Files by table:', JSON.stringify(tableCounts, null, 2));
   
   return fileMap;
+}
+
+// CDN-based scanning - fetch manifest.json from public CDN
+async function scanViaCDN(baseUrl) {
+  const fileMap = new Map();
+  
+  console.log('[SYNC] 🌐 CDN-based scan starting...');
+  console.log('[SYNC]   - Base URL:', baseUrl);
+  
+  try {
+    // Fetch manifest.json from CDN
+    const manifestUrl = `${baseUrl}/manifest.json`;
+    console.log('[SYNC]   - Fetching manifest from:', manifestUrl);
+    
+    const response = await fetch(manifestUrl, {
+      headers: { 'Cache-Control': 'no-cache' }
+    });
+    
+    if (!response.ok) {
+      console.error('[SYNC] ❌ Failed to fetch manifest:', response.status, response.statusText);
+      return fileMap;
+    }
+    
+    const manifest = await response.json();
+    console.log('[SYNC] ✓ Manifest loaded:', {
+      generated: manifest.generated,
+      fileCount: manifest.files?.length || 0
+    });
+    
+    // Convert manifest to fileMap format
+    for (const file of (manifest.files || [])) {
+      fileMap.set(file.path, {
+        hash: file.hash,
+        table: file.table,
+        fileType: file.fileType,
+        size: file.size,
+        // Content will be fetched on-demand during pull
+        content: null
+      });
+    }
+    
+    // Log summary by table
+    const tableCounts = {};
+    for (const [, data] of fileMap) {
+      tableCounts[data.table] = (tableCounts[data.table] || 0) + 1;
+    }
+    console.log('[SYNC] 📊 CDN Scan Summary:');
+    console.log('[SYNC]   - Total files found:', fileMap.size);
+    console.log('[SYNC]   - Files by table:', JSON.stringify(tableCounts, null, 2));
+    
+  } catch (error) {
+    console.error('[SYNC] ❌ CDN scan failed:', error.message);
+  }
+  
+  return fileMap;
+}
+
+// Fetch file content from CDN
+async function fetchFileFromCDN(baseUrl, filePath) {
+  const fileUrl = `${baseUrl}/${filePath}`;
+  try {
+    const response = await fetch(fileUrl);
+    if (!response.ok) {
+      console.warn('[SYNC] ⚠️ Failed to fetch file:', filePath, response.status);
+      return null;
+    }
+    return await response.text();
+  } catch (error) {
+    console.warn('[SYNC] ⚠️ Error fetching file:', filePath, error.message);
+    return null;
+  }
 }
 
 // Scan mode: Detect changes compared to sync_manifest
@@ -280,8 +351,24 @@ async function scanForChanges(supabase) {
 }
 
 // Scan mode using Postgres client
-async function scanForChangesPg(sqlClient) {
-  const currentFiles = scanPublicFolder();
+async function scanForChangesPg(sqlClient, request) {
+  // Try filesystem first, fallback to CDN
+  let currentFiles = scanPublicFolder();
+  let useCDN = false;
+  
+  if (currentFiles.size === 0) {
+    // Filesystem not available, use CDN
+    console.log('[SYNC] 📡 Filesystem empty, switching to CDN mode...');
+    useCDN = true;
+    
+    // Determine base URL from request or environment
+    const host = request?.headers?.get('host') || process.env.VERCEL_URL || 'static.kuhandranchatbot.info';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
+    
+    currentFiles = await scanViaCDN(baseUrl);
+  }
+  
   const changes = [];
   let newFiles = 0;
   let modifiedFiles = 0;
@@ -493,15 +580,21 @@ async function pullChangesToDatabase(supabase, changes) {
 }
 
 // Pull mode using Postgres client
-async function pullChangesToDatabasePg(sqlClient, changes) {
+async function pullChangesToDatabasePg(sqlClient, changes, request) {
   let appliedCount = 0;
   const publicPath = getPublicDir() || path.join(process.cwd(), 'public');
+  const useFilesystem = fs.existsSync(publicPath);
   
-  console.log('[SYNC] Pull using publicPath:', publicPath);
+  // Determine CDN base URL for HTTP fetching
+  const host = request?.headers?.get('host') || process.env.VERCEL_URL || 'static.kuhandranchatbot.info';
+  const protocol = host.includes('localhost') ? 'http' : 'https';
+  const baseUrl = `${protocol}://${host}`;
   
-  if (!publicPath) {
-    throw new Error('publicPath is null - cannot pull changes');
-  }
+  console.log('[SYNC] Pull mode:', {
+    useFilesystem,
+    publicPath: useFilesystem ? publicPath : '(using CDN)',
+    baseUrl: useFilesystem ? '(not needed)' : baseUrl
+  });
 
   for (const change of changes) {
     try {
@@ -529,7 +622,18 @@ async function pullChangesToDatabasePg(sqlClient, changes) {
         }
         appliedCount++;
       } else if (change.status === 'new' || change.status === 'modified') {
-        const content = fs.readFileSync(fullPath, 'utf-8');
+        // Fetch content from filesystem or CDN
+        let content;
+        if (useFilesystem) {
+          content = fs.readFileSync(fullPath, 'utf-8');
+        } else {
+          content = await fetchFileFromCDN(baseUrl, change.relativePath);
+          if (!content) {
+            console.warn('[SYNC] ⚠️ Could not fetch file, skipping:', change.relativePath);
+            continue;
+          }
+        }
+        
         switch (change.table) {
           case 'collections': {
             const parts = change.relativePath.split(path.sep);
@@ -705,7 +809,7 @@ export async function POST(request) {
     if (mode === 'scan') {
       try {
         console.log('[SYNC] 🔍 Scan starting...');
-        const { changes, stats } = useSql ? await scanForChangesPg(sql) : await scanForChanges(supabase);
+        const { changes, stats } = useSql ? await scanForChangesPg(sql, request) : await scanForChanges(supabase);
         console.log('[SYNC] ✓ Scan completed', { stats, changesCount: changes.length });
 
         return NextResponse.json({
@@ -730,8 +834,8 @@ export async function POST(request) {
     } else if (mode === 'pull') {
       try {
         console.log('[SYNC] 📥 Pull starting...');
-        const { changes, stats } = useSql ? await scanForChangesPg(sql) : await scanForChanges(supabase);
-        const result = useSql ? await pullChangesToDatabasePg(sql, changes) : await pullChangesToDatabase(supabase, changes);
+        const { changes, stats } = useSql ? await scanForChangesPg(sql, request) : await scanForChanges(supabase);
+        const result = useSql ? await pullChangesToDatabasePg(sql, changes, request) : await pullChangesToDatabase(supabase, changes);
         console.log('[SYNC] ✓ Pull completed', { stats, applied: result.applied, changesCount: changes.length });
 
         return NextResponse.json({
