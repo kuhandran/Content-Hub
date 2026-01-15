@@ -6,6 +6,12 @@ const nextConfig = {
   // Page extensions
   pageExtensions: ['js', 'jsx'],
   
+  // Output file tracing - include public folder in serverless functions
+  outputFileTracingIncludes: {
+    '/api/admin/sync': ['./public/**/*'],
+    '/api/admin/data': ['./public/**/*'],
+  },
+  
   // Modern Next.js features
   experimental: {
     // Optimize package imports
