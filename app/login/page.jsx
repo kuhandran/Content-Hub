@@ -1,247 +1,292 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { setAuthToken, setUserInfo } from '@/utils/auth';
+import styles from './login.module.css';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [step, setStep] = useState("login");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [code, setCode] = useState(["", "", "", "", "", ""]);
-  const [sessionToken, setSessionToken] = useState("");
-  const [error, setError] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [requiresMfa, setRequiresMfa] = useState(false);
+  const [mfaToken, setMfaToken] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
 
   async function handleLogin(e) {
     e.preventDefault();
-    if (!username.trim()) {
-      setError("Username is required");
-      return;
-    }
-    if (!password.trim()) {
-      setError("Password is required");
-      return;
-    }
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Invalid credentials");
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Login failed');
         setLoading(false);
         return;
       }
 
-      // Check if MFA is required
-      if (data.requiresMfa && data.sessionToken) {
-        setSessionToken(data.sessionToken);
-        setStep("mfa");
-      } else {
-        // No MFA required, redirect to dashboard
-        // Small delay to ensure cookie is set before navigation
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 100);
+      if (data.requiresMfa) {
+        // MFA required - show MFA input
+        setRequiresMfa(true);
+        setMfaToken(data.token);
+        setLoading(false);
+        return;
       }
+
+      // Login successful - store JWT token in localStorage
+      console.log('[AUTH] Login successful, storing JWT token in localStorage');
+      setAuthToken(data.token);
+      setUserInfo(data.user);
+
+      // Redirect to admin dashboard
+      router.push('/admin');
     } catch (err) {
-      setError("An error occurred. Please try again.");
-    } finally {
+      setError('An error occurred during login: ' + err.message);
       setLoading(false);
     }
   }
 
-  function handleCodeChange(index, value) {
-    if (!/^\d?$/.test(value)) return;
-    const newCode = [...code];
-    newCode[index] = value;
-    setCode(newCode);
-    if (value && index < 5) {
-      document.getElementById(`code-${index + 1}`)?.focus();
-    }
-  }
-
-  async function handleMfaVerify(e) {
+  async function handleMfaSubmit(e) {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
 
-    const fullCode = code.join("");
-    if (fullCode.length !== 6) {
-      setError("Please enter all 6 digits");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const res = await fetch("/api/auth/mfa/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionToken, code: fullCode }),
-        credentials: "include",
+      const response = await fetch('/api/auth/mfa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mfaToken: mfaToken,
+          code: mfaCode
+        })
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Verification failed");
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'MFA verification failed');
         setLoading(false);
         return;
       }
 
-      // Redirect to dashboard after successful MFA verification
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 100);
+      // MFA verified - store JWT token in localStorage
+      console.log('[AUTH] MFA verified, storing JWT token in localStorage');
+      setAuthToken(data.token);
+      setUserInfo(data.user);
+
+      // Redirect to admin dashboard
+      router.push('/admin');
     } catch (err) {
-      setError("An error occurred. Please try again.");
-    } finally {
+      setError('An error occurred during MFA: ' + err.message);
       setLoading(false);
     }
+  }
+
+  if (requiresMfa) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.decorativeBackground}>
+          <div className={styles.blob1} />
+          <div className={styles.blob2} />
+        </div>
+        <div className={styles.mainContent}>
+          <div className={styles.leftSection}>
+            <div className={styles.brandBox}>
+              <div className={styles.logo}>🔐</div>
+              <h1 className={styles.brandName}>Verification</h1>
+              <p className={styles.brandTagline}>Enter your authentication code</p>
+            </div>
+
+            <div className={styles.featuresBox}>
+              <h3 className={styles.featuresTitle}>Secure MFA</h3>
+              <ul className={styles.featuresList}>
+                <li className={styles.featureItem}>
+                  <span className={styles.featureIcon}>📲</span>
+                  <span className={styles.featureText}>One-time codes expire in seconds</span>
+                </li>
+                <li className={styles.featureItem}>
+                  <span className={styles.featureIcon}>⚡️</span>
+                  <span className={styles.featureText}>Instant verification feedback</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className={styles.rightSection}>
+            <div className={styles.formBox}>
+              <div className={styles.formHeader}>
+                <h2 className={styles.formTitle}>Multi-Factor Authentication</h2>
+                <p className={styles.formSubtitle}>Check your authenticator app for the 6-digit code</p>
+              </div>
+
+              <form onSubmit={handleMfaSubmit} className={styles.form}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label} htmlFor="mfaCode">
+                    Authentication Code
+                  </label>
+                  <input
+                    className={styles.input}
+                    id="mfaCode"
+                    type="text"
+                    placeholder="000000"
+                    value={mfaCode}
+                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    maxLength="6"
+                    required
+                    disabled={loading}
+                    autoComplete="one-time-code"
+                  />
+                </div>
+
+                {error && (
+                  <div className={styles.errorMessage}>
+                    <span className={styles.errorIcon}>!</span>
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <button type="submit" disabled={loading} className={styles.submitButton}>
+                  {loading ? (
+                    <>
+                      <span className={styles.spinner} /> Verifying...
+                    </>
+                  ) : (
+                    '✓ Verify Code'
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRequiresMfa(false);
+                    setMfaCode('');
+                    setError('');
+                    setPassword('');
+                  }}
+                  className={styles.backButton}
+                >
+                  ← Back to Login
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)", padding: "20px", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif" }}>
-      <div style={{ width: "100%", maxWidth: "360px" }}>
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <div style={{ fontSize: "32px", fontWeight: "400", color: "#1565c0", letterSpacing: "-0.5px", marginBottom: "8px" }}>
-            Content Hub
+    <div className={styles.container}>
+      <div className={styles.decorativeBackground}>
+        <div className={styles.blob1} />
+        <div className={styles.blob2} />
+      </div>
+      <div className={styles.mainContent}>
+        <div className={styles.leftSection}>
+          <div className={styles.brandBox}>
+            <div className={styles.logo}>📊</div>
+            <h1 className={styles.brandName}>Content Hub</h1>
+            <p className={styles.brandTagline}>Secure Admin Dashboard</p>
           </div>
-          <div style={{ fontSize: "13px", color: "#0d47a1", letterSpacing: "0.2px" }}>
-            Sign in to your account
+
+          <div className={styles.featuresBox}>
+            <h3 className={styles.featuresTitle}>Why teams choose Content Hub</h3>
+            <ul className={styles.featuresList}>
+              <li className={styles.featureItem}>
+                <span className={styles.featureIcon}>🔒</span>
+                <span className={styles.featureText}>JWT token authentication with refresh support</span>
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.featureIcon}>📱</span>
+                <span className={styles.featureText}>Optional multi-factor security per admin</span>
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.featureIcon}>💾</span>
+                <span className={styles.featureText}>Tokens stored locally for API performance</span>
+              </li>
+            </ul>
           </div>
         </div>
 
-        {/* Login Card */}
-        {step === "login" && (
-          <div style={{ background: "#fff", borderRadius: "8px", padding: "32px 24px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-            <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              {error && (
-                <div style={{ padding: "12px 16px", background: "#ffebee", border: "1px solid #ffcdd2", borderRadius: "8px", fontSize: "13px", color: "#c62828", lineHeight: "1.4" }}>
-                  {error}
-                </div>
-              )}
-
-              <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#1565c0", marginBottom: "12px", letterSpacing: "0.3px" }}>
-                  USERNAME
-                </label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter username"
-                  autoFocus
-                  disabled={loading}
-                  style={{ width: "100%", padding: "14px 12px", border: "1px solid #90caf9", borderRadius: "4px", fontSize: "15px", background: "#fff", boxSizing: "border-box", outline: "none", transition: "border-color 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
-                  onFocus={(e) => { e.target.style.borderColor = "#1565c0"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05), inset 0 0 0 1px #1565c0"; }}
-                  onBlur={(e) => { e.target.style.borderColor = "#90caf9"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)"; }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#1565c0", marginBottom: "12px", letterSpacing: "0.3px" }}>
-                  PASSWORD
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
-                  disabled={loading}
-                  autoComplete="current-password"
-                  style={{ width: "100%", padding: "14px 12px", border: "1px solid #90caf9", borderRadius: "4px", fontSize: "15px", background: "#fff", boxSizing: "border-box", outline: "none", transition: "border-color 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
-                  onFocus={(e) => { e.target.style.borderColor = "#1565c0"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05), inset 0 0 0 1px #1565c0"; }}
-                  onBlur={(e) => { e.target.style.borderColor = "#90caf9"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)"; }}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                style={{ padding: "12px 24px", background: "#1976d2", color: "#fff", border: "none", borderRadius: "4px", fontSize: "15px", fontWeight: "500", cursor: loading ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: loading ? 0.8 : 1, boxShadow: "0 2px 4px rgba(25, 118, 210, 0.3)" }}
-                onMouseEnter={(e) => !loading && (e.target.style.background = "#1565c0", e.target.style.boxShadow = "0 4px 8px rgba(25, 118, 210, 0.4)")}
-                onMouseLeave={(e) => !loading && (e.target.style.background = "#1976d2", e.target.style.boxShadow = "0 2px 4px rgba(25, 118, 210, 0.3)")}
-              >
-                {loading ? "Signing in..." : "Next"}
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* MFA Card */}
-        {step === "mfa" && (
-          <div style={{ background: "#fff", borderRadius: "8px", padding: "32px 24px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-            <div style={{ fontSize: "13px", color: "#0d47a1", marginBottom: "24px", lineHeight: "1.5" }}>
-              We sent a 6-digit code to your authenticator app
+        <div className={styles.rightSection}>
+          <div className={styles.formBox}>
+            <div className={styles.formHeader}>
+              <h2 className={styles.formTitle}>Admin Login</h2>
+              <p className={styles.formSubtitle}>Sign in to access the dashboard</p>
             </div>
 
-            <form onSubmit={handleMfaVerify} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            <form onSubmit={handleLogin} className={styles.form}>
+              <div className={styles.formGroup}>
+                <label className={styles.label} htmlFor="username">
+                  Username
+                </label>
+                <input
+                  className={styles.input}
+                  id="username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  disabled={loading}
+                  autoComplete="username"
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label} htmlFor="password">
+                  Password
+                </label>
+                <input
+                  className={styles.input}
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  autoComplete="current-password"
+                />
+              </div>
+
               {error && (
-                <div style={{ padding: "12px 16px", background: "#ffebee", border: "1px solid #ffcdd2", borderRadius: "8px", fontSize: "13px", color: "#c62828", lineHeight: "1.4" }}>
-                  {error}
+                <div className={styles.errorMessage}>
+                  <span className={styles.errorIcon}>!</span>
+                  <span>{error}</span>
                 </div>
               )}
 
-              <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#1565c0", marginBottom: "16px", letterSpacing: "0.3px" }}>
-                  VERIFICATION CODE
-                </label>
-                <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-                  {code.map((digit, index) => (
-                    <input
-                      key={index}
-                      id={`code-${index}`}
-                      type="text"
-                      value={digit}
-                      onChange={(e) => handleCodeChange(index, e.target.value)}
-                      maxLength="1"
-                      placeholder="0"
-                      disabled={loading}
-                      style={{ width: "44px", height: "44px", textAlign: "center", border: "1px solid #90caf9", borderRadius: "4px", fontSize: "20px", fontWeight: "600", color: "#1565c0", background: "#fff", outline: "none", transition: "border-color 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
-                      onFocus={(e) => { e.target.style.borderColor = "#1565c0"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05), inset 0 0 0 1px #1565c0"; }}
-                      onBlur={(e) => { e.target.style.borderColor = "#90caf9"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)"; }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                style={{ padding: "12px 24px", background: "#1976d2", color: "#fff", border: "none", borderRadius: "4px", fontSize: "15px", fontWeight: "500", cursor: loading ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: loading ? 0.8 : 1, boxShadow: "0 2px 4px rgba(25, 118, 210, 0.3)" }}
-                onMouseEnter={(e) => !loading && (e.target.style.background = "#1565c0", e.target.style.boxShadow = "0 4px 8px rgba(25, 118, 210, 0.4)")}
-                onMouseLeave={(e) => !loading && (e.target.style.background = "#1976d2", e.target.style.boxShadow = "0 2px 4px rgba(25, 118, 210, 0.3)")}
-              >
-                {loading ? "Verifying..." : "Verify"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => { setStep("login"); setError(""); }}
-                disabled={loading}
-                style={{ padding: "10px 24px", background: "#fff", color: "#1976d2", border: "1px solid #90caf9", borderRadius: "4px", fontSize: "14px", fontWeight: "500", cursor: "pointer", transition: "all 0.2s" }}
-                onMouseEnter={(e) => { e.target.style.background = "#e3f2fd"; e.target.style.borderColor = "#1565c0"; }}
-                onMouseLeave={(e) => { e.target.style.background = "#fff"; e.target.style.borderColor = "#90caf9"; }}
-              >
-                Back
+              <button type="submit" disabled={loading} className={styles.submitButton}>
+                {loading ? (
+                  <>
+                    <span className={styles.spinner} /> Logging in...
+                  </>
+                ) : (
+                  '→ Sign In'
+                )}
               </button>
             </form>
-          </div>
-        )}
 
-        {/* Footer */}
-        <div style={{ marginTop: "40px", textAlign: "center", fontSize: "12px", color: "#0d47a1" }}>
-          <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
-            <a href="#" style={{ color: "#1976d2", textDecoration: "none", fontSize: "12px" }}>Help</a>
-            <a href="#" style={{ color: "#1976d2", textDecoration: "none", fontSize: "12px" }}>Privacy</a>
-            <a href="#" style={{ color: "#1976d2", textDecoration: "none", fontSize: "12px" }}>Terms</a>
+            <div className={styles.infoBox}>
+              <div className={styles.infoIcon}>🔒</div>
+              <div>
+                <p className={styles.infoTitle}>Security Notice</p>
+                <p className={styles.infoText}>
+                  Credentials transmit over TLS. We store JWT tokens in localStorage so every API request stays authenticated.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

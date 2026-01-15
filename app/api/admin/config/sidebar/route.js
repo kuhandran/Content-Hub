@@ -1,0 +1,237 @@
+/**
+ * app/api/admin/config/sidebar/route.js
+ * 
+ * Dynamic Sidebar Configuration API
+ * Returns list of tabs/components for AdminDashboard
+ * Data can be stored in DB or config file
+ * 
+ * GET /api/admin/config/sidebar
+ * Returns: { status, tabs: [{ id, key, label, icon, component, order, isVisible }] }
+ */
+
+import { NextResponse } from 'next/server';
+import authMod from '../../../../../lib/auth';
+import { logRequest, logResponse, logError } from '../../../../../lib/logger';
+
+// Default sidebar configuration
+// Can be overridden from database or environment
+const DEFAULT_TABS = [
+  {
+    id: 'overview',
+    key: 'overview',
+    label: 'Overview',
+    icon: '📊',
+    component: 'OverviewTab',
+    order: 1,
+    isVisible: true,
+    description: 'Load primary data and quick statistics'
+  },
+  {
+    id: 'collections',
+    key: 'collections',
+    label: 'Collections',
+    icon: '📚',
+    component: 'CollectionsTab',
+    order: 2,
+    isVisible: true,
+    description: 'Language packs and collection data',
+    hasLanguageSelector: true
+  },
+  {
+    id: 'analytics',
+    key: 'analytics',
+    label: 'Analytics',
+    icon: '📈',
+    component: 'AnalyticsPanel',
+    order: 3,
+    isVisible: true,
+    description: 'Dashboard analytics and KPIs'
+  },
+  {
+    id: 'control',
+    key: 'control',
+    label: 'Control Panel',
+    icon: '🎛️',
+    component: 'ControlPanel',
+    order: 4,
+    isVisible: true,
+    description: 'CRUD operations for tables'
+  },
+  {
+    id: 'datamanager',
+    key: 'datamanager',
+    label: 'Data Manager',
+    icon: '💾',
+    component: 'DataManager',
+    order: 5,
+    isVisible: true,
+    description: 'Pump monitor and database analytics'
+  },
+  {
+    id: 'config',
+    key: 'config',
+    label: 'Config',
+    icon: '⚙️',
+    component: 'GenericTab',
+    order: 6,
+    isVisible: true,
+    table: 'config_files',
+    description: 'Configuration files'
+  },
+  {
+    id: 'data',
+    key: 'data',
+    label: 'Data',
+    icon: '📄',
+    component: 'GenericTab',
+    order: 7,
+    isVisible: true,
+    table: 'data_files',
+    description: 'Data files'
+  },
+  {
+    id: 'files',
+    key: 'files',
+    label: 'Files',
+    icon: '📦',
+    component: 'GenericTab',
+    order: 8,
+    isVisible: true,
+    table: 'static_files',
+    description: 'Static files'
+  },
+  {
+    id: 'images',
+    key: 'images',
+    label: 'Images',
+    icon: '🖼️',
+    component: 'GenericTab',
+    order: 9,
+    isVisible: true,
+    table: 'images',
+    description: 'Image files'
+  },
+  {
+    id: 'javascript',
+    key: 'javascript',
+    label: 'JavaScript',
+    icon: '⚡',
+    component: 'GenericTab',
+    order: 10,
+    isVisible: true,
+    table: 'javascript_files',
+    description: 'JavaScript files'
+  },
+  {
+    id: 'resume',
+    key: 'resume',
+    label: 'Resume',
+    icon: '📋',
+    component: 'GenericTab',
+    order: 11,
+    isVisible: true,
+    table: 'resumes',
+    description: 'Resume files'
+  }
+];
+
+/**
+ * GET /api/admin/config/sidebar
+ * Returns sidebar configuration
+ */
+export async function GET(request) {
+  logRequest(request);
+  
+  try {
+    const auth = authMod?.isAuthorized ? authMod.isAuthorized(request) : { ok: true };
+    if (!auth.ok) {
+      return NextResponse.json(
+        { status: 'error', error: auth.message || 'Unauthorized' },
+        { status: auth.status || 401 }
+      );
+    }
+
+    // TODO: Load from database if configured
+    // For now, return default configuration
+    const tabs = DEFAULT_TABS
+      .filter(tab => tab.isVisible)
+      .sort((a, b) => a.order - b.order);
+
+    const response = {
+      status: 'success',
+      source: 'default', // 'default' or 'database'
+      count: tabs.length,
+      tabs,
+      timestamp: new Date().toISOString()
+    };
+
+    logResponse(request, response);
+    return NextResponse.json(response);
+
+  } catch (error) {
+    logError('GET /api/admin/config/sidebar', error);
+    return NextResponse.json(
+      { status: 'error', error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * POST /api/admin/config/sidebar
+ * Update sidebar configuration (save to database)
+ * 
+ * Body: { tabs: [{ id, order, isVisible }] }
+ */
+export async function POST(request) {
+  logRequest(request);
+  
+  try {
+    const auth = authMod?.isAuthorized ? authMod.isAuthorized(request) : { ok: true };
+    if (!auth.ok) {
+      return NextResponse.json(
+        { status: 'error', error: auth.message || 'Unauthorized' },
+        { status: auth.status || 401 }
+      );
+    }
+
+    const { tabs, action } = await request.json();
+
+    // TODO: Validate and save to database
+    // For now, return success
+
+    if (action === 'reorder') {
+      console.log('[⚙️ Sidebar] Reordering tabs:', tabs);
+      return NextResponse.json({
+        status: 'success',
+        action: 'reorder',
+        message: 'Tab order updated',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    if (action === 'toggle_visibility') {
+      console.log('[⚙️ Sidebar] Toggling visibility:', tabs);
+      return NextResponse.json({
+        status: 'success',
+        action: 'toggle_visibility',
+        message: 'Visibility updated',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    return NextResponse.json({
+      status: 'success',
+      action,
+      message: 'Configuration updated',
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    logError('POST /api/admin/config/sidebar', error);
+    return NextResponse.json(
+      { status: 'error', error: error.message },
+      { status: 500 }
+    );
+  }
+}

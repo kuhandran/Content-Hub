@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { authenticatedFetch } from '@/utils/auth';
 import styles from './DataManager.module.css';
 
 export default function DataManager() {
   console.log('[🔵 DataManager] Component mounted');
+  console.warn('[🔴 DEBUG] DataManager component RENDERING - THIS SHOULD BE VISIBLE');
   
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -22,9 +24,7 @@ export default function DataManager() {
     setLoading(true);
     try {
       console.log('[📊 DataManager] → Fetching /api/admin/database-stats');
-      const response = await fetch('/api/admin/database-stats', {
-        credentials: 'include',
-      });
+      const response = await authenticatedFetch('/api/admin/database-stats');
       console.log(`[📊 DataManager] ← Response: status=${response.status}, ok=${response.ok}`);
       
       if (!response.ok) {
@@ -50,9 +50,7 @@ export default function DataManager() {
     console.log('[🔄 DataManager] monitorPump() starting...');
     try {
       console.log('[🔄 DataManager] → Fetching /api/admin/pump-monitor');
-      const response = await fetch('/api/admin/pump-monitor', {
-        credentials: 'include',
-      });
+      const response = await authenticatedFetch('/api/admin/pump-monitor');
       console.log(`[🔄 DataManager] ← Response: status=${response.status}, ok=${response.ok}`);
       
       if (!response.ok) {
@@ -72,29 +70,12 @@ export default function DataManager() {
     }
   };
 
-  // Load data on mount and set up polling
+  // Load data on mount only (no polling to avoid excessive requests)
   useEffect(() => {
-    console.log('[⏱️ DataManager] useEffect mount - initializing data load');
+    console.log('[⏱️ DataManager] useEffect mount - loading initial data');
     
     fetchDatabaseStats();
     monitorPump();
-
-    // Poll for updates every 10 seconds for stats, 15 seconds for pump
-    const statsInterval = setInterval(() => {
-      console.log('[⏱️ DataManager] POLL: fetchDatabaseStats');
-      fetchDatabaseStats();
-    }, 10000);
-    
-    const pumpInterval = setInterval(() => {
-      console.log('[⏱️ DataManager] POLL: monitorPump');
-      monitorPump();
-    }, 15000);
-
-    return () => {
-      console.log('[⏱️ DataManager] useEffect cleanup - clearing intervals');
-      clearInterval(statsInterval);
-      clearInterval(pumpInterval);
-    };
   }, []);
 
   // Manual refresh
@@ -109,21 +90,20 @@ export default function DataManager() {
   const handlePumpData = async () => {
     setPumpLoading(true);
     try {
-      const response = await fetch('/api/admin/sync', {
+      const response = await authenticatedFetch('/api/admin/sync', {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'pump_all_data' }),
       });
       
       if (response.ok) {
-        // Start monitoring pump immediately
-        monitorPump();
-        // Refresh stats frequently while pumping
+        // Start monitoring pump once initially
+        await monitorPump();
+        // Monitor every 3 seconds while pumping (reduced from 1 second)
         const pumpInterval = setInterval(async () => {
           await monitorPump();
           await fetchDatabaseStats();
-        }, 1000);
+        }, 3000);
         
         // Stop monitoring after 30 seconds
         setTimeout(() => clearInterval(pumpInterval), 30000);
@@ -137,7 +117,8 @@ export default function DataManager() {
 
   return (
     <div className={styles.dataManager}>      {console.log('[🎨 DataManager] RENDERING:', { loading, pumpStatus: pumpStatus?.status, stats: stats?.totalTables, tablesCount: tables.length })}
-            {/* Header */}
+      
+      {/* Header */}
       <div className={styles.header}>
         <h2>� Data Manager</h2>
         <p>Pump Data • Monitor Operations • Analyze Database</p>

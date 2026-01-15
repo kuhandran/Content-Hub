@@ -1,59 +1,129 @@
 /**
  * components/AdminDashboard.jsx
  * 
- * Admin Dashboard with 12-tab structure
- * - Overview: Load Primary Data + Quick Actions
- * - Collections: Language picker + Type selector + Sync Data
- * - Analytics: KPIs, Charts, Activity Log
- * - Control Panel: CRUD operations for all tables
- * - Data Manager: Pump monitor, database analytics
- * - Config, Data, Files, Images, JavaScript, Resume: File browser + Sync Data
+ * Admin Dashboard - Dynamic Tab System
  * 
- * 📋 DEBUG CHECKLIST - Console Logging Points:
- * ✅ [📱 AdminDashboard] Component mounted
- * ✅ [📱 AdminDashboard] useEffect mount - reading URL params
- * ✅ [📱 AdminDashboard] URL param ?type=...
- * ✅ [📱 AdminDashboard] Setting activeTab to: ...
- * ✅ [📱 AdminDashboard] 🔘 TAB CLICKED: ...
- * ✅ [📱 AdminDashboard] 🎨 RENDERING TAB: ...
- * ✅ [📱 AdminDashboard] ✅ Rendering ... TAB
- * ✅ [📈 AnalyticsPanel] Component loaded
- * ✅ [📈 AnalyticsPanel] useEffect mount - loading analytics
- * ✅ [🎛️ ControlPanel] Component loaded
- * ✅ [💾 DataManager] Component loaded
- * ✅ [💾 DataManager] 🎨 RENDERING: ...
- * ✅ [📊 DataManager] fetchDatabaseStats() starting...
- * ✅ [🔄 DataManager] monitorPump() starting...
+ * Features:
+ * - Loads sidebar configuration from /api/admin/config/sidebar
+ * - Dynamically renders components based on API configuration
+ * - Supports language selection for collections
+ * - Manages sync data and statistics
+ * 
+ * State:
+ * - activeTab: Currently selected tab (from URL or user click)
+ * - tabs: Array of tab configurations from API
+ * - activeLanguage: Selected language for collections (en, es, etc)
+ * - activeCollectionType: Selected collection type (config, data)
+ * - dataCounts: Database record counts by table
+ * - syncData: Sync comparison results
  */
 
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getAuthToken, authenticatedFetch, clearAuth } from '@/utils/auth';
 import styles from './AdminDashboard.module.css';
 import AnalyticsPanel from './AnalyticsPanel';
 import ControlPanel from './ControlPanel';
 import DataManager from './DataManager';
 
-const TABLES = {
-  overview: { label: 'Overview', icon: '📊' },
-  collections: { label: 'Collections', icon: '📚', hasLang: true },
-  analytics: { label: 'Analytics', icon: '📈' },
-  control: { label: 'Control Panel', icon: '🎛️' },
-  datamanager: { label: 'Data Manager', icon: '💾' },
-  config: { label: 'Config', icon: '⚙️', table: 'config_files' },
-  data: { label: 'Data', icon: '📄', table: 'data_files' },
-  files: { label: 'Files', icon: '📦', table: 'static_files' },
-  images: { label: 'Images', icon: '🖼️', table: 'images' },
-  javascript: { label: 'JavaScript', icon: '⚡', table: 'javascript_files' },
-  resume: { label: 'Resume', icon: '📋', table: 'resumes' }
-};
-
 const LANGUAGES = ['en', 'es', 'fr', 'de', 'ar-AE', 'hi', 'id', 'my', 'si', 'ta', 'th'];
 const COLLECTION_TYPES = ['config', 'data'];
 
+/**
+ * Render sync results in a structured format
+ */
+function SyncResultsSection({ syncData, styles }) {
+  if (!syncData) {
+    return <p className={styles.placeholder}>Click "Sync Data" to compare with /public folder</p>;
+  }
+
+  return (
+    <div className={styles.syncResults}>
+      <div className={styles.summaryBar}>
+        <div className={styles.summaryItem}>
+          <span className={styles.badge + ' ' + styles.similar}>✅ Similar</span>
+          <span className={styles.count}>{syncData.summary.similar_count}</span>
+        </div>
+        <div className={styles.summaryItem}>
+          <span className={styles.badge + ' ' + styles.different}>⚠️ Different</span>
+          <span className={styles.count}>{syncData.summary.different_count}</span>
+        </div>
+        <div className={styles.summaryItem}>
+          <span className={styles.badge + ' ' + styles.missing}>❌ Missing</span>
+          <span className={styles.count}>{syncData.summary.missing_count}</span>
+        </div>
+      </div>
+
+      {syncData.different.length > 0 && (
+        <div className={styles.fileSection}>
+          <h4>⚠️ Different Files ({syncData.different.length})</h4>
+          <div className={styles.fileList}>
+            {syncData.different.slice(0, 10).map((file, idx) => (
+              <div key={idx} className={styles.fileItem + ' ' + styles.different}>
+                <span className={styles.filename}>{file.filename}</span>
+                <span className={styles.hint}>Hash mismatch - needs update</span>
+              </div>
+            ))}
+            {syncData.different.length > 10 && (
+              <p className={styles.moreText}>+{syncData.different.length - 10} more</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {syncData.missing.length > 0 && (
+        <div className={styles.fileSection}>
+          <h4>❌ Missing Files ({syncData.missing.length})</h4>
+          <div className={styles.fileList}>
+            {syncData.missing.slice(0, 10).map((file, idx) => (
+              <div key={idx} className={styles.fileItem + ' ' + styles.missing}>
+                <span className={styles.filename}>{file.filename}</span>
+                <span className={styles.hint}>In /public but not in database</span>
+              </div>
+            ))}
+            {syncData.missing.length > 10 && (
+              <p className={styles.moreText}>+{syncData.missing.length - 10} more</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {syncData.similar.length > 0 && (
+        <div className={styles.fileSection}>
+          <h4>✅ Similar Files ({syncData.similar.length})</h4>
+          <details className={styles.details}>
+            <summary>Show all (click to expand)</summary>
+            <div className={styles.fileList}>
+              {syncData.similar.map((file, idx) => (
+                <div key={idx} className={styles.fileItem + ' ' + styles.similar}>
+                  <span className={styles.filename}>{file.filename}</span>
+                </div>
+              ))}
+            </div>
+          </details>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
-  console.log('[📱 AdminDashboard] Component mounted');
+  const router = useRouter();
+  console.log('[📱 AdminDashboard] Component mounted - loading from API');
+
+  // Check authentication on mount
+  useEffect(() => {
+    const token = getAuthToken();
+    if (!token) {
+      console.log('[📱 AdminDashboard] No token found - redirecting to login');
+      router.push('/login');
+    }
+  }, [router]);
   
+  const [tabs, setTabs] = useState([]);
+  const [tabsLoading, setTabsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [activeLanguage, setActiveLanguage] = useState('en');
   const [activeCollectionType, setActiveCollectionType] = useState('config');
@@ -62,15 +132,38 @@ export default function AdminDashboard() {
   const [dataCounts, setDataCounts] = useState({});
   const [loadingData, setLoadingData] = useState(false);
 
+  // Load sidebar configuration from API
+  useEffect(() => {
+    loadSidebarConfig();
+  }, []);
+
+  async function loadSidebarConfig() {
+    try {
+      console.log('[📱 AdminDashboard] 🔄 Fetching sidebar config from API...');
+      const response = await authenticatedFetch('/api/admin/config/sidebar');
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        console.log('[📱 AdminDashboard] ✅ Loaded', data.tabs.length, 'tabs from API');
+        setTabs(data.tabs);
+      } else {
+        console.error('[📱 AdminDashboard] ❌ Failed to load tabs:', data.error);
+      }
+    } catch (error) {
+      console.error('[📱 AdminDashboard] ❌ Error loading sidebar config:', error);
+    } finally {
+      setTabsLoading(false);
+    }
+  }
+
   // Read query parameter from URL on mount
   useEffect(() => {
-    console.log('[📱 AdminDashboard] useEffect mount - reading URL params');
+    console.log('[📱 AdminDashboard] Reading URL params...');
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const typeParam = params.get('type');
-      console.log(`[📱 AdminDashboard] URL param ?type=${typeParam}`);
-      if (typeParam && Object.keys(TABLES).includes(typeParam)) {
-        console.log(`[📱 AdminDashboard] ✅ Setting activeTab to: ${typeParam}`);
+      if (typeParam) {
+        console.log(`[📱 AdminDashboard] Found URL param: type=${typeParam}`);
         setActiveTab(typeParam);
       }
     }
@@ -84,7 +177,7 @@ export default function AdminDashboard() {
   async function loadDataStatistics() {
     setLoadingData(true);
     try {
-      const response = await fetch('/api/admin/data');
+      const response = await authenticatedFetch('/api/admin/data');
       const result = await response.json();
       if (result.status === 'success') {
         setDataCounts(result.database || {});
@@ -102,7 +195,7 @@ export default function AdminDashboard() {
 
     setLoadingData(true);
     try {
-      const response = await fetch('/api/admin/data', {
+      const response = await authenticatedFetch('/api/admin/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'pump' })
@@ -132,7 +225,7 @@ export default function AdminDashboard() {
         body.type = activeCollectionType;
       }
 
-      const response = await fetch('/api/admin/sync-compare', {
+      const response = await authenticatedFetch('/api/admin/sync-compare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -150,302 +243,231 @@ export default function AdminDashboard() {
     setSyncLoading(false);
   }
 
-  // Overview Tab
-  const renderOverviewTab = () => {
-    console.log('[📱 AdminDashboard] 🎨 renderOverviewTab() - rendering overview with', Object.keys(dataCounts).length, 'tables');
-    return (
-    <div className={styles.tabContent}>
-      <h2>📊 Overview</h2>
+  /**
+   * Render active tab content using switch statement
+   */
+  function renderTabContent(tab) {
+    console.log(`[📱 AdminDashboard] 🎨 Rendering tab: ${tab.key}`);
+
+    switch (tab.key) {
+      case 'overview':
+        return <OverviewTabContent />;
       
-      <section className={styles.section}>
-        <h3>🚀 Load Primary Data</h3>
-        <p>Scan /public folder and pump all files to database tables</p>
-        <button 
-          className={styles.primaryButton}
-          onClick={() => {
-            console.log('[📱 AdminDashboard] 🚀 Load Primary Data button clicked');
-            handleLoadPrimaryData();
-          }}
-          disabled={loadingData}
-        >
-          {loadingData ? '⏳ Loading...' : '🚀 Load Primary Data'}
-        </button>
-      </section>
-
-      <section className={styles.section}>
-        <h3>📊 Database Statistics</h3>
-        <p>Current record counts across all tables</p>
-        <div className={styles.statsGrid}>
-          {Object.entries(dataCounts).map(([table, count]) => (
-            <div key={table} className={styles.statCard}>
-              <div className={styles.statLabel}>{table}</div>
-              <div className={styles.statValue}>{count || 0}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className={styles.section}>
-        <h3>⚡ Quick Actions</h3>
-        <div className={styles.actionGrid}>
-          <button className={styles.actionButton} onClick={() => {
-            if (window.confirm('Clear all database tables?')) {
-              fetch('/api/admin/data', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'clear' })
-              })
-              .then(r => r.json())
-              .then(result => {
-                if (result.status === 'success') {
-                  alert('✅ All data cleared!');
-                  loadDataStatistics();
-                } else {
-                  alert('❌ Error: ' + result.error);
-                }
-              })
-              .catch(e => alert('❌ Error: ' + e.message));
-            }
-          }}>🗑️ Clear All Data</button>
-          <button className={styles.actionButton} onClick={() => {
-            console.log('[📱 AdminDashboard] 🔄 Refresh Statistics clicked');
-            loadDataStatistics();
-          }}>🔄 Refresh Statistics</button>
-          <button className={styles.actionButton} onClick={() => console.log('[📱 AdminDashboard] 📋 View Sync Manifest clicked')}>📋 View Sync Manifest</button>
-          <button className={styles.actionButton} onClick={() => console.log('[📱 AdminDashboard] 📊 Database Health Check clicked')}>📊 Database Health Check</button>
-        </div>
-      </section>
-    </div>
-    );
-  };
-
-  // Collections Tab
-  const renderCollectionsTab = () => {
-    console.log('[📱 AdminDashboard] 🎨 renderCollectionsTab() - rendering collections with language:', activeLanguage, 'type:', activeCollectionType);
-    return (
-    <div className={styles.tabContent}>
-      <h2>📚 Collections</h2>
+      case 'collections':
+        return <CollectionsTabContent />;
       
-      <div className={styles.collectionSelector}>
-        <div className={styles.selectorGroup}>
-          <label>Language:</label>
-          <select 
-            value={activeLanguage}
-            onChange={(e) => {
-              console.log('[📱 AdminDashboard] 🌐 Language changed to:', e.target.value);
-              setActiveLanguage(e.target.value);
-            }}
-            className={styles.select}
-          >
-            {LANGUAGES.map(lang => (
-              <option key={lang} value={lang}>{lang}</option>
-            ))}
-          </select>
-        </div>
+      case 'analytics':
+        return <AnalyticsPanel />;
+      
+      case 'control':
+        return <ControlPanel />;
+      
+      case 'datamanager':
+        return <DataManager />;
+      
+      default:
+        // Generic tab for config, data, files, images, javascript, resume
+        return <GenericTabContent tab={tab} />;
+    }
+  }
 
-        <div className={styles.selectorGroup}>
-          <label>Type:</label>
-          <select 
-            value={activeCollectionType}
-            onChange={(e) => {
-              console.log('[📱 AdminDashboard] 📂 Collection type changed to:', e.target.value);
-              setActiveCollectionType(e.target.value);
-            }}
-            className={styles.select}
-          >
-            {COLLECTION_TYPES.map(type => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <h3>Files: {activeLanguage} / {activeCollectionType}</h3>
-          <button 
-            className={styles.syncButton}
-            onClick={() => {
-              console.log('[📱 AdminDashboard] 🔄 Sync collections clicked');
-              handleSyncData('collections');
-            }}
-            disabled={syncLoading}
-          >
-            {syncLoading ? '⏳ Syncing...' : '🔄 Sync Data'}
-          </button>
-        </div>
-        
-        {renderSyncResults()}
-      </section>
-    </div>
-    );
-  };
-
-  // Generic Tab (Config, Data, Files, etc.)
-  const renderGenericTab = (tabKey) => {
-    console.log(`[📱 AdminDashboard] 🎨 renderGenericTab() called for: ${tabKey}`);
-    const tabInfo = TABLES[tabKey];
-    const tableName = tabInfo.table;
-    console.log(`[📱 AdminDashboard] 📋 Tab Info: label="${tabInfo.label}", table="${tableName}"`);
-
+  /**
+   * Overview Tab Component
+   */
+  function OverviewTabContent() {
     return (
       <div className={styles.tabContent}>
-        <h2>{tabInfo.icon} {tabInfo.label}</h2>
+        <h2>📊 Overview</h2>
+        
+        <section className={styles.section}>
+          <h3>🚀 Load Primary Data</h3>
+          <p>Scan /public folder and pump all files to database tables</p>
+          <button 
+            className={styles.primaryButton}
+            onClick={handleLoadPrimaryData}
+            disabled={loadingData}
+          >
+            {loadingData ? '⏳ Loading...' : '🚀 Load Primary Data'}
+          </button>
+        </section>
+
+        <section className={styles.section}>
+          <h3>📊 Database Statistics</h3>
+          <p>Current record counts across all tables</p>
+          <div className={styles.statsGrid}>
+            {Object.entries(dataCounts).map(([table, count]) => (
+              <div key={table} className={styles.statCard}>
+                <div className={styles.statLabel}>{table}</div>
+                <div className={styles.statValue}>{count || 0}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <h3>⚡ Quick Actions</h3>
+          <div className={styles.actionGrid}>
+            <button className={styles.actionButton} onClick={handleClearAllData}>🗑️ Clear All Data</button>
+            <button className={styles.actionButton} onClick={loadDataStatistics}>🔄 Refresh Statistics</button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  /**
+   * Collections Tab Component
+   */
+  function CollectionsTabContent() {
+    return (
+      <div className={styles.tabContent}>
+        <h2>📚 Collections</h2>
+        
+        <div className={styles.collectionSelector}>
+          <div className={styles.selectorGroup}>
+            <label>Language:</label>
+            <select 
+              value={activeLanguage}
+              onChange={(e) => setActiveLanguage(e.target.value)}
+              className={styles.select}
+            >
+              {LANGUAGES.map(lang => (
+                <option key={lang} value={lang}>{lang}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.selectorGroup}>
+            <label>Type:</label>
+            <select 
+              value={activeCollectionType}
+              onChange={(e) => setActiveCollectionType(e.target.value)}
+              className={styles.select}
+            >
+              {COLLECTION_TYPES.map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h3>Files: {activeLanguage} / {activeCollectionType}</h3>
+            <button 
+              className={styles.syncButton}
+              onClick={() => handleSyncData('collections')}
+              disabled={syncLoading}
+            >
+              {syncLoading ? '⏳ Syncing...' : '🔄 Sync Data'}
+            </button>
+          </div>
+          
+          <SyncResultsSection syncData={syncData} styles={styles} />
+        </section>
+      </div>
+    );
+  }
+
+  /**
+   * Generic Tab Component (Config, Data, Files, etc.)
+   */
+  function GenericTabContent({ tab }) {
+    return (
+      <div className={styles.tabContent}>
+        <h2>{tab.icon} {tab.label}</h2>
 
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <h3>Files</h3>
             <button 
               className={styles.syncButton}
-              onClick={() => {
-                console.log(`[📱 AdminDashboard] 🔄 Sync button clicked for: ${tabKey}`);
-                handleSyncData(tableName);
-              }}
+              onClick={() => handleSyncData(tab.table || tab.key)}
               disabled={syncLoading}
             >
               {syncLoading ? '⏳ Syncing...' : '🔄 Sync Data'}
             </button>
           </div>
 
-          {renderSyncResults()}
+          <SyncResultsSection syncData={syncData} styles={styles} />
         </section>
       </div>
     );
-  };
+  }
 
-  // Sync Results Component
-  const renderSyncResults = () => {
-    if (!syncData) {
-      return <p className={styles.placeholder}>Click "Sync Data" to compare with /public folder</p>;
+  /**
+   * Handle clear all data action
+   */
+  function handleClearAllData() {
+    if (!window.confirm('Clear all database tables?')) {
+      return;
     }
 
-    return (
-      <div className={styles.syncResults}>
-        <div className={styles.summaryBar}>
-          <div className={styles.summaryItem}>
-            <span className={styles.badge + ' ' + styles.similar}>✅ Similar</span>
-            <span className={styles.count}>{syncData.summary.similar_count}</span>
-          </div>
-          <div className={styles.summaryItem}>
-            <span className={styles.badge + ' ' + styles.different}>⚠️ Different</span>
-            <span className={styles.count}>{syncData.summary.different_count}</span>
-          </div>
-          <div className={styles.summaryItem}>
-            <span className={styles.badge + ' ' + styles.missing}>❌ Missing</span>
-            <span className={styles.count}>{syncData.summary.missing_count}</span>
-          </div>
-        </div>
-
-        {syncData.different.length > 0 && (
-          <div className={styles.fileSection}>
-            <h4>⚠️ Different Files ({syncData.different.length})</h4>
-            <div className={styles.fileList}>
-              {syncData.different.slice(0, 10).map((file, idx) => (
-                <div key={idx} className={styles.fileItem + ' ' + styles.different}>
-                  <span className={styles.filename}>{file.filename}</span>
-                  <span className={styles.hint}>Hash mismatch - needs update</span>
-                </div>
-              ))}
-              {syncData.different.length > 10 && (
-                <p className={styles.moreText}>+{syncData.different.length - 10} more</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {syncData.missing.length > 0 && (
-          <div className={styles.fileSection}>
-            <h4>❌ Missing Files ({syncData.missing.length})</h4>
-            <div className={styles.fileList}>
-              {syncData.missing.slice(0, 10).map((file, idx) => (
-                <div key={idx} className={styles.fileItem + ' ' + styles.missing}>
-                  <span className={styles.filename}>{file.filename}</span>
-                  <span className={styles.hint}>In /public but not in database</span>
-                </div>
-              ))}
-              {syncData.missing.length > 10 && (
-                <p className={styles.moreText}>+{syncData.missing.length - 10} more</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {syncData.similar.length > 0 && (
-          <div className={styles.fileSection}>
-            <h4>✅ Similar Files ({syncData.similar.length})</h4>
-            <details className={styles.details}>
-              <summary>Show all (click to expand)</summary>
-              <div className={styles.fileList}>
-                {syncData.similar.map((file, idx) => (
-                  <div key={idx} className={styles.fileItem + ' ' + styles.similar}>
-                    <span className={styles.filename}>{file.filename}</span>
-                  </div>
-                ))}
-              </div>
-            </details>
-          </div>
-        )}
-      </div>
-    );
-  };
+    authenticatedFetch('/api/admin/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'clear' })
+    })
+    .then(r => r.json())
+    .then(result => {
+      if (result.status === 'success') {
+        alert('✅ All data cleared!');
+        loadDataStatistics();
+      } else {
+        alert('❌ Error: ' + result.error);
+      }
+    })
+    .catch(e => alert('❌ Error: ' + e.message));
+  }
 
   return (
     <div className={styles.dashboard}>
       <div className={styles.sidebar}>
         <h1>🔧 Admin Dashboard</h1>
-        <nav className={styles.nav}>
-          {Object.entries(TABLES).map(([key, tab]) => (
-            <button
-              key={key}
-              className={`${styles.navItem} ${activeTab === key ? styles.active : ''}`}
-              onClick={() => {
-                console.log(`[📱 AdminDashboard] 🔘 TAB CLICKED: ${key} (${tab.label})`);
-                setActiveTab(key);
-                setSyncData(null);
-              }}
-            >
-              {tab.icon} {tab.label}
-            </button>
-          ))}
-        </nav>
+        {tabsLoading ? (
+          <div className={styles.loading}>⏳ Loading tabs...</div>
+        ) : (
+          <nav className={styles.nav}>
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`${styles.navItem} ${activeTab === tab.key ? styles.active : ''}`}
+                onClick={() => {
+                  console.log(`[📱 AdminDashboard] 🔘 TAB CLICKED: ${tab.key}`);
+                  setActiveTab(tab.key);
+                  setSyncData(null);
+                }}
+                title={tab.description}
+              >
+                {tab.icon} {tab.label}
+              </button>
+            ))}
+          </nav>
+        )}
+
+        <div className={styles.logout}>
+          <button 
+            className={styles.logoutButton}
+            onClick={() => {
+              clearAuth();
+              router.push('/login');
+            }}
+            title="Sign out and go to login page"
+          >
+            🚪 Logout
+          </button>
+        </div>
       </div>
 
       <div className={styles.main}>
-        {console.log(`[📱 AdminDashboard] 🎨 RENDERING TAB: ${activeTab}`)}
-        
-        {activeTab === 'overview' && (
-          <>
-            {console.log('[📱 AdminDashboard] ✅ Rendering OVERVIEW tab')}
-            {renderOverviewTab()}
-          </>
+        {tabsLoading ? (
+          <div className={styles.loading}>⏳ Loading dashboard...</div>
+        ) : (
+          (() => {
+            const tab = tabs.find(t => t.key === activeTab);
+            return tab ? renderTabContent(tab) : <div className={styles.tabContent}><h2>❌ Tab not found</h2></div>;
+          })()
         )}
-        {activeTab === 'collections' && (
-          <>
-            {console.log('[📱 AdminDashboard] ✅ Rendering COLLECTIONS tab')}
-            {renderCollectionsTab()}
-          </>
-        )}
-        {activeTab === 'analytics' && (
-          <>
-            {console.log('[📱 AdminDashboard] ✅ Rendering ANALYTICS tab')}
-            <AnalyticsPanel />
-          </>
-        )}
-        {activeTab === 'control' && (
-          <>
-            {console.log('[📱 AdminDashboard] ✅ Rendering CONTROL PANEL tab')}
-            <ControlPanel />
-          </>
-        )}
-        {activeTab === 'datamanager' && (
-          <>
-            {console.log('[📱 AdminDashboard] ✅ Rendering DATA MANAGER tab')}
-            <DataManager />
-          </>
-        )}
-        {['config', 'data', 'files', 'images', 'javascript', 'resume'].includes(activeTab) && 
-          renderGenericTab(activeTab)
-        }
       </div>
     </div>
   );

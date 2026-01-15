@@ -179,7 +179,28 @@ async function scanForChangesPg(sqlClient) {
   let deletedFiles = 0;
 
   try {
-    const manifestRows = await sqlClient`SELECT file_path, file_hash, table_name FROM sync_manifest`;
+    // Ensure sync_manifest table exists
+    try {
+      await sqlClient`CREATE TABLE IF NOT EXISTS sync_manifest (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        file_path VARCHAR(512) UNIQUE,
+        file_hash VARCHAR(64),
+        table_name VARCHAR(50),
+        last_synced TIMESTAMP DEFAULT now()
+      )`;
+    } catch (err) {
+      console.warn('[SYNC] Table creation warning:', err.message);
+    }
+
+    // Get manifest entries safely
+    let manifestRows = [];
+    try {
+      manifestRows = await sqlClient`SELECT file_path, file_hash, table_name FROM sync_manifest`;
+    } catch (err) {
+      console.warn('[SYNC] Manifest query failed, continuing with empty manifest:', err.message);
+      manifestRows = [];
+    }
+
     const manifestMap = new Map((manifestRows || []).map(m => [m.file_path, m]));
 
     for (const [relativePath, fileData] of currentFiles) {
@@ -323,7 +344,18 @@ async function pullChangesToDatabasePg(sqlClient, changes) {
       const filename = path.basename(fullPath, path.extname(fullPath));
 
       if (change.status === 'deleted') {
-        await sqlClient.unsafe(`DELETE FROM ${change.table} WHERE file_path = ${sqlClient.parameters([change.relativePath])}`);
+        // Different tables have different key columns
+        if (change.table === 'collections') {
+          const parts = change.relativePath.split(path.sep);
+          const langIndex = parts.findIndex(p => p === 'collections');
+          const lang = parts[langIndex + 1];
+          const type = parts[langIndex + 2];
+          const fname = path.basename(change.relativePath, path.extname(change.relativePath));
+          await sqlClient`DELETE FROM collections WHERE lang = ${lang} AND type = ${type} AND filename = ${fname}`;
+        } else {
+          const fname = path.basename(change.relativePath, path.extname(change.relativePath));
+          await sqlClient`DELETE FROM ${sqlClient(change.table)} WHERE filename = ${fname}`;
+        }
         appliedCount++;
       } else if (change.status === 'new' || change.status === 'modified') {
         const content = fs.readFileSync(fullPath, 'utf-8');
@@ -433,6 +465,35 @@ export async function POST(request) {
 
     const useSql = !!sql;
     console.log('[SYNC] Client selection', { useSql });
+    
+    // Initialize database tables if using Postgres
+    if (useSql) {
+      try {
+        console.log('[SYNC] Initializing database tables...');
+        const tables = [
+          `CREATE TABLE IF NOT EXISTS collections (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), lang VARCHAR(10), type VARCHAR(20), filename VARCHAR(255), file_content JSONB, file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now(), UNIQUE(lang, type, filename))`,
+          `CREATE TABLE IF NOT EXISTS static_files (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), filename VARCHAR(255) UNIQUE, file_type VARCHAR(50), file_content TEXT, file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now())`,
+          `CREATE TABLE IF NOT EXISTS config_files (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), filename VARCHAR(255) UNIQUE, file_type VARCHAR(50), file_content JSONB, file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now())`,
+          `CREATE TABLE IF NOT EXISTS data_files (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), filename VARCHAR(255) UNIQUE, file_type VARCHAR(50), file_content JSONB, file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now())`,
+          `CREATE TABLE IF NOT EXISTS images (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), filename VARCHAR(255) UNIQUE, file_path VARCHAR(512), mime_type VARCHAR(50), file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now())`,
+          `CREATE TABLE IF NOT EXISTS resumes (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), filename VARCHAR(255) UNIQUE, file_type VARCHAR(50), file_path VARCHAR(512), file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now())`,
+          `CREATE TABLE IF NOT EXISTS javascript_files (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), filename VARCHAR(255) UNIQUE, file_path VARCHAR(512), file_content TEXT, file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now())`,
+          `CREATE TABLE IF NOT EXISTS sync_manifest (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), file_path VARCHAR(512) UNIQUE, file_hash VARCHAR(64), table_name VARCHAR(50), last_synced TIMESTAMP DEFAULT now())`,
+          `CREATE INDEX IF NOT EXISTS idx_sync_manifest_path ON sync_manifest(file_path)`
+        ];
+        for (const stmt of tables) {
+          try {
+            await sql.unsafe(stmt);
+          } catch (err) {
+            console.warn('[SYNC] Table creation warning:', err.message);
+          }
+        }
+        console.log('[SYNC] Database tables initialized');
+      } catch (err) {
+        console.error('[SYNC] Database initialization failed:', err.message);
+      }
+    }
+    
     let supabase;
     if (!useSql) {
       supabase = getSupabase();

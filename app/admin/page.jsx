@@ -1,19 +1,7 @@
-/**
- * app/admin/page.jsx
- * Admin Dashboard Page
- */
+'use client';
 
-import AdminDashboard from '../../components/AdminDashboard';
-
-export const metadata = {
-  title: 'Admin Dashboard',
-  description: 'Content management and data synchronization dashboard'
-};
+import AdminDashboard from '@/components/AdminDashboard';
 
 export default function AdminPage() {
-  return (
-    <main>
-      <AdminDashboard />
-    </main>
-  );
+  return <AdminDashboard />;
 }

@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 const argon2 = require('argon2');
 const users = require('../../../../lib/users');
-const { signSession, makeCookie } = require('../../../../lib/session');
+const { generateToken, verifyToken } = require('../../../../lib/jwt-manager');
 
 /**
  * POST /api/auth/login
  * 
  * Authenticates a user with username and password
- * If user has MFA enabled, returns a temporary session token for MFA verification
- * Otherwise, returns a full authenticated session
+ * Returns a JWT token stored in localStorage (NOT a cookie)
+ * If user has MFA enabled, returns a temporary token for MFA verification
+ * Otherwise, returns a full authenticated JWT token
  * 
  * Request body:
  * {
@@ -21,9 +22,12 @@ const { signSession, makeCookie } = require('../../../../lib/session');
  *   status: 'success' | 'error',
  *   error?: string,
  *   requiresMfa?: boolean,
- *   sessionToken?: string,
+ *   token?: string,  // JWT token (store in localStorage)
  *   user?: { id, username }
  * }
+ * 
+ * NOTE: Client should store token in localStorage using:
+ * localStorage.setItem('auth_token', response.token)
  */
 export async function POST(request) {
   try {
@@ -60,8 +64,8 @@ export async function POST(request) {
     const requiresMfa = !!user.mfa_enabled;
 
     if (requiresMfa) {
-      // Issue temporary session token for MFA verification
-      const mfaToken = signSession({ 
+      // Issue temporary JWT token for MFA verification
+      const mfaToken = generateToken({ 
         uid: user.id, 
         mfa: false, // Not fully authenticated yet
         temp: true  // Temporary token
@@ -70,24 +74,22 @@ export async function POST(request) {
       return NextResponse.json({
         status: 'success',
         requiresMfa: true,
-        sessionToken: mfaToken,
+        token: mfaToken,  // JWT token for client to store in localStorage
         user: { id: user.id, username: user.username }
       });
     } else {
-      // No MFA required, issue full session token
-      const token = signSession({ 
+      // No MFA required, issue full JWT token
+      const token = generateToken({ 
         uid: user.id, 
         mfa: true // Fully authenticated
       });
       
-      const res = NextResponse.json({
+      return NextResponse.json({
         status: 'success',
         requiresMfa: false,
+        token: token,  // JWT token for client to store in localStorage
         user: { id: user.id, username: user.username }
       });
-      
-      res.headers.set('Set-Cookie', makeCookie(token));
-      return res;
     }
   } catch (err) {
     console.error('[LOGIN_ERROR]', err);
