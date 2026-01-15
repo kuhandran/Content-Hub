@@ -11,7 +11,41 @@
 
 import { NextResponse } from 'next/server';
 import authMod from '../../../../../lib/auth';
+import jwtManager from '../../../../../lib/jwt-manager';
 import { logRequest, logResponse, logError } from '../../../../../lib/logger';
+
+/**
+ * Verify JWT token from Authorization header
+ */
+function verifyJWT(request) {
+  try {
+    const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
+    if (!authHeader) {
+      console.warn('[AUTH] No Authorization header found');
+      return { ok: false, error: 'No authorization header' };
+    }
+
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
+      console.warn('[AUTH] Invalid Authorization header format');
+      return { ok: false, error: 'Invalid authorization header' };
+    }
+
+    const token = parts[1];
+    const decoded = jwtManager.verifyToken(token);
+    
+    if (!decoded) {
+      console.warn('[AUTH] JWT verification failed');
+      return { ok: false, error: 'Invalid or expired token' };
+    }
+
+    console.log('[AUTH] JWT verified successfully for user:', decoded.username);
+    return { ok: true, user: decoded };
+  } catch (error) {
+    console.error('[AUTH] JWT verification error:', error.message);
+    return { ok: false, error: error.message };
+  }
+}
 
 // Default sidebar configuration
 // Can be overridden from database or environment
@@ -143,11 +177,13 @@ export async function GET(request) {
   logRequest(request);
   
   try {
-    const auth = authMod?.isAuthorized ? authMod.isAuthorized(request) : { ok: true };
-    if (!auth.ok) {
+    // Verify JWT token
+    const jwtAuth = verifyJWT(request);
+    if (!jwtAuth.ok) {
+      console.warn('[SIDEBAR] JWT verification failed:', jwtAuth.error);
       return NextResponse.json(
-        { status: 'error', error: auth.message || 'Unauthorized' },
-        { status: auth.status || 401 }
+        { status: 'error', error: jwtAuth.error },
+        { status: 401 }
       );
     }
 
@@ -187,11 +223,13 @@ export async function POST(request) {
   logRequest(request);
   
   try {
-    const auth = authMod?.isAuthorized ? authMod.isAuthorized(request) : { ok: true };
-    if (!auth.ok) {
+    // Verify JWT token
+    const jwtAuth = verifyJWT(request);
+    if (!jwtAuth.ok) {
+      console.warn('[SIDEBAR] JWT verification failed:', jwtAuth.error);
       return NextResponse.json(
-        { status: 'error', error: auth.message || 'Unauthorized' },
-        { status: auth.status || 401 }
+        { status: 'error', error: jwtAuth.error },
+        { status: 401 }
       );
     }
 
