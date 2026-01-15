@@ -329,9 +329,19 @@ async function scanForChangesPg(sqlClient) {
       manifestRows = [];
     }
 
-    const manifestMap = new Map((manifestRows || []).map(m => [m.file_path, m]));
+    // Filter out null file_path values from manifest
+    const manifestMap = new Map(
+      (manifestRows || [])
+        .filter(m => m && m.file_path)
+        .map(m => [m.file_path, m])
+    );
 
     for (const [relativePath, fileData] of currentFiles) {
+      // Skip entries with null/undefined relativePath
+      if (!relativePath) {
+        console.warn('[SYNC] ⚠️ Skipping entry with null relativePath');
+        continue;
+      }
       const manifestEntry = manifestMap.get(relativePath);
       if (!manifestEntry) {
         changes.push({ path: path.join('public', relativePath), relativePath, status: 'new', table: fileData.table, hash: fileData.hash, fileType: fileData.fileType });
@@ -343,8 +353,13 @@ async function scanForChangesPg(sqlClient) {
     }
 
     for (const [filePath, manifestEntry] of manifestMap) {
+      // Skip entries with null/undefined filePath
+      if (!filePath) {
+        console.warn('[SYNC] ⚠️ Skipping manifest entry with null filePath');
+        continue;
+      }
       if (!currentFiles.has(filePath)) {
-        changes.push({ path: path.join('public', filePath), relativePath: filePath, status: 'deleted', table: manifestEntry.table_name, hash: manifestEntry.file_hash, fileType: getFileExtension(filePath) });
+        changes.push({ path: path.join('public', filePath), relativePath: filePath, status: 'deleted', table: manifestEntry.table_name || 'unknown', hash: manifestEntry.file_hash || '', fileType: getFileExtension(filePath) });
         deletedFiles++;
       }
     }
