@@ -27,6 +27,7 @@ import styles from './AdminDashboard.module.css';
 import AnalyticsPanel from './AnalyticsPanel';
 import ControlPanel from './ControlPanel';
 import DataManager from './DataManager';
+import AuthDebugPanel from './AuthDebugPanel';
 
 const LANGUAGES = ['en', 'es', 'fr', 'de', 'ar-AE', 'hi', 'id', 'my', 'si', 'ta', 'th'];
 const COLLECTION_TYPES = ['config', 'data'];
@@ -457,7 +458,11 @@ export default function AdminDashboard() {
           <button 
             className={styles.logoutButton}
             onClick={() => {
-              clearAuth();
+              clearAuth('User clicked logout button', {
+                component: 'AdminDashboard',
+                activeTab: activeTab,
+                timestamp: new Date().toISOString()
+              });
               router.push('/login');
             }}
             title="Sign out and go to login page"
@@ -477,6 +482,9 @@ export default function AdminDashboard() {
           })()
         )}
       </div>
+
+      {/* Debug Panel */}
+      <AuthDebugPanel />
     </div>
   );
 }
