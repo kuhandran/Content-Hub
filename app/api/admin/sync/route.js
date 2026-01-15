@@ -93,11 +93,25 @@ function scanPublicFolder() {
   console.log('[SYNC]   - Resolved publicPath:', publicPath);
   console.log('[SYNC]   - Path exists:', fs.existsSync(publicPath));
   
-  // List root directory contents
+  // List root directory contents with more detail
   console.log('[SYNC] 📁 Listing process.cwd():', cwd);
   if (fs.existsSync(cwd)) {
     const rootContents = fs.readdirSync(cwd);
-    console.log('[SYNC]   - Root contents:', rootContents.join(', '));
+    console.log('[SYNC]   - Root contents (' + rootContents.length + '):', rootContents.join(', '));
+    
+    // Check for any folder that might contain our files
+    for (const item of rootContents) {
+      const itemPath = path.join(cwd, item);
+      try {
+        const stat = fs.statSync(itemPath);
+        if (stat.isDirectory() && !['node_modules', '.next', '.git', '.v8-cache'].includes(item)) {
+          const subContents = fs.readdirSync(itemPath).slice(0, 5);
+          console.log(`[SYNC]     📁 ${item}/: ${subContents.join(', ')}${subContents.length >= 5 ? '...' : ''}`);
+        }
+      } catch (e) {
+        // Skip if can't read
+      }
+    }
   }
   
   // Try alternative paths
@@ -198,50 +212,68 @@ async function scanViaCDN(baseUrl) {
   console.log('[SYNC] 🌐 CDN-based scan starting...');
   console.log('[SYNC]   - Base URL:', baseUrl);
   
-  try {
-    // Fetch manifest.json from CDN
-    const manifestUrl = `${baseUrl}/manifest.json`;
-    console.log('[SYNC]   - Fetching manifest from:', manifestUrl);
-    
-    const response = await fetch(manifestUrl, {
-      headers: { 'Cache-Control': 'no-cache' }
-    });
-    
-    if (!response.ok) {
-      console.error('[SYNC] ❌ Failed to fetch manifest:', response.status, response.statusText);
-      return fileMap;
-    }
-    
-    const manifest = await response.json();
-    console.log('[SYNC] ✓ Manifest loaded:', {
-      generated: manifest.generated,
-      fileCount: manifest.files?.length || 0
-    });
-    
-    // Convert manifest to fileMap format
-    for (const file of (manifest.files || [])) {
-      fileMap.set(file.path, {
-        hash: file.hash,
-        table: file.table,
-        fileType: file.fileType,
-        size: file.size,
-        // Content will be fetched on-demand during pull
-        content: null
+  // Try multiple manifest URLs
+  const manifestUrls = [
+    `${baseUrl}/manifest.json`,
+    `${baseUrl}/public/manifest.json`,
+    'https://static.kuhandranchatbot.info/manifest.json',
+  ];
+  
+  let manifest = null;
+  let successUrl = null;
+  
+  for (const manifestUrl of manifestUrls) {
+    console.log('[SYNC]   - Trying manifest URL:', manifestUrl);
+    try {
+      const response = await fetch(manifestUrl, {
+        headers: { 'Cache-Control': 'no-cache' }
       });
+      
+      console.log('[SYNC]     Response:', response.status, response.statusText);
+      
+      if (response.ok) {
+        manifest = await response.json();
+        successUrl = manifestUrl;
+        console.log('[SYNC] ✓ Manifest loaded from:', manifestUrl);
+        break;
+      }
+    } catch (err) {
+      console.log('[SYNC]     Error:', err.message);
     }
-    
-    // Log summary by table
-    const tableCounts = {};
-    for (const [, data] of fileMap) {
-      tableCounts[data.table] = (tableCounts[data.table] || 0) + 1;
-    }
-    console.log('[SYNC] 📊 CDN Scan Summary:');
-    console.log('[SYNC]   - Total files found:', fileMap.size);
-    console.log('[SYNC]   - Files by table:', JSON.stringify(tableCounts, null, 2));
-    
-  } catch (error) {
-    console.error('[SYNC] ❌ CDN scan failed:', error.message);
   }
+  
+  if (!manifest) {
+    console.error('[SYNC] ❌ Failed to fetch manifest from all URLs');
+    console.log('[SYNC] 💡 Make sure manifest.json is deployed to /public folder');
+    return fileMap;
+  }
+  
+  console.log('[SYNC] ✓ Manifest loaded:', {
+    url: successUrl,
+    generated: manifest.generated,
+    fileCount: manifest.files?.length || 0
+  });
+  
+  // Convert manifest to fileMap format
+  for (const file of (manifest.files || [])) {
+    fileMap.set(file.path, {
+      hash: file.hash,
+      table: file.table,
+      fileType: file.fileType,
+      size: file.size,
+      // Content will be fetched on-demand during pull
+      content: null
+    });
+  }
+  
+  // Log summary by table
+  const tableCounts = {};
+  for (const [, data] of fileMap) {
+    tableCounts[data.table] = (tableCounts[data.table] || 0) + 1;
+  }
+  console.log('[SYNC] 📊 CDN Scan Summary:');
+  console.log('[SYNC]   - Total files found:', fileMap.size);
+  console.log('[SYNC]   - Files by table:', JSON.stringify(tableCounts, null, 2));
   
   return fileMap;
 }
