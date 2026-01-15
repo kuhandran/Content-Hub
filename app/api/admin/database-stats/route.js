@@ -58,7 +58,7 @@ export async function GET(request) {
     // Get record counts for each table
     const tables = [];
     let totalRecords = 0;
-    let totalSize = 0;
+    let totalSize = BigInt(0);
 
     for (const tableName of tableNames) {
       try {
@@ -66,9 +66,9 @@ export async function GET(request) {
         const countResult = await sql`SELECT COUNT(*)::int as count FROM ${ sql(tableName) }`;
         const recordCount = countResult[0]?.count || 0;
 
-        // Get table size
+        // Get table size (returns bigint)
         const sizeResult = await sql`SELECT pg_total_relation_size(${ tableName })::bigint as size`;
-        const size = sizeResult[0]?.size || 0;
+        const size = BigInt(sizeResult[0]?.size || 0);
 
         // Get created/updated timestamps
         const statsResult = await sql`
@@ -102,7 +102,7 @@ export async function GET(request) {
           name: tableName,
           icon: iconMap[tableName] || '📊',
           recordCount,
-          size,
+          size: Number(size),
           createdAt,
           updatedAt,
           columnCount: tableInfo?.column_count || 0,
@@ -122,16 +122,21 @@ export async function GET(request) {
     // Sort by record count descending
     tables.sort((a, b) => b.recordCount - a.recordCount);
 
+    // Convert BigInt to Number for JSON serialization
+    const totalSizeNum = Number(totalSize);
+    const totalSizeMB = (totalSizeNum / 1024 / 1024).toFixed(2);
+
     const summary = {
       totalTables: tables.length,
       totalRecords,
-      totalSize,
+      totalSize: totalSizeNum,
+      totalSizeMB: parseFloat(totalSizeMB),
       lastUpdated: new Date().toLocaleString(),
       health: totalRecords > 0 ? 'healthy' : 'empty',
     };
 
     const duration = Date.now() - startTime;
-    console.log(`[${requestId}] Success - ${summary.totalTables} tables, ${summary.totalRecords} records, ${(summary.totalSize / 1024 / 1024).toFixed(2)} MB (${duration}ms)`);
+    console.log(`[${requestId}] Success - ${summary.totalTables} tables, ${summary.totalRecords} records, ${totalSizeMB} MB (${duration}ms)`);
 
     return Response.json({
       success: true,

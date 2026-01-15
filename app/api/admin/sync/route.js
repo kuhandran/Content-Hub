@@ -213,15 +213,34 @@ async function scanForChangesPg(sqlClient) {
   let deletedFiles = 0;
 
   try {
-    // Ensure sync_manifest table exists
+    // Ensure sync_manifest table exists with correct schema
     try {
+      // Check if table exists and has correct columns
+      const tableCheck = await sqlClient`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'sync_manifest' 
+        AND table_schema = 'public'
+      `;
+      
+      const columns = tableCheck.map(r => r.column_name);
+      const hasFilePathColumn = columns.includes('file_path');
+      
+      if (columns.length > 0 && !hasFilePathColumn) {
+        // Table exists but has wrong schema - drop and recreate
+        console.log('[SYNC] ⚠️ sync_manifest has wrong schema, recreating...');
+        await sqlClient`DROP TABLE IF EXISTS sync_manifest`;
+      }
+      
+      // Create table with correct schema
       await sqlClient`CREATE TABLE IF NOT EXISTS sync_manifest (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        file_path VARCHAR(512) UNIQUE,
+        file_path VARCHAR(512) UNIQUE NOT NULL,
         file_hash VARCHAR(64),
         table_name VARCHAR(50),
         last_synced TIMESTAMP DEFAULT now()
       )`;
+      console.log('[SYNC] ✓ sync_manifest table ready');
     } catch (err) {
       console.warn('[SYNC] Table creation warning:', err.message);
     }
