@@ -3,7 +3,12 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-  "installCommand": "npm ci --include=dev"
+  "installCommand": "npm ci --include=dev",
+  "functions": {
+    "app/api/**/*.js": {
+      "includeFiles": "public/**"
+    }
+  }
 }
 
 

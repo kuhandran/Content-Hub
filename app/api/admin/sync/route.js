@@ -82,15 +82,14 @@ function scanPublicFolder() {
   const fileMap = new Map();
   
   // Debug logging for path resolution
+  const cwd = process.cwd();
   console.log('[SYNC] 📂 Path Resolution:');
-  console.log('[SYNC]   - process.cwd():', process.cwd());
-  console.log('[SYNC]   - __dirname:', __dirname);
+  console.log('[SYNC]   - process.cwd():', cwd);
   console.log('[SYNC]   - PUBLIC_DIR env:', process.env.PUBLIC_DIR || '(not set)');
   console.log('[SYNC]   - Resolved publicPath:', publicPath);
   console.log('[SYNC]   - Path exists:', fs.existsSync(publicPath));
   
   // List root directory contents
-  const cwd = process.cwd();
   console.log('[SYNC] 📁 Listing process.cwd():', cwd);
   if (fs.existsSync(cwd)) {
     const rootContents = fs.readdirSync(cwd);
@@ -110,22 +109,33 @@ function scanPublicFolder() {
   ];
   
   console.log('[SYNC] 🔍 Checking alternative paths:');
+  let foundPath = null;
   for (const altPath of altPaths) {
     const exists = fs.existsSync(altPath);
     console.log(`[SYNC]   - ${altPath}: ${exists ? '✓ EXISTS' : '✗ not found'}`);
-    if (exists) {
+    if (exists && !foundPath) {
       try {
         const contents = fs.readdirSync(altPath).slice(0, 10);
         console.log(`[SYNC]     Contents: ${contents.join(', ')}${contents.length >= 10 ? '...' : ''}`);
+        // Check if this looks like public folder (has collections, config, etc.)
+        if (contents.includes('collections') || contents.includes('config') || contents.includes('data')) {
+          foundPath = altPath;
+          console.log(`[SYNC]   ✓ Found public folder at: ${altPath}`);
+        }
       } catch (e) {
         console.log(`[SYNC]     Could not list: ${e.message}`);
       }
     }
   }
   
-  if (fs.existsSync(publicPath)) {
-    const contents = fs.readdirSync(publicPath);
-    console.log('[SYNC]   - Root contents:', contents.join(', '));
+  // Use found path or fallback to default
+  const scanPath = foundPath || publicPath;
+  console.log('[SYNC] 📂 Using scan path:', scanPath);
+  
+  if (!fs.existsSync(scanPath)) {
+    console.warn('[SYNC] ⚠️ No valid public folder found. On Vercel, /public is not available to serverless functions.');
+    console.warn('[SYNC] ⚠️ Consider using Vercel Blob Storage or including files via vercel.json');
+    return fileMap;
   }
 
   function walkDir(dirPath) {
