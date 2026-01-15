@@ -84,9 +84,44 @@ function scanPublicFolder() {
   // Debug logging for path resolution
   console.log('[SYNC] 📂 Path Resolution:');
   console.log('[SYNC]   - process.cwd():', process.cwd());
+  console.log('[SYNC]   - __dirname:', __dirname);
   console.log('[SYNC]   - PUBLIC_DIR env:', process.env.PUBLIC_DIR || '(not set)');
   console.log('[SYNC]   - Resolved publicPath:', publicPath);
   console.log('[SYNC]   - Path exists:', fs.existsSync(publicPath));
+  
+  // List root directory contents
+  const cwd = process.cwd();
+  console.log('[SYNC] 📁 Listing process.cwd():', cwd);
+  if (fs.existsSync(cwd)) {
+    const rootContents = fs.readdirSync(cwd);
+    console.log('[SYNC]   - Root contents:', rootContents.join(', '));
+  }
+  
+  // Try alternative paths
+  const altPaths = [
+    path.join(cwd, 'public'),
+    path.join(cwd, '.next', 'static'),
+    path.join(cwd, '.next', 'server'),
+    '/var/task/public',
+    '/var/task/.next/static',
+    '/vercel/path0/public',
+    path.resolve('public'),
+    path.resolve('.', 'public'),
+  ];
+  
+  console.log('[SYNC] 🔍 Checking alternative paths:');
+  for (const altPath of altPaths) {
+    const exists = fs.existsSync(altPath);
+    console.log(`[SYNC]   - ${altPath}: ${exists ? '✓ EXISTS' : '✗ not found'}`);
+    if (exists) {
+      try {
+        const contents = fs.readdirSync(altPath).slice(0, 10);
+        console.log(`[SYNC]     Contents: ${contents.join(', ')}${contents.length >= 10 ? '...' : ''}`);
+      } catch (e) {
+        console.log(`[SYNC]     Could not list: ${e.message}`);
+      }
+    }
+  }
   
   if (fs.existsSync(publicPath)) {
     const contents = fs.readdirSync(publicPath);
