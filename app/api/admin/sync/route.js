@@ -476,10 +476,21 @@ async function pullChangesToDatabase(supabase, changes) {
 // Pull mode using Postgres client
 async function pullChangesToDatabasePg(sqlClient, changes) {
   let appliedCount = 0;
-  const publicPath = getPublicDir();
+  const publicPath = getPublicDir() || path.join(process.cwd(), 'public');
+  
+  console.log('[SYNC] Pull using publicPath:', publicPath);
+  
+  if (!publicPath) {
+    throw new Error('publicPath is null - cannot pull changes');
+  }
 
   for (const change of changes) {
     try {
+      if (!change.relativePath) {
+        console.warn('[SYNC] Skipping change with no relativePath:', change);
+        continue;
+      }
+      
       const fullPath = path.join(publicPath, change.relativePath);
       const now = new Date().toISOString();
       const filename = path.basename(fullPath, path.extname(fullPath));
