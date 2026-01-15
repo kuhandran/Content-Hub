@@ -129,7 +129,7 @@ function scanPublicFolder() {
   }
   
   // Use found path or fallback to default
-  const scanPath = foundPath || publicPath;
+  const scanPath = foundPath || publicPath || path.join(process.cwd(), 'public');
   console.log('[SYNC] 📂 Using scan path:', scanPath);
   
   if (!fs.existsSync(scanPath)) {
@@ -139,7 +139,7 @@ function scanPublicFolder() {
   }
 
   function walkDir(dirPath) {
-    if (!fs.existsSync(dirPath)) {
+    if (!dirPath || !fs.existsSync(dirPath)) {
       console.warn('[SYNC] ⚠️ Directory does not exist:', dirPath);
       return;
     }
@@ -148,7 +148,7 @@ function scanPublicFolder() {
 
     for (const entry of entries) {
       const fullPath = path.join(dirPath, entry.name);
-      const relativePath = path.relative(publicPath, fullPath);
+      const relativePath = path.relative(scanPath, fullPath);
 
       if (entry.isDirectory()) {
         if (!IGNORED_DIRS.includes(entry.name)) {
@@ -173,7 +173,7 @@ function scanPublicFolder() {
     }
   }
 
-  walkDir(publicPath);
+  walkDir(scanPath);
   
   // Log scan summary by table
   const tableCounts = {};
