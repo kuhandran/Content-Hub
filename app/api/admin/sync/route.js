@@ -80,9 +80,24 @@ function calculateHash(content) {
 function scanPublicFolder() {
   const publicPath = getPublicDir();
   const fileMap = new Map();
+  
+  // Debug logging for path resolution
+  console.log('[SYNC] 📂 Path Resolution:');
+  console.log('[SYNC]   - process.cwd():', process.cwd());
+  console.log('[SYNC]   - PUBLIC_DIR env:', process.env.PUBLIC_DIR || '(not set)');
+  console.log('[SYNC]   - Resolved publicPath:', publicPath);
+  console.log('[SYNC]   - Path exists:', fs.existsSync(publicPath));
+  
+  if (fs.existsSync(publicPath)) {
+    const contents = fs.readdirSync(publicPath);
+    console.log('[SYNC]   - Root contents:', contents.join(', '));
+  }
 
   function walkDir(dirPath) {
-    if (!fs.existsSync(dirPath)) return;
+    if (!fs.existsSync(dirPath)) {
+      console.warn('[SYNC] ⚠️ Directory does not exist:', dirPath);
+      return;
+    }
 
     const entries = fs.readdirSync(dirPath, { withFileTypes: true });
 
@@ -105,7 +120,8 @@ function scanPublicFolder() {
               fileMap.set(relativePath, { hash, content, table, fileType });
             }
           } catch (error) {
-            // Skip files that can't be read
+            // Skip files that can't be read (e.g., binary files)
+            console.log('[SYNC] ⚠️ Could not read file:', relativePath, '-', error.message);
           }
         }
       }
@@ -113,6 +129,16 @@ function scanPublicFolder() {
   }
 
   walkDir(publicPath);
+  
+  // Log scan summary by table
+  const tableCounts = {};
+  for (const [, data] of fileMap) {
+    tableCounts[data.table] = (tableCounts[data.table] || 0) + 1;
+  }
+  console.log('[SYNC] 📊 Scan Summary:');
+  console.log('[SYNC]   - Total files found:', fileMap.size);
+  console.log('[SYNC]   - Files by table:', JSON.stringify(tableCounts, null, 2));
+  
   return fileMap;
 }
 
