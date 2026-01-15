@@ -1,53 +1,68 @@
 # Content Hub
 
-A Next.js-based content delivery and sync system with a Postgres-first backend and on-demand sync utilities.
+A Next.js-based content delivery and sync system with a PostgreSQL-first backend and clean MVC architecture.
 
 ## Quick Start
 - Install: `npm install`
 - Dev: `npm run dev`
-- Build & initialize DB: `npm run build`
-- Drop DB safely: `npm run db:drop` (destructive; see docs)
-- Reset schema: `npm run db:reset`
+- Build: `npm run build`
+- Reset DB: `npm run db:reset`
+- Drop DB: `npm run db:drop`
+
+## Project Structure
+
+```
+├── app/
+│   ├── api/
+│   │   ├── controllers/        # Request orchestration
+│   │   ├── helpers/           # Reusable utilities (auth, response)
+│   │   ├── services/          # Business logic
+│   │   ├── utils/             # Infrastructure (database, cache)
+│   │   ├── admin/             # Admin APIs
+│   │   ├── auth/              # Authentication APIs
+│   │   └── dashboard/         # Dashboard APIs
+│   ├── components/            # React components
+│   ├── login/                 # Login page
+│   └── admin/                 # Admin dashboard
+├── lib/                       # Core utilities
+├── public/                    # Static files
+├── utils/                     # Client utilities
+└── docs/                      # Documentation
+```
+
+## Architecture
+
+### API Pattern: MVC with Services
+
+Each API follows a clean separation of concerns:
+
+- **Routes** (`app/api/*/route.js`): Clean entry points, minimal logic
+- **Controllers** (`app/api/controllers/`): Orchestration and coordination
+- **Helpers** (`app/api/helpers/`): Reusable utilities (auth, responses)
+- **Services** (`app/api/services/`): Pure business logic
+- **Utils** (`app/api/utils/`): Infrastructure (database, cache)
+
+See [API_ARCHITECTURE.md](API_ARCHITECTURE.md) for detailed refactoring guide.
+
+## Core Features
+
+- ✅ JWT Authentication with MFA support
+- ✅ File synchronization from `/public` to database
+- ✅ Admin dashboard with dynamic tabs
+- ✅ Redis caching support
+- ✅ PostgreSQL + Supabase fallback
+- ✅ Debug panel for logout tracking
+- ✅ Comprehensive error logging
 
 ## Documentation
-See the complete documentation index in `docs/README.md`.
 
-- Architecture: `docs/architecture.md`
-- Database: `docs/db-structure.md`
-- Sync Strategy: `docs/sync-strategy.md`
-- API Reference: `docs/api.md`
-- Quick Reference: `docs/quick-reference.md`
-- Deployment: `docs/deployment-guide.md`, `docs/deploy-to-vercel.md`
+- [API Architecture](API_ARCHITECTURE.md) - Complete refactoring guide
+- [Quick Start](docs/QUICK_START.md)
+- [Database Schema](docs/DATABASE_SCHEMA.sql)
+- [Authentication Setup](docs/AUTH_SETUP.md)
+- [API Reference](docs/api.md)
+- [Deployment](docs/DEPLOYMENT_TESTING.md)
 
-## Notes
-- Environment variables are required (local `.env`, set in Vercel).
-- All database access is server-only; do not import DB client in browser code.
-
-## Environment Setup
-Create a local `.env` (do not commit) with placeholders like below:
-
-```dotenv
-# Database (preferred)
-DATABASE_URL="postgresql://USER:PASS@HOST:PORT/DBNAME?sslmode=require"
-
-# Supabase (optional fallback / public anon)
-SUPABASE_URL="https://YOUR_PROJECT.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="<service-role-key>"
-NEXT_PUBLIC_SUPABASE_URL="https://YOUR_PROJECT.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="<anon-key>"
-
-# Cache (optional)
-REDIS_URL="redis://default:PASSWORD@HOST:PORT"
-
-# Auth (optional)
-JWT_SECRET="<random-strong-secret>"
-ADMIN_TOKEN="<set-to-enable-admin-API-auth>"
-MFA_ENCRYPTION_KEY="<32-char key for encrypting MFA secrets>"
-## MFA (Free, TOTP-based)
-- What: Use TOTP (Time-based One-Time Password) via authenticator apps (Google Authenticator, Authy). No paid service required.
-- How it works:
-	- User registers with username/password (passwords hashed with Argon2).
-	- On first login, backend generates a TOTP secret and QR (otplib + qrcode).
 	- User scans the QR in their authenticator and submits the 6-digit code.
 	- Backend verifies the code and stores the secret encrypted (AES-256-GCM) using `MFA_ENCRYPTION_KEY`.
 	- Subsequent logins require the 6-digit code; upon success, a JWT session cookie is issued.

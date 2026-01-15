@@ -31,9 +31,43 @@ const path = require('path');
 const crypto = require('crypto');
 const { NextResponse } = require('next/server');
 const { isAuthorized } = require('../../../../lib/auth');
+const jwtManager = require('../../../../lib/jwt-manager');
 const { getSupabase } = require('../../../../lib/supabase');
 const { mapFileToTable, getFileExtension, ALLOWED_EXTENSIONS, IGNORED_DIRS, getPublicDir } = require('../../../../lib/sync-config');
 const sql = require('../../../../lib/postgres');
+
+/**
+ * Verify JWT token from Authorization header
+ */
+function verifyJWT(request) {
+  try {
+    const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
+    if (!authHeader) {
+      console.warn('[SYNC] No Authorization header found');
+      return { ok: false, error: 'No authorization header' };
+    }
+
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
+      console.warn('[SYNC] Invalid Authorization header format');
+      return { ok: false, error: 'Invalid authorization header' };
+    }
+
+    const token = parts[1];
+    const decoded = jwtManager.verifyToken(token);
+    
+    if (!decoded) {
+      console.warn('[SYNC] JWT verification failed - token invalid or expired');
+      return { ok: false, error: 'Invalid or expired token' };
+    }
+
+    console.log('[SYNC] JWT verified successfully for user:', decoded.uid);
+    return { ok: true, user: decoded };
+  } catch (error) {
+    console.error('[SYNC] JWT verification error:', error.message);
+    return { ok: false, error: error.message };
+  }
+}
 
 // Utility functions
 function calculateHash(content) {
@@ -196,8 +230,12 @@ async function scanForChangesPg(sqlClient) {
     let manifestRows = [];
     try {
       manifestRows = await sqlClient`SELECT file_path, file_hash, table_name FROM sync_manifest`;
+      console.log('[SYNC] ✓ Manifest loaded from database', { count: manifestRows?.length || 0 });
     } catch (err) {
-      console.warn('[SYNC] Manifest query failed, continuing with empty manifest:', err.message);
+      console.warn('[SYNC] ❌ Manifest query failed, continuing with empty manifest:', {
+        message: err.message,
+        code: err.code
+      });
       manifestRows = [];
     }
 
@@ -221,11 +259,24 @@ async function scanForChangesPg(sqlClient) {
       }
     }
 
+    console.log('[SYNC] ✓ Scan analysis complete', {
+      filesScanned: currentFiles.size,
+      newFiles,
+      modifiedFiles,
+      deletedFiles,
+      totalChanges: changes.length
+    });
+
     return {
       changes,
       stats: { files_scanned: currentFiles.size, new_files: newFiles, modified_files: modifiedFiles, deleted_files: deletedFiles },
     };
   } catch (error) {
+    console.error('[SYNC] ❌ scanForChangesPg failed:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
     throw new Error(`Scan failed (pg): ${error.message}`);
   }
 }
@@ -442,10 +493,12 @@ async function pullChangesToDatabasePg(sqlClient, changes) {
 
 // Main POST handler
 export async function POST(request) {
-  const auth = isAuthorized(request);
-  if (!auth.ok) {
-    return NextResponse.json({ status: 'error', error: auth.message || 'Unauthorized' }, { status: auth.status || 401 });
+  const jwtAuth = verifyJWT(request);
+  if (!jwtAuth.ok) {
+    console.error('[SYNC] Authentication failed:', jwtAuth.error);
+    return NextResponse.json({ status: 'error', error: jwtAuth.error }, { status: 401 });
   }
+
   try {
     const body = await request.json();
     const mode = body.mode || 'scan';
@@ -454,8 +507,9 @@ export async function POST(request) {
     const region = process.env.VERCEL_REGION || 'unknown-region';
     const env = process.env.VERCEL_ENV || (process.env.NODE_ENV || 'development');
 
-    console.log('[SYNC] Request received', {
+    console.log('[SYNC] ✓ Request received', {
       mode,
+      userId: jwtAuth.user?.uid,
       vercelId,
       forwardedFor,
       region,
@@ -464,12 +518,12 @@ export async function POST(request) {
     });
 
     const useSql = !!sql;
-    console.log('[SYNC] Client selection', { useSql });
+    console.log('[SYNC] Client selection', { useSql, sqlAvailable: !!sql });
     
     // Initialize database tables if using Postgres
     if (useSql) {
       try {
-        console.log('[SYNC] Initializing database tables...');
+        console.log('[SYNC] 🔧 Initializing database tables...');
         const tables = [
           `CREATE TABLE IF NOT EXISTS collections (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), lang VARCHAR(10), type VARCHAR(20), filename VARCHAR(255), file_content JSONB, file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now(), UNIQUE(lang, type, filename))`,
           `CREATE TABLE IF NOT EXISTS static_files (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), filename VARCHAR(255) UNIQUE, file_type VARCHAR(50), file_content TEXT, file_hash VARCHAR(64), synced_at TIMESTAMP DEFAULT now(), created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now())`,
@@ -481,59 +535,105 @@ export async function POST(request) {
           `CREATE TABLE IF NOT EXISTS sync_manifest (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), file_path VARCHAR(512) UNIQUE, file_hash VARCHAR(64), table_name VARCHAR(50), last_synced TIMESTAMP DEFAULT now())`,
           `CREATE INDEX IF NOT EXISTS idx_sync_manifest_path ON sync_manifest(file_path)`
         ];
+        let tableCount = 0;
         for (const stmt of tables) {
           try {
             await sql.unsafe(stmt);
+            tableCount++;
           } catch (err) {
             console.warn('[SYNC] Table creation warning:', err.message);
           }
         }
-        console.log('[SYNC] Database tables initialized');
+        console.log(`[SYNC] ✓ Database tables initialized (${tableCount}/${tables.length})`);
       } catch (err) {
-        console.error('[SYNC] Database initialization failed:', err.message);
+        console.error('[SYNC] ❌ Database initialization failed:', {
+          message: err.message,
+          code: err.code,
+          severity: err.severity,
+          detail: err.detail
+        });
+        return NextResponse.json({
+          status: 'error',
+          error: 'Database initialization failed',
+          details: err.message,
+          timestamp: new Date().toISOString(),
+        }, { status: 500 });
       }
     }
     
     let supabase;
     if (!useSql) {
-      supabase = getSupabase();
-      console.log('[SYNC] Supabase client initialized', {
-        supabaseUrlConfigured: !!(process.env.SUPABASE_URL),
-        serviceKeyConfigured: !!(process.env.SUPABASE_SERVICE_ROLE_KEY),
-      });
+      try {
+        supabase = getSupabase();
+        console.log('[SYNC] ✓ Supabase client initialized', {
+          supabaseUrlConfigured: !!(process.env.SUPABASE_URL),
+          serviceKeyConfigured: !!(process.env.SUPABASE_SERVICE_ROLE_KEY),
+        });
+      } catch (err) {
+        console.error('[SYNC] ❌ Supabase initialization failed:', err.message);
+        return NextResponse.json({
+          status: 'error',
+          error: 'Supabase initialization failed',
+          details: err.message,
+          timestamp: new Date().toISOString(),
+        }, { status: 500 });
+      }
     }
 
     const timestamp = new Date().toISOString();
 
     if (mode === 'scan') {
-      // Scan for changes without applying
-      console.log('[SYNC] Scan starting');
-      const { changes, stats } = useSql ? await scanForChangesPg(sql) : await scanForChanges(supabase);
-      console.log('[SYNC] Scan completed', { stats, changesCount: changes.length });
+      try {
+        console.log('[SYNC] 🔍 Scan starting...');
+        const { changes, stats } = useSql ? await scanForChangesPg(sql) : await scanForChanges(supabase);
+        console.log('[SYNC] ✓ Scan completed', { stats, changesCount: changes.length });
 
-      return NextResponse.json({
-        status: 'success',
-        mode: 'scan',
-        ...stats,
-        changes: changes.slice(0, 100), // Return first 100 changes
-        timestamp,
-      });
+        return NextResponse.json({
+          status: 'success',
+          mode: 'scan',
+          ...stats,
+          changes: changes.slice(0, 100),
+          timestamp,
+        });
+      } catch (scanErr) {
+        console.error('[SYNC] ❌ Scan failed:', {
+          message: scanErr.message,
+          stack: scanErr.stack
+        });
+        return NextResponse.json({
+          status: 'error',
+          mode: 'scan',
+          error: `Scan failed: ${scanErr.message}`,
+          timestamp,
+        }, { status: 500 });
+      }
     } else if (mode === 'pull') {
-      // Pull changes from /public to database
-      console.log('[SYNC] Pull starting');
-      const { changes, stats } = useSql ? await scanForChangesPg(sql) : await scanForChanges(supabase);
-      const result = useSql ? await pullChangesToDatabasePg(sql, changes) : await pullChangesToDatabase(supabase, changes);
-      console.log('[SYNC] Pull completed', { stats, applied: result.applied, changesCount: changes.length });
+      try {
+        console.log('[SYNC] 📥 Pull starting...');
+        const { changes, stats } = useSql ? await scanForChangesPg(sql) : await scanForChanges(supabase);
+        const result = useSql ? await pullChangesToDatabasePg(sql, changes) : await pullChangesToDatabase(supabase, changes);
+        console.log('[SYNC] ✓ Pull completed', { stats, applied: result.applied, changesCount: changes.length });
 
-      return NextResponse.json({
-        status: 'success',
-        mode: 'pull',
-        ...stats,
-        changes: changes.slice(0, 50),
-        timestamp,
-      });
+        return NextResponse.json({
+          status: 'success',
+          mode: 'pull',
+          ...stats,
+          changes: changes.slice(0, 50),
+          timestamp,
+        });
+      } catch (pullErr) {
+        console.error('[SYNC] ❌ Pull failed:', {
+          message: pullErr.message,
+          stack: pullErr.stack
+        });
+        return NextResponse.json({
+          status: 'error',
+          mode: 'pull',
+          error: `Pull failed: ${pullErr.message}`,
+          timestamp,
+        }, { status: 500 });
+      }
     } else if (mode === 'push') {
-      // Push changes from database to /public (not yet implemented)
       console.warn('[SYNC] Push requested but not implemented');
       return NextResponse.json({
         status: 'error',
@@ -542,7 +642,7 @@ export async function POST(request) {
         timestamp,
       }, { status: 501 });
     } else {
-      console.warn('[SYNC] Unknown mode', { mode });
+      console.warn('[SYNC] Unknown mode requested:', { mode });
       return NextResponse.json({
         status: 'error',
         mode,
@@ -551,11 +651,17 @@ export async function POST(request) {
       }, { status: 400 });
     }
   } catch (error) {
-    console.error('[SYNC] Error handler', { message: error.message, stack: error.stack });
+    console.error('[SYNC] ❌ Unhandled error in POST:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack,
+      type: error.constructor.name
+    });
     return NextResponse.json({
       status: 'error',
       mode: 'unknown',
       error: error.message || 'Internal server error',
+      errorType: error.constructor.name,
       timestamp: new Date().toISOString(),
     }, { status: 500 });
   }
@@ -563,15 +669,19 @@ export async function POST(request) {
 
 // GET endpoint to check sync status
 export async function GET(request) {
-  const auth = isAuthorized(request);
-  if (!auth.ok) {
-    return NextResponse.json({ status: 'error', error: auth.message || 'Unauthorized' }, { status: auth.status || 401 });
+  const jwtAuth = verifyJWT(request);
+  if (!jwtAuth.ok) {
+    console.error('[SYNC] GET Authentication failed:', jwtAuth.error);
+    return NextResponse.json({ status: 'error', error: jwtAuth.error }, { status: 401 });
   }
-  console.log('[SYNC] GET status', {
+  
+  console.log('[SYNC] GET status request', {
+    userId: jwtAuth.user?.uid,
     vercelId: request.headers?.get?.('x-vercel-id'),
     region: process.env.VERCEL_REGION || 'unknown-region',
     time: new Date().toISOString(),
   });
+  
   return NextResponse.json({
     status: 'success',
     message: 'Sync endpoint is active',
