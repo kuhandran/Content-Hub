@@ -29,8 +29,7 @@
   "author": "kuhandran",
   "license": "MIT",
   "engines": {
-    "node": ">=20.0.0",
-    "npm": ">=9.0.0"
+    "node": "20.x"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.90.1",
