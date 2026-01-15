@@ -107,11 +107,14 @@ export async function authenticatedFetch(url, options = {}) {
 
   // If unauthorized, clear auth and redirect to login
   if (response.status === 401) {
-    console.warn('[AUTH] Unauthorized - clearing auth and redirecting to login');
+    console.warn('[AUTH] Unauthorized (401) - clearing auth and redirecting to login');
     clearAuth();
     if (typeof window !== 'undefined') {
-      window.location.href = '/login';
+      // Use replace to prevent going back to protected page
+      window.location.replace('/login');
     }
+    // Throw error to prevent further processing
+    throw new Error('Unauthorized - redirecting to login');
   }
 
   return response;

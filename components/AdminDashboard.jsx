@@ -150,7 +150,12 @@ export default function AdminDashboard() {
         console.error('[📱 AdminDashboard] ❌ Failed to load tabs:', data.error);
       }
     } catch (error) {
-      console.error('[📱 AdminDashboard] ❌ Error loading sidebar config:', error);
+      // If 401, redirect to login is handled by authenticatedFetch
+      if (error.message.includes('Unauthorized')) {
+        console.log('[📱 AdminDashboard] 🔴 Session expired - redirecting to login');
+      } else {
+        console.error('[📱 AdminDashboard] ❌ Error loading sidebar config:', error);
+      }
     } finally {
       setTabsLoading(false);
     }
@@ -183,7 +188,10 @@ export default function AdminDashboard() {
         setDataCounts(result.database || {});
       }
     } catch (error) {
-      console.error('Error loading data:', error);
+      // If 401, redirect to login is handled by authenticatedFetch
+      if (!error.message.includes('Unauthorized')) {
+        console.error('Error loading data:', error);
+      }
     }
     setLoadingData(false);
   }
