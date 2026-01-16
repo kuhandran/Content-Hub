@@ -86,7 +86,8 @@ function generateManifest() {
                 hash,
                 table,
                 fileType,
-                size: content.length
+                size: content.length,
+                content: content  // Include file content for CDN-less sync
               });
             }
           } catch (error) {

@@ -662,9 +662,13 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
         }
         appliedCount++;
       } else if (change.status === 'new' || change.status === 'modified') {
-        // Fetch content from filesystem or CDN
+        // Get content from embedded manifest data, filesystem, or CDN (in that order)
         let content;
-        if (useFilesystem) {
+        if (change.content) {
+          // Content is embedded in the manifest (preferred for Vercel)
+          content = change.content;
+          console.log('[SYNC] Using embedded content for:', change.relativePath);
+        } else if (useFilesystem) {
           content = fs.readFileSync(fullPath, 'utf-8');
         } else {
           content = await fetchFileFromCDN(baseUrl, change.relativePath);
