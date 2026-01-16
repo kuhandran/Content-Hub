@@ -212,10 +212,12 @@ async function scanViaCDN(baseUrl) {
   console.log('[SYNC] 🌐 CDN-based scan starting...');
   console.log('[SYNC]   - Base URL:', baseUrl);
   
-  // Try multiple manifest URLs
+  // Try multiple manifest URLs - including API route as fallback
   const manifestUrls = [
+    `${baseUrl}/api/manifest`,  // API route - most reliable
     `${baseUrl}/manifest.json`,
     `${baseUrl}/public/manifest.json`,
+    'https://static.kuhandranchatbot.info/api/manifest',
     'https://static.kuhandranchatbot.info/manifest.json',
   ];
   
@@ -232,10 +234,16 @@ async function scanViaCDN(baseUrl) {
       console.log('[SYNC]     Response:', response.status, response.statusText);
       
       if (response.ok) {
-        manifest = await response.json();
-        successUrl = manifestUrl;
-        console.log('[SYNC] ✓ Manifest loaded from:', manifestUrl);
-        break;
+        const text = await response.text();
+        // Check if we got JSON (not HTML 404 page)
+        if (text.startsWith('{') || text.startsWith('[')) {
+          manifest = JSON.parse(text);
+          successUrl = manifestUrl;
+          console.log('[SYNC] ✓ Manifest loaded from:', manifestUrl);
+          break;
+        } else {
+          console.log('[SYNC]     Got non-JSON response (likely 404 page)');
+        }
       }
     } catch (err) {
       console.log('[SYNC]     Error:', err.message);
@@ -244,7 +252,7 @@ async function scanViaCDN(baseUrl) {
   
   if (!manifest) {
     console.error('[SYNC] ❌ Failed to fetch manifest from all URLs');
-    console.log('[SYNC] 💡 Make sure manifest.json is deployed to /public folder');
+    console.log('[SYNC] 💡 Make sure manifest.json is deployed or /api/manifest is available');
     return fileMap;
   }
   
