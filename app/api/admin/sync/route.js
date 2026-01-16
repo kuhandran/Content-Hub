@@ -703,20 +703,29 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
         }
         appliedCount++;
       } else if (change.status === 'new' || change.status === 'modified') {
+        // Tables that don't need file content (only store path and hash)
+        const TABLES_WITHOUT_CONTENT = ['images', 'resumes', 'static_files'];
+        const needsContent = !TABLES_WITHOUT_CONTENT.includes(change.table);
+        
         // Get content from embedded manifest data, filesystem, or CDN (in that order)
-        let content;
-        if (change.content) {
-          // Content is embedded in the manifest (preferred for Vercel)
-          content = change.content;
-          console.log('[SYNC] Using embedded content for:', change.relativePath);
-        } else if (useFilesystem) {
-          content = fs.readFileSync(fullPath, 'utf-8');
-        } else {
-          content = await fetchFileFromCDN(baseUrl, change.relativePath);
-          if (!content) {
-            console.warn('[SYNC] ⚠️ Could not fetch file, skipping:', change.relativePath);
-            continue;
+        // Skip content fetching for binary/metadata-only tables
+        let content = null;
+        if (needsContent) {
+          if (change.content) {
+            // Content is embedded in the manifest (preferred for Vercel)
+            content = change.content;
+            console.log('[SYNC] Using embedded content for:', change.relativePath);
+          } else if (useFilesystem) {
+            content = fs.readFileSync(fullPath, 'utf-8');
+          } else {
+            content = await fetchFileFromCDN(baseUrl, change.relativePath);
+            if (!content) {
+              console.warn('[SYNC] ⚠️ Could not fetch file, skipping:', change.relativePath);
+              continue;
+            }
           }
+        } else {
+          console.log('[SYNC] 📄 Metadata-only sync for:', change.relativePath, '(no content needed)');
         }
         
         // Log each insert attempt
