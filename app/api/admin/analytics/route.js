@@ -2,11 +2,22 @@
  * app/api/admin/analytics/route.js
  * 
  * Analytics Dashboard API
- * Provides KPIs, charts, and activity logs
+ * Provides KPIs, charts, Supabase stats, and Redis stats
  */
 
 import sql from '../../../../lib/postgres';
 import { NextResponse } from 'next/server';
+
+// Redis client (optional)
+let redis = null;
+try {
+  if (process.env.REDIS_URL) {
+    const Redis = require('ioredis');
+    redis = new Redis(process.env.REDIS_URL);
+  }
+} catch (e) {
+  console.warn('[ANALYTICS] Redis not available');
+}
 
 export async function GET(request) {
   try {
@@ -62,6 +73,76 @@ export async function GET(request) {
       }
     }
 
+    // ===== SUPABASE/POSTGRES STATS =====
+    let supabaseStats = {
+      connected: false,
+      host: 'N/A',
+      database: 'N/A',
+      totalTables: tables.length,
+      totalRows: totalFiles,
+      dbSize: 'N/A',
+      activeConnections: 0
+    };
+
+    try {
+      // Get database info
+      const dbInfo = await sql`SELECT current_database() as db_name, inet_server_addr() as host`;
+      
+      // Get database size
+      const sizeResult = await sql`SELECT pg_size_pretty(pg_database_size(current_database())) as size`;
+      
+      // Get active connections
+      const connResult = await sql`SELECT count(*)::int as connections FROM pg_stat_activity WHERE state = 'active'`;
+
+      supabaseStats = {
+        connected: true,
+        host: process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).hostname : 'Supabase',
+        database: dbInfo[0]?.db_name || 'postgres',
+        totalTables: tables.length,
+        totalRows: totalFiles,
+        dbSize: sizeResult[0]?.size || 'N/A',
+        activeConnections: connResult[0]?.connections || 1
+      };
+    } catch (error) {
+      console.warn('[ANALYTICS] Supabase stats error:', error.message);
+      supabaseStats.connected = true; // Still connected since table queries worked
+      supabaseStats.totalRows = totalFiles;
+    }
+
+    // ===== REDIS STATS =====
+    let redisStats = {
+      connected: false,
+      host: 'N/A',
+      memory: 'N/A',
+      keys: 0,
+      uptime: 'N/A',
+      version: 'N/A'
+    };
+
+    if (redis) {
+      try {
+        const info = await redis.info();
+        const dbSize = await redis.dbsize();
+        
+        // Parse Redis INFO
+        const parseInfo = (info, key) => {
+          const match = info.match(new RegExp(`${key}:(.+)`));
+          return match ? match[1].trim() : null;
+        };
+
+        redisStats = {
+          connected: true,
+          host: process.env.REDIS_URL ? new URL(process.env.REDIS_URL).hostname : 'Redis',
+          memory: parseInfo(info, 'used_memory_human') || 'N/A',
+          keys: dbSize || 0,
+          uptime: `${Math.floor((parseInt(parseInfo(info, 'uptime_in_seconds')) || 0) / 86400)} days`,
+          version: parseInfo(info, 'redis_version') || 'N/A'
+        };
+      } catch (error) {
+        console.warn('[ANALYTICS] Redis stats error:', error.message);
+      }
+    }
+
     // Get last sync time
     let lastSync = null;
     try {
@@ -111,7 +192,9 @@ export async function GET(request) {
         filesByType,
         tableGrowth,
         recentActivity,
-        dataCounts
+        dataCounts,
+        supabase: supabaseStats,
+        redis: redisStats
       }
     });
   } catch (error) {
