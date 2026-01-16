@@ -633,6 +633,21 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
   const protocol = host.includes('localhost') ? 'http' : 'https';
   const baseUrl = `${protocol}://${host}`;
   
+  // Debug: Check how many changes have content
+  const changesWithContent = changes.filter(c => c.content).length;
+  console.log('[SYNC] 📋 Pull starting with changes:', {
+    totalChanges: changes.length,
+    changesWithContent,
+    changesWithoutContent: changes.length - changesWithContent,
+    sampleChange: changes[0] ? {
+      path: changes[0].relativePath,
+      status: changes[0].status,
+      table: changes[0].table,
+      hasContent: !!changes[0].content,
+      contentLength: changes[0].content?.length || 0
+    } : null
+  });
+  
   console.log('[SYNC] Pull mode:', {
     useFilesystem,
     publicPath: useFilesystem ? publicPath : '(using CDN)',
@@ -681,6 +696,14 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
           }
         }
         
+        // Log each insert attempt
+        console.log(`[SYNC] 💾 Inserting into ${change.table}:`, {
+          filename,
+          table: change.table,
+          contentLength: content?.length || 0,
+          hash: change.hash?.substring(0, 12) + '...'
+        });
+        
         switch (change.table) {
           case 'collections': {
             const parts = change.relativePath.split(path.sep);
@@ -693,6 +716,7 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
               VALUES (${lang}, ${type}, ${filename}, ${sqlClient.json(fileContent)}, ${change.hash}, ${now})
               ON CONFLICT (lang, type, filename) DO UPDATE SET file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
             `;
+            console.log(`[SYNC] ✅ Inserted collection: ${lang}/${type}/${filename}`);
             break;
           }
           case 'config_files': {
@@ -702,6 +726,7 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
               VALUES (${filename}, ${change.fileType}, ${sqlClient.json(fileContent)}, ${change.hash}, ${now})
               ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
             `;
+            console.log(`[SYNC] ✅ Inserted config_file: ${filename}`);
             break;
           }
           case 'data_files': {
@@ -711,6 +736,7 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
               VALUES (${filename}, ${change.fileType}, ${sqlClient.json(fileContent)}, ${change.hash}, ${now})
               ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
             `;
+            console.log(`[SYNC] ✅ Inserted data_file: ${filename}`);
             break;
           }
           case 'static_files': {

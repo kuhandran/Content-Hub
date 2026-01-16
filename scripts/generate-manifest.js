@@ -19,25 +19,26 @@ function calculateHash(content) {
 
 function mapFileToTable(filePath) {
   const sep = path.sep;
-  if (filePath.includes(`${sep}collections${sep}`) || filePath.includes('/collections/')) {
+  // Handle both absolute and relative paths - check if path starts with or contains the folder
+  if (filePath.startsWith('collections/') || filePath.startsWith('collections\\') || filePath.includes(`${sep}collections${sep}`) || filePath.includes('/collections/')) {
     return 'collections';
   }
-  if (filePath.includes(`${sep}files${sep}`) || filePath.includes('/files/')) {
+  if (filePath.startsWith('files/') || filePath.startsWith('files\\') || filePath.includes(`${sep}files${sep}`) || filePath.includes('/files/')) {
     return 'static_files';
   }
-  if (filePath.includes(`${sep}config${sep}`) || filePath.includes('/config/')) {
+  if (filePath.startsWith('config/') || filePath.startsWith('config\\') || filePath.includes(`${sep}config${sep}`) || filePath.includes('/config/')) {
     return 'config_files';
   }
-  if (filePath.includes(`${sep}data${sep}`) || filePath.includes('/data/')) {
+  if (filePath.startsWith('data/') || filePath.startsWith('data\\') || filePath.includes(`${sep}data${sep}`) || filePath.includes('/data/')) {
     return 'data_files';
   }
-  if (filePath.includes(`${sep}image${sep}`) || filePath.includes('/image/')) {
+  if (filePath.startsWith('image/') || filePath.startsWith('image\\') || filePath.includes(`${sep}image${sep}`) || filePath.includes('/image/')) {
     return 'images';
   }
-  if (filePath.includes(`${sep}js${sep}`) || filePath.includes('/js/')) {
+  if (filePath.startsWith('js/') || filePath.startsWith('js\\') || filePath.includes(`${sep}js${sep}`) || filePath.includes('/js/')) {
     return 'javascript_files';
   }
-  if (filePath.includes(`${sep}resume${sep}`) || filePath.includes('/resume/')) {
+  if (filePath.startsWith('resume/') || filePath.startsWith('resume\\') || filePath.includes(`${sep}resume${sep}`) || filePath.includes('/resume/')) {
     return 'resumes';
   }
   return 'unknown';
