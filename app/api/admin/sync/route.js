@@ -730,9 +730,9 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
             }
             
             await sqlClient`
-              INSERT INTO collections (lang, type, filename, file_content, file_hash, synced_at)
-              VALUES (${lang}, ${type}, ${filename}, ${sqlClient.json(fileContent)}, ${change.hash}, ${now})
-              ON CONFLICT (lang, type, filename) DO UPDATE SET file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+              INSERT INTO collections (language, type, filename, file_path, file_hash, content, updated_at)
+              VALUES (${lang}, ${type}, ${filename}, ${change.relativePath}, ${change.hash}, ${sqlClient.json(fileContent)}, ${now})
+              ON CONFLICT (language, type, filename) DO UPDATE SET file_path = EXCLUDED.file_path, content = EXCLUDED.content, file_hash = EXCLUDED.file_hash, updated_at = EXCLUDED.updated_at
             `;
             console.log(`[SYNC] ✅ Inserted collection: ${lang}/${type}/${filename}`);
             break;
@@ -747,9 +747,9 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
               continue;
             }
             await sqlClient`
-              INSERT INTO config_files (filename, file_type, file_content, file_hash, synced_at)
-              VALUES (${filename}, ${change.fileType}, ${sqlClient.json(fileContent)}, ${change.hash}, ${now})
-              ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+              INSERT INTO config_files (filename, file_path, file_hash, content, updated_at)
+              VALUES (${filename}, ${change.relativePath}, ${change.hash}, ${sqlClient.json(fileContent)}, ${now})
+              ON CONFLICT (file_path) DO UPDATE SET filename = EXCLUDED.filename, content = EXCLUDED.content, file_hash = EXCLUDED.file_hash, updated_at = EXCLUDED.updated_at
             `;
             console.log(`[SYNC] ✅ Inserted config_file: ${filename}`);
             break;
@@ -764,42 +764,45 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
               continue;
             }
             await sqlClient`
-              INSERT INTO data_files (filename, file_type, file_content, file_hash, synced_at)
-              VALUES (${filename}, ${change.fileType}, ${sqlClient.json(fileContent)}, ${change.hash}, ${now})
-              ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+              INSERT INTO data_files (filename, file_path, file_hash, content, updated_at)
+              VALUES (${filename}, ${change.relativePath}, ${change.hash}, ${sqlClient.json(fileContent)}, ${now})
+              ON CONFLICT (file_path) DO UPDATE SET filename = EXCLUDED.filename, content = EXCLUDED.content, file_hash = EXCLUDED.file_hash, updated_at = EXCLUDED.updated_at
             `;
             console.log(`[SYNC] ✅ Inserted data_file: ${filename}`);
             break;
           }
           case 'static_files': {
             await sqlClient`
-              INSERT INTO static_files (filename, file_type, file_content, file_hash, synced_at)
-              VALUES (${filename}, ${change.fileType}, ${content}, ${change.hash}, ${now})
-              ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+              INSERT INTO static_files (filename, file_path, file_hash, file_type, updated_at)
+              VALUES (${filename}, ${change.relativePath}, ${change.hash}, ${change.fileType}, ${now})
+              ON CONFLICT (file_path) DO UPDATE SET filename = EXCLUDED.filename, file_type = EXCLUDED.file_type, file_hash = EXCLUDED.file_hash, updated_at = EXCLUDED.updated_at
             `;
+            console.log(`[SYNC] ✅ Inserted static_file: ${filename}`);
             break;
           }
           case 'images': {
             await sqlClient`
-              INSERT INTO images (filename, file_path, mime_type, file_hash, synced_at)
-              VALUES (${filename}, ${change.relativePath}, ${`image/${getFileExtension(fullPath)}`}, ${change.hash}, ${now})
-              ON CONFLICT (filename) DO UPDATE SET file_path = EXCLUDED.file_path, mime_type = EXCLUDED.mime_type, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+              INSERT INTO images (filename, file_path, file_hash, updated_at)
+              VALUES (${filename}, ${change.relativePath}, ${change.hash}, ${now})
+              ON CONFLICT (file_path) DO UPDATE SET filename = EXCLUDED.filename, file_hash = EXCLUDED.file_hash, updated_at = EXCLUDED.updated_at
             `;
+            console.log(`[SYNC] ✅ Inserted image: ${filename}`);
             break;
           }
           case 'resumes': {
             await sqlClient`
-              INSERT INTO resumes (filename, file_type, file_path, file_hash, synced_at)
-              VALUES (${filename}, ${getFileExtension(fullPath)}, ${change.relativePath}, ${change.hash}, ${now})
-              ON CONFLICT (filename) DO UPDATE SET file_type = EXCLUDED.file_type, file_path = EXCLUDED.file_path, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+              INSERT INTO resumes (filename, file_path, file_hash, updated_at)
+              VALUES (${filename}, ${change.relativePath}, ${change.hash}, ${now})
+              ON CONFLICT (file_path) DO UPDATE SET filename = EXCLUDED.filename, file_hash = EXCLUDED.file_hash, updated_at = EXCLUDED.updated_at
             `;
+            console.log(`[SYNC] ✅ Inserted resume: ${filename}`);
             break;
           }
           case 'javascript_files': {
             await sqlClient`
-              INSERT INTO javascript_files (filename, file_path, file_content, file_hash, synced_at)
-              VALUES (${filename}, ${change.relativePath}, ${content}, ${change.hash}, ${now})
-              ON CONFLICT (filename) DO UPDATE SET file_path = EXCLUDED.file_path, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
+              INSERT INTO javascript_files (filename, file_path, file_hash, content, updated_at)
+              VALUES (${filename}, ${change.relativePath}, ${change.hash}, ${content}, ${now})
+              ON CONFLICT (file_path) DO UPDATE SET filename = EXCLUDED.filename, content = EXCLUDED.content, file_hash = EXCLUDED.file_hash, updated_at = EXCLUDED.updated_at
             `;
             console.log(`[SYNC] ✅ Inserted javascript_file: ${filename}`);
             break;
@@ -810,12 +813,7 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
             continue;
           }
         }
-        // Update sync_manifest via upsert
-        await sqlClient`
-          INSERT INTO sync_manifest (file_path, file_hash, table_name, last_synced)
-          VALUES (${change.relativePath}, ${change.hash}, ${change.table}, ${now})
-          ON CONFLICT (file_path) DO UPDATE SET file_hash = EXCLUDED.file_hash, table_name = EXCLUDED.table_name, last_synced = EXCLUDED.last_synced
-        `;
+        // File tracking is handled by file_hash column in each table
         appliedCount++;
       }
     } catch (error) {
