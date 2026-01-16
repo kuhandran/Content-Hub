@@ -625,6 +625,7 @@ async function pullChangesToDatabase(supabase, changes) {
 // Pull mode using Postgres client
 async function pullChangesToDatabasePg(sqlClient, changes, request) {
   let appliedCount = 0;
+  let errorCount = 0;
   const publicPath = getPublicDir() || path.join(process.cwd(), 'public');
   const useFilesystem = fs.existsSync(publicPath);
   
@@ -769,7 +770,13 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
               VALUES (${filename}, ${change.relativePath}, ${content}, ${change.hash}, ${now})
               ON CONFLICT (filename) DO UPDATE SET file_path = EXCLUDED.file_path, file_content = EXCLUDED.file_content, file_hash = EXCLUDED.file_hash, synced_at = EXCLUDED.synced_at
             `;
+            console.log(`[SYNC] ✅ Inserted javascript_file: ${filename}`);
             break;
+          }
+          default: {
+            console.warn(`[SYNC] ⚠️ Unknown table "${change.table}" for file: ${change.relativePath}`);
+            // Skip unknown tables - don't count as applied
+            continue;
           }
         }
         // Update sync_manifest via upsert
@@ -781,11 +788,13 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
         appliedCount++;
       }
     } catch (error) {
-      console.error(`[SYNC][PG] Failed to apply ${change.relativePath}:`, error.message);
+      console.error(`[SYNC] ❌ Failed to apply ${change.relativePath}:`, error.message, error.stack?.split('\\n')[0]);
+      errorCount++;
     }
   }
 
-  return { status: 'completed', applied: appliedCount };
+  console.log(`[SYNC] 📊 Pull summary: ${appliedCount} applied, ${errorCount} errors out of ${changes.length} total`);
+  return { status: 'completed', applied: appliedCount, errors: errorCount };
 }
 
 // Main POST handler
@@ -908,12 +917,34 @@ export async function POST(request) {
       try {
         console.log('[SYNC] 📥 Pull starting...');
         const { changes, stats } = useSql ? await scanForChangesPg(sql, request) : await scanForChanges(supabase);
+        
+        console.log('[SYNC] 📊 Pull scan results:', {
+          totalChanges: changes.length,
+          stats,
+          samplePaths: changes.slice(0, 3).map(c => c.relativePath),
+          hasContent: changes.filter(c => c.content).length
+        });
+        
+        if (changes.length === 0) {
+          console.log('[SYNC] ⚠️ No changes to pull - database already in sync');
+          return NextResponse.json({
+            status: 'success',
+            mode: 'pull',
+            message: 'No changes to pull - database already in sync',
+            applied: 0,
+            ...stats,
+            timestamp,
+          });
+        }
+        
         const result = useSql ? await pullChangesToDatabasePg(sql, changes, request) : await pullChangesToDatabase(supabase, changes);
-        console.log('[SYNC] ✓ Pull completed', { stats, applied: result.applied, changesCount: changes.length });
+        console.log('[SYNC] ✓ Pull completed', { stats, applied: result.applied, errors: result.errors, changesCount: changes.length });
 
         return NextResponse.json({
           status: 'success',
           mode: 'pull',
+          applied: result.applied,
+          errors: result.errors || 0,
           ...stats,
           changes: changes.slice(0, 50),
           timestamp,
