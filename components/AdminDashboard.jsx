@@ -516,40 +516,79 @@ export default function AdminDashboard() {
    * Overview Tab Component
    */
   function OverviewTabContent() {
+    const totalRecords = Object.values(dataCounts).reduce((sum, count) => sum + (count || 0), 0);
+    const activeTablesCount = Object.values(dataCounts).filter(count => count > 0).length;
+
     return (
       <div className={styles.tabContent}>
         <h2>📊 Overview</h2>
         
-        <section className={styles.section}>
-          <h3>🚀 Load Primary Data</h3>
-          <p>Scan /public folder and pump all files to database tables</p>
-          <button 
-            className={styles.primaryButton}
-            onClick={handleLoadPrimaryData}
-            disabled={loadingData}
-          >
-            {loadingData ? '⏳ Loading...' : '🚀 Load Primary Data'}
-          </button>
-        </section>
+        {/* Summary Cards */}
+        <div className={styles.summaryCards}>
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryIcon}>📁</div>
+            <div className={styles.summaryData}>
+              <span className={styles.summaryValue}>{totalRecords}</span>
+              <span className={styles.summaryLabel}>Total Records</span>
+            </div>
+          </div>
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryIcon}>🗄️</div>
+            <div className={styles.summaryData}>
+              <span className={styles.summaryValue}>{activeTablesCount}</span>
+              <span className={styles.summaryLabel}>Active Tables</span>
+            </div>
+          </div>
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryIcon}>✅</div>
+            <div className={styles.summaryData}>
+              <span className={styles.summaryValue}>Synced</span>
+              <span className={styles.summaryLabel}>Status</span>
+            </div>
+          </div>
+        </div>
 
+        {/* Database Statistics */}
         <section className={styles.section}>
           <h3>📊 Database Statistics</h3>
           <p>Current record counts across all tables</p>
           <div className={styles.statsGrid}>
             {Object.entries(dataCounts).map(([table, count]) => (
               <div key={table} className={styles.statCard}>
-                <div className={styles.statLabel}>{table}</div>
+                <div className={styles.statLabel}>{table.replace(/_/g, ' ')}</div>
                 <div className={styles.statValue}>{count || 0}</div>
               </div>
             ))}
           </div>
         </section>
 
+        {/* Actions */}
         <section className={styles.section}>
-          <h3>⚡ Quick Actions</h3>
-          <div className={styles.actionGrid}>
-            <button className={styles.actionButton} onClick={handleClearAllData}>🗑️ Clear All Data</button>
-            <button className={styles.actionButton} onClick={loadDataStatistics}>🔄 Refresh Statistics</button>
+          <h3>⚡ Actions</h3>
+          <p>Manage your content database</p>
+          <div className={styles.actionCards}>
+            <div className={styles.actionCard} onClick={handleLoadPrimaryData}>
+              <div className={styles.actionCardIcon}>🚀</div>
+              <div className={styles.actionCardContent}>
+                <span className={styles.actionCardTitle}>Sync Data</span>
+                <span className={styles.actionCardDesc}>Load files from manifest to database</span>
+              </div>
+              {loadingData && <span className={styles.actionCardSpinner}>⏳</span>}
+            </div>
+            <div className={styles.actionCard} onClick={loadDataStatistics}>
+              <div className={styles.actionCardIcon}>🔄</div>
+              <div className={styles.actionCardContent}>
+                <span className={styles.actionCardTitle}>Refresh Stats</span>
+                <span className={styles.actionCardDesc}>Update table counts</span>
+              </div>
+            </div>
+            <div className={styles.actionCard + ' ' + styles.danger} onClick={handleClearAllData}>
+              <div className={styles.actionCardIcon}>🗑️</div>
+              <div className={styles.actionCardContent}>
+                <span className={styles.actionCardTitle}>Clear Data</span>
+                <span className={styles.actionCardDesc}>Remove all records</span>
+              </div>
+            </div>
           </div>
         </section>
       </div>
