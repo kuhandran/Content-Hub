@@ -2,17 +2,15 @@
  * app/api/admin/sync-compare/route.js
  * 
  * Sync Comparison Endpoint
- * Compares /public folder with database
+ * Compares manifest files with database
  * Returns: Similar, Different, Missing files
  */
 
-import fs from 'fs';
 import path from 'path';
-import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import jwtManager from '../../../../lib/jwt-manager';
-import { ALLOWED_EXTENSIONS, IGNORED_DIRS, getPublicDir } from '../../../../lib/sync-config';
 import dbopModule from '../../../../lib/dbop';
+import manifestData from '../../../../lib/manifest-data.js';
 
 /**
  * Verify JWT token from Authorization header
@@ -43,80 +41,71 @@ function verifyJWT(request) {
 }
 
 function calculateHash(content) {
+  // Use the hash from manifest, or calculate if needed
+  const crypto = require('crypto');
   return crypto.createHash('sha256').update(content).digest('hex');
 }
 
-// Scan folder for specific table type
-function scanFolderForTable(tableName) {
-  const publicPath = getPublicDir();
-  const files = [];
-  let targetFolder = '';
+// Get files from manifest for specific table type
+function getFilesFromManifest(tableName) {
+  const files = manifestData.files || [];
+  const result = [];
 
-  // Map table to folder
-  switch (tableName) {
-    case 'collections':
-      targetFolder = path.join(publicPath, 'collections');
-      break;
-    case 'config_files':
-      targetFolder = path.join(publicPath, 'config');
-      break;
-    case 'data_files':
-      targetFolder = path.join(publicPath, 'data');
-      break;
-    case 'static_files':
-      targetFolder = path.join(publicPath, 'files');
-      break;
-    case 'images':
-      targetFolder = path.join(publicPath, 'image');
-      break;
-    case 'javascript_files':
-      targetFolder = path.join(publicPath, 'js');
-      break;
-    case 'resumes':
-      targetFolder = path.join(publicPath, 'resume');
-      break;
-    default:
-      return [];
+  // Map table to folder prefix
+  const folderMap = {
+    'collections': 'collections/',
+    'config_files': 'config/',
+    'data_files': 'data/',
+    'static_files': 'files/',
+    'images': 'image/',
+    'javascript_files': 'js/',
+    'resumes': 'resume/'
+  };
+
+  const targetPrefix = folderMap[tableName];
+  if (!targetPrefix) return [];
+
+  for (const file of files) {
+    if (file.path.startsWith(targetPrefix)) {
+      const filename = path.basename(file.path, path.extname(file.path));
+      result.push({
+        filename,
+        path: file.path,
+        hash: file.hash,
+        size: file.size || 0
+      });
+    }
   }
 
-  if (!fs.existsSync(targetFolder)) {
-    return [];
-  }
+  return result;
+}
 
-  function walkDir(dirPath) {
-    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+// Get collections from manifest (special handling for multi-language)
+function getCollectionsFromManifest() {
+  const files = manifestData.files || [];
+  const result = [];
 
-    for (const entry of entries) {
-      const fullPath = path.join(dirPath, entry.name);
-      const relativePath = path.relative(publicPath, fullPath);
-
-      if (entry.isDirectory()) {
-        if (!IGNORED_DIRS.includes(entry.name)) {
-          walkDir(fullPath);
-        }
-      } else {
-        if (ALLOWED_EXTENSIONS.includes(path.extname(fullPath).toLowerCase())) {
-          try {
-            const content = fs.readFileSync(fullPath, 'utf-8');
-            const hash = calculateHash(content);
-            const filename = path.basename(fullPath, path.extname(fullPath));
-
-            files.push({
-              filename,
-              path: relativePath,
-              hash,
-              size: Buffer.byteLength(content, 'utf-8')
-            });
-          } catch (error) {
-            console.warn(`⚠️ Failed to read: ${fullPath}`);
-          }
-        }
+  for (const file of files) {
+    if (file.path.startsWith('collections/')) {
+      // Path format: collections/en/config/filename.json
+      const parts = file.path.split('/');
+      if (parts.length >= 4) {
+        const lang = parts[1];
+        const type = parts[2];
+        const filename = path.basename(file.path, path.extname(file.path));
+        result.push({
+          filename,
+          path: file.path,
+          hash: file.hash,
+          lang,
+          type,
+          size: file.size || 0
+        });
       }
     }
   }
 
-  walkDir(targetFolder);
-  return files;
+  return result;
 }
 
 // Get files from database
@@ -150,12 +139,12 @@ async function getCollectionsFromDB() {
     let rows = [];
 
     if (mode === 'postgres' && sql) {
-      rows = await sql.unsafe(`SELECT lang, type, filename, file_hash as hash FROM collections`);
+      rows = await sql.unsafe(`SELECT language, type, filename, file_hash as hash FROM collections`);
     } else {
-      const { data } = await supabase.from('collections').select('lang, type, filename, file_hash');
+      const { data } = await supabase.from('collections').select('language, type, filename, file_hash');
       rows = data || [];
       rows = rows.map(r => ({
-        lang: r.lang,
+        lang: r.language,
         type: r.type,
         filename: r.filename,
         hash: r.file_hash
@@ -215,7 +204,7 @@ function compareFiles(publicFiles, dbFiles, tableName) {
 }
 
 // Compare collections (special handling for multi-language)
-function compareCollections(publicFiles, dbFiles) {
+function compareCollections(manifestFiles, dbFiles) {
   const similar = [];
   const different = [];
   const missing = [];
@@ -223,54 +212,47 @@ function compareCollections(publicFiles, dbFiles) {
   // Group DB files by lang/type/filename
   const dbMap = new Map();
   dbFiles.forEach(file => {
-    const key = `${file.lang}/${file.type}/${file.filename}`;
+    // Handle both 'lang' and 'language' column names
+    const lang = file.lang || file.language;
+    const key = `${lang}/${file.type}/${file.filename}`;
     dbMap.set(key, file);
   });
 
-  // Check each public file
-  publicFiles.forEach(pubFile => {
-    // Extract lang and type from path: collections/en/config/filename
-    const parts = pubFile.path.split(path.sep);
-    const langIdx = parts.findIndex(p => p === 'collections');
-    
-    if (langIdx !== -1 && langIdx + 2 < parts.length) {
-      const lang = parts[langIdx + 1];
-      const type = parts[langIdx + 2];
-      const key = `${lang}/${type}/${pubFile.filename}`;
+  // Check each manifest file
+  manifestFiles.forEach(mFile => {
+    const key = `${mFile.lang}/${mFile.type}/${mFile.filename}`;
+    const dbFile = dbMap.get(key);
 
-      const dbFile = dbMap.get(key);
-
-      if (!dbFile) {
-        missing.push({
-          filename: pubFile.filename,
-          lang,
-          type,
-          path: pubFile.path,
-          status: 'missing',
-          message: 'In /public but not in database'
-        });
-      } else if (pubFile.hash === dbFile.hash) {
-        similar.push({
-          filename: pubFile.filename,
-          lang,
-          type,
-          path: pubFile.path,
-          hash: pubFile.hash,
-          status: 'similar',
-          message: 'In sync'
-        });
-      } else {
-        different.push({
-          filename: pubFile.filename,
-          lang,
-          type,
-          path: pubFile.path,
-          publicHash: pubFile.hash,
-          dbHash: dbFile.hash,
-          status: 'different',
-          message: 'Hash mismatch - needs update'
-        });
-      }
+    if (!dbFile) {
+      missing.push({
+        filename: mFile.filename,
+        lang: mFile.lang,
+        type: mFile.type,
+        path: mFile.path,
+        status: 'missing',
+        message: 'In manifest but not in database'
+      });
+    } else if (mFile.hash === dbFile.hash) {
+      similar.push({
+        filename: mFile.filename,
+        lang: mFile.lang,
+        type: mFile.type,
+        path: mFile.path,
+        hash: mFile.hash,
+        status: 'similar',
+        message: 'In sync'
+      });
+    } else {
+      different.push({
+        filename: mFile.filename,
+        lang: mFile.lang,
+        type: mFile.type,
+        path: mFile.path,
+        manifestHash: mFile.hash,
+        dbHash: dbFile.hash,
+        status: 'different',
+        message: 'Hash mismatch - needs update'
+      });
     }
   });
 
@@ -305,16 +287,16 @@ export async function POST(request) {
 
     console.log(`[SYNC COMPARE] Comparing ${table}...`);
 
-    let publicFiles, dbFiles, comparison;
+    let manifestFiles, dbFiles, comparison;
 
     if (table === 'collections') {
-      publicFiles = scanFolderForTable('collections');
+      manifestFiles = getCollectionsFromManifest();
       dbFiles = await getCollectionsFromDB();
-      comparison = compareCollections(publicFiles, dbFiles);
+      comparison = compareCollections(manifestFiles, dbFiles);
     } else {
-      publicFiles = scanFolderForTable(table);
+      manifestFiles = getFilesFromManifest(table);
       dbFiles = await getFilesFromDB(table);
-      comparison = compareFiles(publicFiles, dbFiles, table);
+      comparison = compareFiles(manifestFiles, dbFiles, table);
     }
 
     return NextResponse.json({
@@ -326,7 +308,7 @@ export async function POST(request) {
         different: comparison.different,
         missing: comparison.missing,
         summary: {
-          total_in_public: publicFiles.length,
+          total_in_manifest: manifestFiles.length,
           total_in_db: dbFiles.length,
           similar_count: comparison.similar.length,
           different_count: comparison.different.length,
@@ -345,11 +327,11 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
-    const auth = isAuthorized(request);
+    const auth = verifyJWT(request);
     if (!auth.ok) {
       return NextResponse.json(
         { status: 'error', error: 'Unauthorized' },
-        { status: auth.status || 401 }
+        { status: 401 }
       );
     }
 
