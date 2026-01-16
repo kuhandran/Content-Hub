@@ -124,6 +124,7 @@ export default function AdminDashboard() {
   }, [router]);
   
   const [tabs, setTabs] = useState([]);
+  const [sections, setSections] = useState({ main: [], content: [], settings: [] });
   const [tabsLoading, setTabsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [activeLanguage, setActiveLanguage] = useState('en');
@@ -132,10 +133,25 @@ export default function AdminDashboard() {
   const [syncLoading, setSyncLoading] = useState(false);
   const [dataCounts, setDataCounts] = useState({});
   const [loadingData, setLoadingData] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
+  const [expandedSections, setExpandedSections] = useState({
+    main: true,
+    content: true,
+    settings: false
+  });
 
   // Load sidebar configuration from API
   useEffect(() => {
     loadSidebarConfig();
+    // Load user info from localStorage
+    const storedUser = localStorage.getItem('auth_user');
+    if (storedUser) {
+      try {
+        setUserInfo(JSON.parse(storedUser));
+      } catch (e) {
+        console.warn('[AdminDashboard] Could not parse user info');
+      }
+    }
   }, []);
 
   async function loadSidebarConfig() {
@@ -147,6 +163,9 @@ export default function AdminDashboard() {
       if (data.status === 'success') {
         console.log('[📱 AdminDashboard] ✅ Loaded', data.tabs.length, 'tabs from API');
         setTabs(data.tabs);
+        if (data.sections) {
+          setSections(data.sections);
+        }
       } else {
         console.error('[📱 AdminDashboard] ❌ Failed to load tabs:', data.error);
       }
@@ -292,11 +311,205 @@ export default function AdminDashboard() {
       
       case 'datamanager':
         return <DataManager />;
+
+      case 'users':
+        return <UserManagementTab />;
+      
+      case 'create-user':
+        return <CreateUserTab />;
+      
+      case 'roles':
+        return <RolesManagementTab />;
+      
+      case 'preferences':
+        return <PreferencesTab />;
+      
+      case 'about':
+        return <AboutTab />;
       
       default:
         // Generic tab for config, data, files, images, javascript, resume
         return <GenericTabContent tab={tab} />;
     }
+  }
+
+  // ===== Settings Tab Components =====
+  function UserManagementTab() {
+    return (
+      <div className={styles.tabContent}>
+        <h2>👥 User Management</h2>
+        <div className={styles.section}>
+          <p className={styles.placeholder}>Manage system users, view active sessions, and control access.</p>
+          <div className={styles.comingSoon}>
+            <span>🚧</span>
+            <span>Coming Soon</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function CreateUserTab() {
+    const [formData, setFormData] = useState({
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      role: 'user'
+    });
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      if (formData.password !== formData.confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+      }
+      // TODO: API call to create user
+      alert('User creation will be implemented with backend API');
+    };
+
+    return (
+      <div className={styles.tabContent}>
+        <h2>➕ Create New User</h2>
+        <div className={styles.section}>
+          <form className={styles.form} onSubmit={handleSubmit}>
+            <div className={styles.formGroup}>
+              <label>Username</label>
+              <input 
+                type="text" 
+                placeholder="Enter username"
+                value={formData.username}
+                onChange={e => setFormData({...formData, username: e.target.value})}
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Email</label>
+              <input 
+                type="email" 
+                placeholder="Enter email"
+                value={formData.email}
+                onChange={e => setFormData({...formData, email: e.target.value})}
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Password</label>
+              <input 
+                type="password" 
+                placeholder="Enter password"
+                value={formData.password}
+                onChange={e => setFormData({...formData, password: e.target.value})}
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Confirm Password</label>
+              <input 
+                type="password" 
+                placeholder="Confirm password"
+                value={formData.confirmPassword}
+                onChange={e => setFormData({...formData, confirmPassword: e.target.value})}
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Role</label>
+              <select 
+                value={formData.role}
+                onChange={e => setFormData({...formData, role: e.target.value})}
+              >
+                <option value="user">User</option>
+                <option value="editor">Editor</option>
+                <option value="admin">Administrator</option>
+              </select>
+            </div>
+            <button type="submit" className={styles.primaryButton}>
+              Create User
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  function RolesManagementTab() {
+    const roles = [
+      { id: 'admin', name: 'Administrator', description: 'Full system access', users: 1 },
+      { id: 'editor', name: 'Editor', description: 'Can edit content', users: 0 },
+      { id: 'user', name: 'User', description: 'Read-only access', users: 0 }
+    ];
+
+    return (
+      <div className={styles.tabContent}>
+        <h2>🔐 Roles & Types</h2>
+        <div className={styles.section}>
+          <p>Manage user roles and permissions.</p>
+          <div className={styles.rolesGrid}>
+            {roles.map(role => (
+              <div key={role.id} className={styles.roleCard}>
+                <div className={styles.roleHeader}>
+                  <span className={styles.roleName}>{role.name}</span>
+                  <span className={styles.roleUsers}>{role.users} users</span>
+                </div>
+                <p className={styles.roleDesc}>{role.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function PreferencesTab() {
+    return (
+      <div className={styles.tabContent}>
+        <h2>🎨 Preferences</h2>
+        <div className={styles.section}>
+          <h3>Theme</h3>
+          <div className={styles.prefOption}>
+            <label>
+              <input type="radio" name="theme" value="light" defaultChecked /> Light Mode
+            </label>
+            <label>
+              <input type="radio" name="theme" value="dark" /> Dark Mode
+            </label>
+          </div>
+        </div>
+        <div className={styles.section}>
+          <h3>Notifications</h3>
+          <div className={styles.prefOption}>
+            <label>
+              <input type="checkbox" defaultChecked /> Email notifications
+            </label>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function AboutTab() {
+    return (
+      <div className={styles.tabContent}>
+        <h2>ℹ️ About</h2>
+        <div className={styles.section}>
+          <div className={styles.aboutInfo}>
+            <h3>Content Hub Admin</h3>
+            <p>Version 1.0.0</p>
+            <p>A modern content management dashboard for managing static files, collections, and data.</p>
+            <hr />
+            <h4>System Info</h4>
+            <ul>
+              <li>Next.js 16.1.2</li>
+              <li>PostgreSQL (Supabase)</li>
+              <li>Vercel Deployment</li>
+            </ul>
+            <hr />
+            <p className={styles.copyright}>© 2026 Kuhandran. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   /**
@@ -448,50 +661,131 @@ export default function AdminDashboard() {
     .catch(e => alert('❌ Error: ' + e.message));
   }
 
+  // Toggle section expand/collapse
+  function toggleSection(section) {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  }
+
+  // Render navigation item
+  function NavItem({ tab }) {
+    return (
+      <div
+        className={`${styles.navItem} ${activeTab === tab.key ? styles.active : ''}`}
+        onClick={() => {
+          console.log(`[📱 AdminDashboard] 🔘 TAB CLICKED: ${tab.key}`);
+          setActiveTab(tab.key);
+          setSyncData(null);
+        }}
+        title={tab.description}
+      >
+        <span className={styles.navIcon}>{tab.icon}</span>
+        <span className={styles.navLabel}>{tab.label}</span>
+        {activeTab === tab.key && <span className={styles.navIndicator} />}
+      </div>
+    );
+  }
+
+  // Render section with header
+  function NavSection({ title, icon, sectionKey, items }) {
+    const isExpanded = expandedSections[sectionKey];
+    
+    return (
+      <div className={styles.navSection}>
+        <div 
+          className={styles.sectionHeader}
+          onClick={() => toggleSection(sectionKey)}
+        >
+          <span className={styles.sectionIcon}>{icon}</span>
+          <span className={styles.sectionTitle}>{title}</span>
+          <span className={`${styles.sectionArrow} ${isExpanded ? styles.expanded : ''}`}>
+            ▾
+          </span>
+        </div>
+        {isExpanded && (
+          <div className={styles.sectionItems}>
+            {items.map(tab => (
+              <NavItem key={tab.id} tab={tab} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={styles.dashboard}>
-      <div className={styles.sidebar}>
-        <h1>🔧 Admin Dashboard</h1>
+      <aside className={styles.sidebar}>
+        {/* Logo/Brand */}
+        <div className={styles.brand}>
+          <span className={styles.brandIcon}>🔧</span>
+          <span className={styles.brandText}>Admin Panel</span>
+        </div>
+
+        {/* User Profile */}
+        <div className={styles.userProfile}>
+          <div className={styles.userAvatar}>
+            {userInfo?.username?.charAt(0)?.toUpperCase() || 'A'}
+          </div>
+          <div className={styles.userInfo}>
+            <span className={styles.userName}>{userInfo?.username || 'Admin'}</span>
+            <span className={styles.userRole}>Administrator</span>
+          </div>
+        </div>
+
+        {/* Navigation */}
         {tabsLoading ? (
-          <div className={styles.loading}>⏳ Loading tabs...</div>
+          <div className={styles.loading}>Loading...</div>
         ) : (
           <nav className={styles.nav}>
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                className={`${styles.navItem} ${activeTab === tab.key ? styles.active : ''}`}
-                onClick={() => {
-                  console.log(`[📱 AdminDashboard] 🔘 TAB CLICKED: ${tab.key}`);
-                  setActiveTab(tab.key);
-                  setSyncData(null);
-                }}
-                title={tab.description}
-              >
-                {tab.icon} {tab.label}
-              </button>
-            ))}
+            <NavSection 
+              title="Dashboard" 
+              icon="🏠" 
+              sectionKey="main" 
+              items={sections.main || []} 
+            />
+            <NavSection 
+              title="Content" 
+              icon="📁" 
+              sectionKey="content" 
+              items={sections.content || []} 
+            />
+            <NavSection 
+              title="Settings" 
+              icon="⚙️" 
+              sectionKey="settings" 
+              items={sections.settings || []} 
+            />
           </nav>
         )}
 
-        <div className={styles.logout}>
-          <button 
-            className={styles.logoutButton}
+        {/* Logout Section */}
+        <div className={styles.sidebarFooter}>
+          <div 
+            className={styles.logoutItem}
             onClick={() => {
-              clearAuth('User clicked logout button', {
-                component: 'AdminDashboard',
-                activeTab: activeTab,
-                timestamp: new Date().toISOString()
-              });
-              router.push('/login');
+              if (window.confirm('Are you sure you want to logout?')) {
+                clearAuth('User clicked logout button', {
+                  component: 'AdminDashboard',
+                  activeTab: activeTab,
+                  timestamp: new Date().toISOString()
+                });
+                router.push('/login');
+              }
             }}
-            title="Sign out and go to login page"
           >
-            🚪 Logout
-          </button>
+            <span className={styles.logoutIcon}>🚪</span>
+            <span className={styles.logoutText}>Sign Out</span>
+          </div>
+          <div className={styles.versionInfo}>
+            v1.0.0 • Content Hub
+          </div>
         </div>
-      </div>
+      </aside>
 
-      <div className={styles.main}>
+      <main className={styles.main}>
         {tabsLoading ? (
           <div className={styles.loading}>⏳ Loading dashboard...</div>
         ) : (
@@ -500,7 +794,7 @@ export default function AdminDashboard() {
             return tab ? renderTabContent(tab) : <div className={styles.tabContent}><h2>❌ Tab not found</h2></div>;
           })()
         )}
-      </div>
+      </main>
 
       {/* Debug Panel */}
       <AuthDebugPanel />

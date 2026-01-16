@@ -50,6 +50,7 @@ function verifyJWT(request) {
 // Default sidebar configuration
 // Can be overridden from database or environment
 const DEFAULT_TABS = [
+  // ===== MAIN SECTION =====
   {
     id: 'overview',
     key: 'overview',
@@ -58,18 +59,8 @@ const DEFAULT_TABS = [
     component: 'OverviewTab',
     order: 1,
     isVisible: true,
-    description: 'Load primary data and quick statistics'
-  },
-  {
-    id: 'collections',
-    key: 'collections',
-    label: 'Collections',
-    icon: '📚',
-    component: 'CollectionsTab',
-    order: 2,
-    isVisible: true,
-    description: 'Language packs and collection data',
-    hasLanguageSelector: true
+    section: 'main',
+    description: 'Dashboard overview and quick stats'
   },
   {
     id: 'analytics',
@@ -77,8 +68,9 @@ const DEFAULT_TABS = [
     label: 'Analytics',
     icon: '📈',
     component: 'AnalyticsPanel',
-    order: 3,
+    order: 2,
     isVisible: true,
+    section: 'main',
     description: 'Dashboard analytics and KPIs'
   },
   {
@@ -87,8 +79,9 @@ const DEFAULT_TABS = [
     label: 'Control Panel',
     icon: '🎛️',
     component: 'ControlPanel',
-    order: 4,
+    order: 3,
     isVisible: true,
+    section: 'main',
     description: 'CRUD operations for tables'
   },
   {
@@ -97,40 +90,58 @@ const DEFAULT_TABS = [
     label: 'Data Manager',
     icon: '💾',
     component: 'DataManager',
-    order: 5,
+    order: 4,
     isVisible: true,
-    description: 'Pump monitor and database analytics'
+    section: 'main',
+    description: 'Pump monitor and database sync'
+  },
+  
+  // ===== CONTENT SECTION =====
+  {
+    id: 'collections',
+    key: 'collections',
+    label: 'Collections',
+    icon: '📚',
+    component: 'CollectionsTab',
+    order: 10,
+    isVisible: true,
+    section: 'content',
+    description: 'Language packs and collection data',
+    hasLanguageSelector: true
   },
   {
     id: 'config',
     key: 'config',
-    label: 'Config',
+    label: 'Config Files',
     icon: '⚙️',
     component: 'GenericTab',
-    order: 6,
+    order: 11,
     isVisible: true,
+    section: 'content',
     table: 'config_files',
     description: 'Configuration files'
   },
   {
     id: 'data',
     key: 'data',
-    label: 'Data',
+    label: 'Data Files',
     icon: '📄',
     component: 'GenericTab',
-    order: 7,
+    order: 12,
     isVisible: true,
+    section: 'content',
     table: 'data_files',
     description: 'Data files'
   },
   {
     id: 'files',
     key: 'files',
-    label: 'Files',
+    label: 'Static Files',
     icon: '📦',
     component: 'GenericTab',
-    order: 8,
+    order: 13,
     isVisible: true,
+    section: 'content',
     table: 'static_files',
     description: 'Static files'
   },
@@ -140,8 +151,9 @@ const DEFAULT_TABS = [
     label: 'Images',
     icon: '🖼️',
     component: 'GenericTab',
-    order: 9,
+    order: 14,
     isVisible: true,
+    section: 'content',
     table: 'images',
     description: 'Image files'
   },
@@ -151,8 +163,9 @@ const DEFAULT_TABS = [
     label: 'JavaScript',
     icon: '⚡',
     component: 'GenericTab',
-    order: 10,
+    order: 15,
     isVisible: true,
+    section: 'content',
     table: 'javascript_files',
     description: 'JavaScript files'
   },
@@ -162,10 +175,68 @@ const DEFAULT_TABS = [
     label: 'Resume',
     icon: '📋',
     component: 'GenericTab',
-    order: 11,
+    order: 16,
     isVisible: true,
+    section: 'content',
     table: 'resumes',
     description: 'Resume files'
+  },
+  
+  // ===== SETTINGS SECTION =====
+  {
+    id: 'users',
+    key: 'users',
+    label: 'User Management',
+    icon: '👥',
+    component: 'UserManagement',
+    order: 20,
+    isVisible: true,
+    section: 'settings',
+    description: 'Manage users and permissions'
+  },
+  {
+    id: 'create-user',
+    key: 'create-user',
+    label: 'Create User',
+    icon: '➕',
+    component: 'CreateUser',
+    order: 21,
+    isVisible: true,
+    section: 'settings',
+    description: 'Add new user account'
+  },
+  {
+    id: 'roles',
+    key: 'roles',
+    label: 'Roles & Types',
+    icon: '🔐',
+    component: 'RolesManagement',
+    order: 22,
+    isVisible: true,
+    section: 'settings',
+    description: 'Manage user roles and types'
+  },
+  {
+    id: 'preferences',
+    key: 'preferences',
+    label: 'Preferences',
+    icon: '🎨',
+    component: 'Preferences',
+    order: 23,
+    isVisible: true,
+    section: 'settings',
+    description: 'Dashboard preferences and theme'
+  },
+  {
+    id: 'about',
+    key: 'about',
+    label: 'About',
+    icon: 'ℹ️',
+    component: 'About',
+    order: 24,
+    isVisible: true,
+    section: 'settings',
+    description: 'System information and version'
   }
 ];
 
@@ -193,11 +264,19 @@ export async function GET(request) {
       .filter(tab => tab.isVisible)
       .sort((a, b) => a.order - b.order);
 
+    // Group tabs by section
+    const sections = {
+      main: tabs.filter(t => t.section === 'main'),
+      content: tabs.filter(t => t.section === 'content'),
+      settings: tabs.filter(t => t.section === 'settings')
+    };
+
     const response = {
       status: 'success',
       source: 'default', // 'default' or 'database'
       count: tabs.length,
       tabs,
+      sections,
       timestamp: new Date().toISOString()
     };
 
