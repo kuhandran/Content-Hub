@@ -10,11 +10,16 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const ALLOWED_EXTENSIONS = ['.json', '.js', '.xml', '.html', '.txt'];
+const ALLOWED_EXTENSIONS = ['.json', '.js', '.xml', '.html', '.txt', '.pdf', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.docx', '.doc'];
+const BINARY_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.docx', '.doc', '.xlsx', '.xls'];
 const IGNORED_DIRS = ['.next', 'node_modules', '.git'];
 
 function calculateHash(content) {
   return crypto.createHash('sha256').update(content).digest('hex');
+}
+
+function isBinaryFile(ext) {
+  return BINARY_EXTENSIONS.includes(ext.toLowerCase());
 }
 
 function mapFileToTable(filePath) {
@@ -76,20 +81,41 @@ function generateManifest() {
         const ext = path.extname(fullPath).toLowerCase();
         if (ALLOWED_EXTENSIONS.includes(ext)) {
           try {
-            const content = fs.readFileSync(fullPath, 'utf-8');
-            const hash = calculateHash(content);
+            const isBinary = isBinaryFile(ext);
+            let content, hash, size;
+            
+            if (isBinary) {
+              // For binary files, read as buffer for hash, don't embed content
+              const buffer = fs.readFileSync(fullPath);
+              hash = calculateHash(buffer);
+              size = buffer.length;
+              content = null; // Don't embed binary content in manifest
+            } else {
+              // For text files, read as utf-8
+              content = fs.readFileSync(fullPath, 'utf-8');
+              hash = calculateHash(content);
+              size = content.length;
+            }
+            
             const table = mapFileToTable(relativePath);
             const fileType = getFileExtension(fullPath);
 
             if (table !== 'unknown') {
-              manifest.files.push({
+              const fileEntry = {
                 path: relativePath,
                 hash,
                 table,
                 fileType,
-                size: content.length,
-                content: content  // Include file content for CDN-less sync
-              });
+                size,
+                isBinary
+              };
+              
+              // Only include content for text files
+              if (!isBinary && content) {
+                fileEntry.content = content;
+              }
+              
+              manifest.files.push(fileEntry);
             }
           } catch (error) {
             console.warn(`⚠️ Could not read: ${relativePath} - ${error.message}`);

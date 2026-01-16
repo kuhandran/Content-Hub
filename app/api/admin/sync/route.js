@@ -163,6 +163,9 @@ function scanPublicFolder() {
     }
 
     const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+    
+    // Binary file extensions that should not be read as text
+    const BINARY_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.docx', '.doc', '.xlsx', '.xls'];
 
     for (const entry of entries) {
       const fullPath = path.join(dirPath, entry.name);
@@ -173,17 +176,36 @@ function scanPublicFolder() {
           walkDir(fullPath);
         }
       } else {
-        if (ALLOWED_EXTENSIONS.includes(path.extname(fullPath).toLowerCase())) {
+        const ext = path.extname(fullPath).toLowerCase();
+        if (ALLOWED_EXTENSIONS.includes(ext)) {
           try {
-            const content = fs.readFileSync(fullPath, 'utf-8');
-            const hash = calculateHash(content);
             const { table, fileType } = mapFileToTable(fullPath);
-
-            if (table !== 'unknown') {
-              fileMap.set(relativePath, { hash, content, table, fileType });
+            
+            // Skip unknown tables
+            if (table === 'unknown') {
+              continue;
             }
+            
+            // Handle binary files differently - read as buffer for hash, don't store content
+            const isBinary = BINARY_EXTENSIONS.includes(ext);
+            
+            let content = null;
+            let hash;
+            
+            if (isBinary) {
+              // Read binary file as buffer for hash calculation
+              const buffer = fs.readFileSync(fullPath);
+              hash = calculateHash(buffer);
+              content = null; // Don't store binary content in memory
+            } else {
+              // Read text file as UTF-8
+              content = fs.readFileSync(fullPath, 'utf-8');
+              hash = calculateHash(content);
+            }
+
+            fileMap.set(relativePath, { hash, content, table, fileType, isBinary });
           } catch (error) {
-            // Skip files that can't be read (e.g., binary files)
+            // Skip files that can't be read
             console.log('[SYNC] ⚠️ Could not read file:', relativePath, '-', error.message);
           }
         }
