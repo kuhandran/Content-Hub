@@ -109,10 +109,20 @@ function generateManifest() {
   console.log(`   Total files: ${manifest.files.length}`);
   console.log('   By table:', JSON.stringify(tableCounts, null, 2));
 
-  // Write manifest
+  // Write manifest JSON
   const manifestPath = path.join(publicPath, 'manifest.json');
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
   console.log(`✅ Manifest written to: ${manifestPath}`);
+
+  // Also write as JS module for bundling
+  const jsModulePath = path.join(process.cwd(), 'lib', 'manifest-data.js');
+  const jsContent = `// Auto-generated manifest data - do not edit
+// Generated: ${manifest.generated}
+export const manifest = ${JSON.stringify(manifest, null, 2)};
+export default manifest;
+`;
+  fs.writeFileSync(jsModulePath, jsContent);
+  console.log(`✅ JS module written to: ${jsModulePath}`);
 
   return manifest;
 }

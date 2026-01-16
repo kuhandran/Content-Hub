@@ -2,12 +2,10 @@
  * API route to serve manifest.json
  * This workaround is needed because Vercel may not serve public files correctly
  */
-const { NextResponse } = require('next/server');
-const fs = require('fs');
-const path = require('path');
-
-// Import manifest at build time - this gets bundled into the serverless function
-import manifestData from '../../../public/manifest.json';
+import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
+import manifestData from '../../../lib/manifest-data.js';
 
 export async function GET() {
   // Try to read manifest from filesystem first (in case it's been updated)
