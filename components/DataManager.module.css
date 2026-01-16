@@ -779,3 +779,151 @@
     text-align: center;
   }
 }
+
+/* URL Column Styles */
+.urlCode {
+  background: #f1f5f9;
+  color: #3b82f6;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  font-size: 12px;
+  white-space: nowrap;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
+
+.urlActions {
+  display: flex;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.urlActionBtn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.urlActionBtn:hover {
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+/* URL Preview Panel */
+.urlPreviewPanel {
+  margin-top: 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.urlPreviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.urlPreviewTitle {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.urlPreviewTitle code {
+  background: #3b82f6;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+}
+
+.urlPreviewMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sourceBadge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cacheHit {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.dbHit {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.closePreviewBtn {
+  background: #f1f5f9;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #64748b;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closePreviewBtn:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.urlPreviewContent {
+  padding: 16px;
+  max-height: 400px;
+  overflow: auto;
+}
+
+.urlPreviewError {
+  color: #dc2626;
+  padding: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.jsonPreview {
+  background: #1e293b;
+  color: #a5f3fc;
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  line-height: 1.6;
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+

@@ -20,6 +20,8 @@ export default function DataManager() {
   const [tableOperating, setTableOperating] = useState(null);
   const [selectedTableData, setSelectedTableData] = useState(null);
   const [viewingTable, setViewingTable] = useState(null);
+  const [urlPreview, setUrlPreview] = useState(null);
+  const [urlLoading, setUrlLoading] = useState(false);
   const menuRef = useRef(null);
 
   // Close menu when clicking outside
@@ -167,20 +169,85 @@ export default function DataManager() {
     setViewingTable(tableName);
     setOpenMenu(null);
     setActiveTab('operations');
+    setUrlPreview(null);
     
     try {
-      const response = await authenticatedFetch(`/api/admin/table-data?table=${tableName}&limit=50`);
-      const result = await response.json();
+      // Use /api/collections endpoint for tables with API URLs
+      const apiTables = ['collections', 'config_files', 'data_files', 'images', 'resumes', 'static_files'];
       
-      if (result.status === 'success') {
-        setSelectedTableData({ name: tableName, data: result.data, columns: result.columns });
+      if (apiTables.includes(tableName)) {
+        const response = await authenticatedFetch(`/api/collections?table=${tableName}&limit=50`);
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          setSelectedTableData({ 
+            name: tableName, 
+            data: result.data, 
+            columns: result.columns,
+            hasUrls: true
+          });
+        } else {
+          throw new Error(result.error || 'Failed to load data');
+        }
       } else {
-        alert(`❌ Failed to load data: ${result.error}`);
-        setViewingTable(null);
+        // Fall back to admin table-data endpoint
+        const response = await authenticatedFetch(`/api/admin/table-data?table=${tableName}&limit=50`);
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          setSelectedTableData({ name: tableName, data: result.data, columns: result.columns });
+        } else {
+          throw new Error(result.error || 'Failed to load data');
+        }
       }
     } catch (error) {
       alert(`❌ Error: ${error.message}`);
       setViewingTable(null);
+    }
+  };
+
+  // Preview URL content
+  const handlePreviewUrl = async (url) => {
+    if (!url || url === urlPreview?.url) {
+      setUrlPreview(null);
+      return;
+    }
+    
+    setUrlLoading(true);
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      setUrlPreview({
+        url,
+        data,
+        status: response.status,
+        source: data.source || 'unknown'
+      });
+    } catch (error) {
+      setUrlPreview({
+        url,
+        error: error.message,
+        status: 'error'
+      });
+    } finally {
+      setUrlLoading(false);
+    }
+  };
+
+  // Copy URL to clipboard
+  const handleCopyUrl = async (url) => {
+    try {
+      await navigator.clipboard.writeText(window.location.origin + url);
+      alert('✅ URL copied to clipboard!');
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = window.location.origin + url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('✅ URL copied to clipboard!');
     }
   };
 
@@ -435,31 +502,107 @@ export default function DataManager() {
               </div>
               
               {selectedTableData?.data ? (
-                <div className={styles.dataTableWrapper}>
-                  <table className={styles.dataTable}>
-                    <thead>
-                      <tr>
-                        {selectedTableData.columns?.map((col) => (
-                          <th key={col}>{col}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedTableData.data.slice(0, 20).map((row, idx) => (
-                        <tr key={idx}>
+                <>
+                  <div className={styles.dataTableWrapper}>
+                    <table className={styles.dataTable}>
+                      <thead>
+                        <tr>
                           {selectedTableData.columns?.map((col) => (
-                            <td key={col}>
-                              {typeof row[col] === 'object' ? JSON.stringify(row[col]).slice(0, 50) : String(row[col] || '').slice(0, 100)}
-                            </td>
+                            <th key={col}>{col === 'api_url' || col === 'url' ? '🔗 API URL' : col}</th>
                           ))}
+                          {selectedTableData.hasUrls && <th>Actions</th>}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {selectedTableData.data.length > 20 && (
-                    <p className={styles.truncateNote}>Showing 20 of {selectedTableData.data.length} records</p>
+                      </thead>
+                      <tbody>
+                        {selectedTableData.data.slice(0, 30).map((row, idx) => (
+                          <tr key={idx}>
+                            {selectedTableData.columns?.map((col) => (
+                              <td key={col}>
+                                {(col === 'api_url' || col === 'url') && row[col] ? (
+                                  <code className={styles.urlCode}>{row[col]}</code>
+                                ) : typeof row[col] === 'object' ? (
+                                  JSON.stringify(row[col]).slice(0, 50)
+                                ) : (
+                                  String(row[col] || '').slice(0, 100)
+                                )}
+                              </td>
+                            ))}
+                            {selectedTableData.hasUrls && (
+                              <td className={styles.urlActions}>
+                                <button 
+                                  className={styles.urlActionBtn}
+                                  onClick={() => handleCopyUrl(row.api_url || row.url)}
+                                  title="Copy URL"
+                                >
+                                  📋
+                                </button>
+                                <button 
+                                  className={styles.urlActionBtn}
+                                  onClick={() => handlePreviewUrl(row.api_url || row.url)}
+                                  title="Preview JSON"
+                                >
+                                  👁️
+                                </button>
+                                <a 
+                                  className={styles.urlActionBtn}
+                                  href={row.api_url || row.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title="Open in new tab"
+                                >
+                                  🔗
+                                </a>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {selectedTableData.data.length > 30 && (
+                      <p className={styles.truncateNote}>Showing 30 of {selectedTableData.data.length} records</p>
+                    )}
+                  </div>
+
+                  {/* URL Preview Panel */}
+                  {urlPreview && (
+                    <div className={styles.urlPreviewPanel}>
+                      <div className={styles.urlPreviewHeader}>
+                        <span className={styles.urlPreviewTitle}>
+                          🔍 API Preview: <code>{urlPreview.url}</code>
+                        </span>
+                        <div className={styles.urlPreviewMeta}>
+                          {urlPreview.source && (
+                            <span className={`${styles.sourceBadge} ${urlPreview.source === 'cache' ? styles.cacheHit : styles.dbHit}`}>
+                              {urlPreview.source === 'cache' ? '⚡ Cache' : '🗄️ DB'}
+                            </span>
+                          )}
+                          <button 
+                            className={styles.closePreviewBtn}
+                            onClick={() => setUrlPreview(null)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                      <div className={styles.urlPreviewContent}>
+                        {urlLoading ? (
+                          <div className={styles.loadingData}>
+                            <div className={styles.miniSpinner}></div>
+                            <span>Loading...</span>
+                          </div>
+                        ) : urlPreview.error ? (
+                          <div className={styles.urlPreviewError}>
+                            ❌ Error: {urlPreview.error}
+                          </div>
+                        ) : (
+                          <pre className={styles.jsonPreview}>
+                            {JSON.stringify(urlPreview.data, null, 2)}
+                          </pre>
+                        )}
+                      </div>
+                    </div>
                   )}
-                </div>
+                </>
               ) : (
                 <div className={styles.loadingData}>
                   <div className={styles.miniSpinner}></div>
