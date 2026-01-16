@@ -10,9 +10,37 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
-import { isAuthorized } from '../../../../lib/auth';
+import jwtManager from '../../../../lib/jwt-manager';
 import { ALLOWED_EXTENSIONS, IGNORED_DIRS, getPublicDir } from '../../../../lib/sync-config';
 import dbopModule from '../../../../lib/dbop';
+
+/**
+ * Verify JWT token from Authorization header
+ */
+function verifyJWT(request) {
+  try {
+    const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
+    if (!authHeader) {
+      return { ok: false, error: 'No authorization header' };
+    }
+
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
+      return { ok: false, error: 'Invalid authorization header' };
+    }
+
+    const token = parts[1];
+    const decoded = jwtManager.verifyToken(token);
+    
+    if (!decoded) {
+      return { ok: false, error: 'Invalid or expired token' };
+    }
+
+    return { ok: true, user: decoded };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+}
 
 function calculateHash(content) {
   return crypto.createHash('sha256').update(content).digest('hex');
@@ -251,11 +279,11 @@ function compareCollections(publicFiles, dbFiles) {
 
 export async function POST(request) {
   try {
-    const auth = isAuthorized(request);
+    const auth = verifyJWT(request);
     if (!auth.ok) {
       return NextResponse.json(
-        { status: 'error', error: 'Unauthorized' },
-        { status: auth.status || 401 }
+        { status: 'error', error: `Unauthorized - ${auth.error}` },
+        { status: 401 }
       );
     }
 
