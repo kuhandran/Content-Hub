@@ -159,7 +159,14 @@ export async function GET(request) {
           status: 'error',
           error: `Unknown table: ${tableName}`,
           supportedTables: ['collections', 'config_files', 'data_files', 'images', 'resumes', 'static_files']
-        }, { status: 400 });
+        }, { 
+          status: 400,
+          headers: {
+            'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          }
+        });
     }
     
     // Add API URLs to each record
@@ -188,13 +195,39 @@ export async function GET(request) {
       }
     }
     
-    return NextResponse.json(response);
+    return NextResponse.json(response, {
+      headers: {
+        'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      }
+    });
     
   } catch (error) {
     console.error('[COLLECTIONS LIST] Error:', error.message);
     return NextResponse.json({
       status: 'error',
       error: error.message
-    }, { status: 500 });
+    }, { 
+      status: 500,
+      headers: {
+        'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      }
+    });
   }
+}
+
+// Handle OPTIONS request for CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
 }

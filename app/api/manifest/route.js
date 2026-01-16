@@ -22,6 +22,9 @@ export async function GET() {
         console.log('[API/manifest] Loaded from:', manifestPath, 'Files:', manifest.files?.length || 0);
         return NextResponse.json(manifest, {
           headers: {
+            'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
             'Cache-Control': 'public, max-age=60',
           },
         });
@@ -36,7 +39,23 @@ export async function GET() {
   
   return NextResponse.json(manifestData, {
     headers: {
+      'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
       'Cache-Control': 'public, max-age=60',
+    },
+  });
+}
+
+// Handle OPTIONS request for CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400',
     },
   });
 }
