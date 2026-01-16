@@ -837,6 +837,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const mode = body.mode || 'scan';
+    const targetTable = body.table || null; // Optional: sync specific table only
     const vercelId = request.headers?.get?.('x-vercel-id');
     const forwardedFor = request.headers?.get?.('x-forwarded-for');
     const region = process.env.VERCEL_REGION || 'unknown-region';
@@ -844,6 +845,7 @@ export async function POST(request) {
 
     console.log('[SYNC] ✓ Request received', {
       mode,
+      targetTable,
       userId: jwtAuth.user?.uid,
       vercelId,
       forwardedFor,
@@ -909,22 +911,44 @@ export async function POST(request) {
       }
     } else if (mode === 'pull') {
       try {
-        console.log('[SYNC] 📥 Pull starting...');
-        const { changes, stats } = useSql ? await scanForChangesPg(sql, request) : await scanForChanges(supabase);
+        console.log('[SYNC] 📥 Pull starting...', { targetTable });
+        let { changes, stats } = useSql ? await scanForChangesPg(sql, request) : await scanForChanges(supabase);
+        
+        // Filter by specific table if requested
+        if (targetTable) {
+          const originalCount = changes.length;
+          changes = changes.filter(c => c.table === targetTable);
+          console.log('[SYNC] 🎯 Filtered to table:', { 
+            targetTable, 
+            originalCount, 
+            filteredCount: changes.length 
+          });
+          // Update stats for filtered results
+          stats = {
+            files_scanned: stats.files_scanned,
+            new_files: changes.filter(c => c.status === 'new').length,
+            modified_files: changes.filter(c => c.status === 'modified').length,
+            deleted_files: changes.filter(c => c.status === 'deleted').length,
+          };
+        }
         
         console.log('[SYNC] 📊 Pull scan results:', {
           totalChanges: changes.length,
+          targetTable: targetTable || 'all',
           stats,
           samplePaths: changes.slice(0, 3).map(c => c.relativePath),
           hasContent: changes.filter(c => c.content).length
         });
         
         if (changes.length === 0) {
-          console.log('[SYNC] ⚠️ No changes to pull - database already in sync');
+          console.log('[SYNC] ⚠️ No changes to pull', { targetTable: targetTable || 'all' });
           return NextResponse.json({
             status: 'success',
             mode: 'pull',
-            message: 'No changes to pull - database already in sync',
+            table: targetTable || 'all',
+            message: targetTable 
+              ? `No changes to pull for table "${targetTable}"` 
+              : 'No changes to pull - database already in sync',
             applied: 0,
             ...stats,
             timestamp,
@@ -932,11 +956,12 @@ export async function POST(request) {
         }
         
         const result = useSql ? await pullChangesToDatabasePg(sql, changes, request) : await pullChangesToDatabase(supabase, changes);
-        console.log('[SYNC] ✓ Pull completed', { stats, applied: result.applied, errors: result.errors, changesCount: changes.length });
+        console.log('[SYNC] ✓ Pull completed', { targetTable: targetTable || 'all', stats, applied: result.applied, errors: result.errors, changesCount: changes.length });
 
         return NextResponse.json({
           status: 'success',
           mode: 'pull',
+          table: targetTable || 'all',
           applied: result.applied,
           errors: result.errors || 0,
           ...stats,
