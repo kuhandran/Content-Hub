@@ -198,24 +198,43 @@ export default function AdminDashboard() {
   }
 
   async function handleLoadPrimaryData() {
-    if (!window.confirm('This will pump all data from /public folder to database. Continue?')) {
+    if (!window.confirm('This will sync all data from /public folder to database. Continue?')) {
       return;
     }
 
     setLoadingData(true);
     try {
-      const response = await authenticatedFetch('/api/admin/data', {
+      // First scan for changes
+      const scanResponse = await authenticatedFetch('/api/admin/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'pump' })
+        body: JSON.stringify({ mode: 'scan' })
       });
-
-      const result = await response.json();
-      if (result.status === 'success') {
-        alert('✅ Primary data loaded successfully!');
-        loadDataStatistics();
+      
+      const scanResult = await scanResponse.json();
+      console.log('[📱 AdminDashboard] Scan result:', scanResult);
+      
+      if (scanResult.status === 'success' && (scanResult.new_files > 0 || scanResult.modified_files > 0)) {
+        // Pull changes to database
+        const pullResponse = await authenticatedFetch('/api/admin/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: 'pull' })
+        });
+        
+        const pullResult = await pullResponse.json();
+        console.log('[📱 AdminDashboard] Pull result:', pullResult);
+        
+        if (pullResult.status === 'success') {
+          alert(`✅ Data loaded successfully!\n\nApplied: ${pullResult.applied || 0} files\nErrors: ${pullResult.errors || 0}`);
+          loadDataStatistics();
+        } else {
+          alert('❌ Error: ' + (pullResult.error || 'Pull failed'));
+        }
+      } else if (scanResult.status === 'success') {
+        alert('✅ Database is already in sync. No changes needed.');
       } else {
-        alert('❌ Error: ' + result.error);
+        alert('❌ Error: ' + (scanResult.error || 'Scan failed'));
       }
     } catch (error) {
       alert('❌ Error loading data: ' + error.message);

@@ -70,12 +70,13 @@ export default function DataManager() {
     }
   };
 
-  // Load data on mount only (no polling to avoid excessive requests)
+  // Load data on mount only (single fetch, no polling)
   useEffect(() => {
-    console.log('[⏱️ DataManager] useEffect mount - loading initial data');
+    console.log('[⏱️ DataManager] useEffect mount - loading initial data ONCE');
     
     fetchDatabaseStats();
-    monitorPump();
+    // Set initial idle status instead of polling pump-monitor
+    setPumpStatus({ status: 'idle', message: 'Ready to sync' });
   }, []);
 
   // Manual refresh
@@ -88,30 +89,71 @@ export default function DataManager() {
 
   // Pump data from /public into database
   const handlePumpData = async () => {
+    if (!window.confirm('This will sync all data from /public folder to database. Continue?')) {
+      return;
+    }
+    
     setPumpLoading(true);
+    setIsPumping(true);
+    
     try {
-      const response = await authenticatedFetch('/api/admin/sync', {
+      // First do a scan to see what needs to be synced
+      console.log('[🚀 DataManager] Starting sync scan...');
+      const scanResponse = await authenticatedFetch('/api/admin/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'pump_all_data' }),
+        body: JSON.stringify({ mode: 'scan' }),
       });
       
-      if (response.ok) {
-        // Start monitoring pump once initially
-        await monitorPump();
-        // Monitor every 3 seconds while pumping (reduced from 1 second)
-        const pumpInterval = setInterval(async () => {
-          await monitorPump();
-          await fetchDatabaseStats();
-        }, 3000);
+      const scanResult = await scanResponse.json();
+      console.log('[🚀 DataManager] Scan result:', scanResult);
+      
+      if (scanResult.status === 'success' && (scanResult.new_files > 0 || scanResult.modified_files > 0)) {
+        // There are changes - proceed with pull
+        console.log('[🚀 DataManager] Changes detected, starting pull...');
+        setPumpStatus({ status: 'in-progress', message: 'Pulling changes to database...' });
+        setPumpProgress(50);
         
-        // Stop monitoring after 30 seconds
-        setTimeout(() => clearInterval(pumpInterval), 30000);
+        const pullResponse = await authenticatedFetch('/api/admin/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: 'pull' }),
+        });
+        
+        const pullResult = await pullResponse.json();
+        console.log('[🚀 DataManager] Pull result:', pullResult);
+        
+        if (pullResult.status === 'success') {
+          setPumpStatus({ 
+            status: 'completed', 
+            message: `✅ Synced ${pullResult.applied || 0} files to database` 
+          });
+          setPumpProgress(100);
+          
+          // Refresh database stats after successful sync
+          await fetchDatabaseStats();
+          
+          alert(`✅ Sync completed!\n\nApplied: ${pullResult.applied || 0} files\nErrors: ${pullResult.errors || 0}`);
+        } else {
+          setPumpStatus({ status: 'error', message: pullResult.error || 'Pull failed' });
+          alert('❌ Sync failed: ' + (pullResult.error || 'Unknown error'));
+        }
+      } else if (scanResult.status === 'success') {
+        // No changes needed
+        setPumpStatus({ status: 'completed', message: '✅ Database already in sync' });
+        setPumpProgress(100);
+        alert('✅ Database is already in sync with /public folder. No changes needed.');
+      } else {
+        setPumpStatus({ status: 'error', message: scanResult.error || 'Scan failed' });
+        alert('❌ Scan failed: ' + (scanResult.error || 'Unknown error'));
       }
     } catch (error) {
-      console.error('Pump operation failed:', error);
+      console.error('[🚀 DataManager] Pump operation failed:', error);
+      setPumpStatus({ status: 'error', message: error.message });
+      alert('❌ Sync error: ' + error.message);
     } finally {
       setPumpLoading(false);
+      setIsPumping(false);
     }
   };
 
