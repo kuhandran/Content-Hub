@@ -269,18 +269,21 @@ async function scanViaCDN(baseUrl) {
       table: file.table,
       fileType: file.fileType,
       size: file.size,
-      // Content will be fetched on-demand during pull
-      content: null
+      // Include embedded content if available (for serverless sync)
+      content: file.content || null
     });
   }
   
   // Log summary by table
   const tableCounts = {};
+  let filesWithContent = 0;
   for (const [, data] of fileMap) {
     tableCounts[data.table] = (tableCounts[data.table] || 0) + 1;
+    if (data.content) filesWithContent++;
   }
   console.log('[SYNC] 📊 CDN Scan Summary:');
   console.log('[SYNC]   - Total files found:', fileMap.size);
+  console.log('[SYNC]   - Files with embedded content:', filesWithContent);
   console.log('[SYNC]   - Files by table:', JSON.stringify(tableCounts, null, 2));
   
   return fileMap;
@@ -475,10 +478,10 @@ async function scanForChangesPg(sqlClient, request) {
       }
       const manifestEntry = manifestMap.get(relativePath);
       if (!manifestEntry) {
-        changes.push({ path: path.join('public', relativePath), relativePath, status: 'new', table: fileData.table, hash: fileData.hash, fileType: fileData.fileType });
+        changes.push({ path: path.join('public', relativePath), relativePath, status: 'new', table: fileData.table, hash: fileData.hash, fileType: fileData.fileType, content: fileData.content });
         newFiles++;
       } else if (manifestEntry.file_hash !== fileData.hash) {
-        changes.push({ path: path.join('public', relativePath), relativePath, status: 'modified', table: fileData.table, hash: fileData.hash, fileType: fileData.fileType });
+        changes.push({ path: path.join('public', relativePath), relativePath, status: 'modified', table: fileData.table, hash: fileData.hash, fileType: fileData.fileType, content: fileData.content });
         modifiedFiles++;
       }
     }
