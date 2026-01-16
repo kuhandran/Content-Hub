@@ -18,17 +18,24 @@ import manifestData from '../../../../lib/manifest-data.js';
 function verifyJWT(request) {
   try {
     const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
+    console.log('[SYNC-COMPARE] Auth header present:', !!authHeader);
+    
     if (!authHeader) {
+      console.log('[SYNC-COMPARE] No auth header found');
       return { ok: false, error: 'No authorization header' };
     }
 
     const parts = authHeader.split(' ');
     if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
+      console.log('[SYNC-COMPARE] Invalid auth header format:', parts[0]);
       return { ok: false, error: 'Invalid authorization header' };
     }
 
     const token = parts[1];
+    console.log('[SYNC-COMPARE] Token length:', token?.length);
+    
     const decoded = jwtManager.verifyToken(token);
+    console.log('[SYNC-COMPARE] Token decoded:', !!decoded, decoded?.username);
     
     if (!decoded) {
       return { ok: false, error: 'Invalid or expired token' };
@@ -36,6 +43,7 @@ function verifyJWT(request) {
 
     return { ok: true, user: decoded };
   } catch (error) {
+    console.error('[SYNC-COMPARE] Auth error:', error.message);
     return { ok: false, error: error.message };
   }
 }
