@@ -707,11 +707,28 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
         
         switch (change.table) {
           case 'collections': {
-            const parts = change.relativePath.split(path.sep);
+            // Always use forward slash for path splitting (consistent across all platforms)
+            const parts = change.relativePath.split('/');
             const langIndex = parts.findIndex(p => p === 'collections');
-            const lang = parts[langIndex + 1];
-            const type = parts[langIndex + 2];
-            const fileContent = JSON.parse(content);
+            const lang = langIndex >= 0 ? parts[langIndex + 1] : null;
+            const type = langIndex >= 0 ? parts[langIndex + 2] : null;
+            
+            // Validate lang and type before inserting
+            if (!lang || !type) {
+              console.error(`[SYNC] ❌ Could not extract lang/type from path: ${change.relativePath}`, { parts, langIndex });
+              errorCount++;
+              continue;
+            }
+            
+            let fileContent;
+            try {
+              fileContent = JSON.parse(content);
+            } catch (parseErr) {
+              console.error(`[SYNC] ❌ JSON parse error for ${change.relativePath}:`, parseErr.message);
+              errorCount++;
+              continue;
+            }
+            
             await sqlClient`
               INSERT INTO collections (lang, type, filename, file_content, file_hash, synced_at)
               VALUES (${lang}, ${type}, ${filename}, ${sqlClient.json(fileContent)}, ${change.hash}, ${now})
@@ -721,7 +738,14 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
             break;
           }
           case 'config_files': {
-            const fileContent = JSON.parse(content);
+            let fileContent;
+            try {
+              fileContent = JSON.parse(content);
+            } catch (parseErr) {
+              console.error(`[SYNC] ❌ JSON parse error for ${change.relativePath}:`, parseErr.message);
+              errorCount++;
+              continue;
+            }
             await sqlClient`
               INSERT INTO config_files (filename, file_type, file_content, file_hash, synced_at)
               VALUES (${filename}, ${change.fileType}, ${sqlClient.json(fileContent)}, ${change.hash}, ${now})
@@ -731,7 +755,14 @@ async function pullChangesToDatabasePg(sqlClient, changes, request) {
             break;
           }
           case 'data_files': {
-            const fileContent = JSON.parse(content);
+            let fileContent;
+            try {
+              fileContent = JSON.parse(content);
+            } catch (parseErr) {
+              console.error(`[SYNC] ❌ JSON parse error for ${change.relativePath}:`, parseErr.message);
+              errorCount++;
+              continue;
+            }
             await sqlClient`
               INSERT INTO data_files (filename, file_type, file_content, file_hash, synced_at)
               VALUES (${filename}, ${change.fileType}, ${sqlClient.json(fileContent)}, ${change.hash}, ${now})
