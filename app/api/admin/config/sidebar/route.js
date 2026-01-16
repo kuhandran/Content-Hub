@@ -74,17 +74,6 @@ const DEFAULT_TABS = [
     description: 'Dashboard analytics and KPIs'
   },
   {
-    id: 'control',
-    key: 'control',
-    label: 'Control Panel',
-    icon: '🎛️',
-    component: 'ControlPanel',
-    order: 3,
-    isVisible: true,
-    section: 'main',
-    description: 'CRUD operations for tables'
-  },
-  {
     id: 'datamanager',
     key: 'datamanager',
     label: 'Data Manager',

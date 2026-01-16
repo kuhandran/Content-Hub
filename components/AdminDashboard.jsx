@@ -25,7 +25,6 @@ import { useRouter } from 'next/navigation';
 import { getAuthToken, authenticatedFetch, clearAuth } from '@/utils/auth';
 import styles from './AdminDashboard.module.css';
 import AnalyticsPanel from './AnalyticsPanel';
-import ControlPanel from './ControlPanel';
 import DataManager from './DataManager';
 import AuthDebugPanel from './AuthDebugPanel';
 
@@ -305,9 +304,6 @@ export default function AdminDashboard() {
       
       case 'analytics':
         return <AnalyticsPanel />;
-      
-      case 'control':
-        return <ControlPanel />;
       
       case 'datamanager':
         return <DataManager />;
