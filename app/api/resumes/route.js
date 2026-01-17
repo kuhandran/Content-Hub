@@ -45,7 +45,7 @@ export async function GET(request) {
     // Fetch from database
     console.log(`[RESUMES LIST] Cache MISS - fetching from DB`);
     const records = await sql`
-      SELECT id, filename, file_path, file_hash, file_size,
+      SELECT id, filename, file_path, file_hash,
              created_at, updated_at
       FROM resumes
       ORDER BY filename
@@ -63,7 +63,7 @@ export async function GET(request) {
       status: 'success',
       table: 'resumes',
       count: records.length,
-      columns: ['filename', 'url', 'file_hash', 'file_size', 'updated_at'],
+      columns: ['filename', 'url', 'file_hash', 'updated_at'],
       data: recordsWithUrls,
       source: 'database',
       responseTime: Date.now() - startTime

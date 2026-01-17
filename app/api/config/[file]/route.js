@@ -73,7 +73,7 @@ export async function GET(request, { params }) {
     
     // Query config_files table - try exact match first, then with .json
     let result = await sql`
-      SELECT id, filename, file_path, file_hash, content, file_size, updated_at
+      SELECT id, filename, file_path, file_hash, content, updated_at
       FROM config_files
       WHERE filename = ${filename} OR filename = ${filename + '.json'}
       LIMIT 1
@@ -117,7 +117,6 @@ export async function GET(request, { params }) {
         filename: record.filename,
         file_path: record.file_path,
         file_hash: record.file_hash,
-        file_size: record.file_size,
         updated_at: record.updated_at,
         api_url: `/api/config/${encodeURIComponent(filename)}`
       },

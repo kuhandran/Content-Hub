@@ -46,7 +46,7 @@ export async function GET(request) {
     // Fetch from database
     console.log(`[CONFIG LIST] Cache MISS - fetching from DB`);
     const records = await sql`
-      SELECT id, filename, file_path, file_hash, file_size,
+      SELECT id, filename, file_path, file_hash,
              created_at, updated_at
              ${includeContent ? sql`,content` : sql``}
       FROM config_files
@@ -66,8 +66,8 @@ export async function GET(request) {
       table: 'config_files',
       count: records.length,
       columns: includeContent 
-        ? ['filename', 'url', 'file_hash', 'file_size', 'updated_at']
-        : ['filename', 'url', 'file_hash', 'file_size', 'updated_at'],
+        ? ['filename', 'url', 'file_hash', 'updated_at']
+        : ['filename', 'url', 'file_hash', 'updated_at'],
       data: recordsWithUrls,
       source: 'database',
       responseTime: Date.now() - startTime
