@@ -118,7 +118,8 @@ export async function GET(request, { params }) {
         file_path: record.file_path,
         file_hash: record.file_hash,
         file_size: record.file_size,
-        updated_at: record.updated_at
+        updated_at: record.updated_at,
+        api_url: `/api/data/${encodeURIComponent(filename)}`
       },
       source: 'database',
       responseTime: Date.now() - startTime
