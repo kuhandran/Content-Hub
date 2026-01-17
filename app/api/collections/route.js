@@ -99,59 +99,59 @@ export async function GET(request) {
       
       case 'config_files':
         records = await sql`
-          SELECT id, filename, file_path, file_hash, file_size,
+          SELECT id, filename, file_path, file_hash,
                  ${includeContent ? sql`content,` : sql``}
                  created_at, updated_at
           FROM config_files
           ORDER BY filename
           LIMIT ${limit}
         `;
-        columns = ['filename', 'api_url', 'file_hash', 'file_size', 'updated_at'];
+        columns = ['filename', 'api_url', 'file_hash', 'updated_at'];
         break;
       
       case 'data_files':
         records = await sql`
-          SELECT id, filename, file_path, file_hash, file_size,
+          SELECT id, filename, file_path, file_hash,
                  ${includeContent ? sql`content,` : sql``}
                  created_at, updated_at
           FROM data_files
           ORDER BY filename
           LIMIT ${limit}
         `;
-        columns = ['filename', 'api_url', 'file_hash', 'file_size', 'updated_at'];
+        columns = ['filename', 'api_url', 'file_hash', 'updated_at'];
         break;
       
       case 'images':
         records = await sql`
-          SELECT id, filename, file_path, file_hash, file_size, dimensions, alt_text,
+          SELECT id, filename, file_path, file_hash,
                  created_at, updated_at
           FROM images
           ORDER BY filename
           LIMIT ${limit}
         `;
-        columns = ['filename', 'url', 'file_hash', 'dimensions', 'updated_at'];
+        columns = ['filename', 'url', 'file_hash', 'updated_at'];
         break;
       
       case 'resumes':
         records = await sql`
-          SELECT id, filename, file_path, file_hash, file_size,
+          SELECT id, filename, file_path, file_hash,
                  created_at, updated_at
           FROM resumes
           ORDER BY filename
           LIMIT ${limit}
         `;
-        columns = ['filename', 'url', 'file_hash', 'file_size', 'updated_at'];
+        columns = ['filename', 'url', 'file_hash', 'updated_at'];
         break;
         
       case 'static_files':
         records = await sql`
-          SELECT id, filename, file_path, file_hash, file_type, file_size,
+          SELECT id, filename, file_path, file_hash, file_type,
                  created_at, updated_at
           FROM static_files
           ORDER BY filename
           LIMIT ${limit}
         `;
-        columns = ['filename', 'url', 'file_type', 'file_size', 'updated_at'];
+        columns = ['filename', 'url', 'file_type', 'updated_at'];
         break;
       
       default:
