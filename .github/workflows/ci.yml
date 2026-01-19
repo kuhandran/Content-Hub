@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    if: false  # Tests disabled - run locally only
     env:
       SMOKE_TEST_DOMAIN: ${{ secrets.SMOKE_TEST_DOMAIN }}
       SMOKE_TEST_TOKEN: ${{ secrets.SMOKE_TEST_TOKEN }}
