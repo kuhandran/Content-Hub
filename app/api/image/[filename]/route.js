@@ -44,6 +44,8 @@ export async function GET(request, { params }) {
     // Construct the path to the image in public/image directory
     const imagePath = path.join(process.cwd(), 'public', 'image', filename);
     
+    console.log('[IMAGE API] Reading from path:', imagePath);
+    
     // Read the file
     const imageBuffer = await readFile(imagePath);
     
