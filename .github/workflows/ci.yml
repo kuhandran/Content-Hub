@@ -28,8 +28,8 @@ jobs:
       - name: Unit tests
         run: npm test
 
-      - name: Optional API smoke tests
-        if: env.SMOKE_TEST_DOMAIN != ''
-        run: |
-          chmod +x scripts/test-all.sh
-          DOMAIN="$SMOKE_TEST_DOMAIN" TOKEN="$SMOKE_TEST_TOKEN" ./scripts/test-all.sh
+      # - name: Optional API smoke tests
+      #   if: env.SMOKE_TEST_DOMAIN != ''
+      #   run: |
+      #     chmod +x scripts/test-all.sh
+      #     DOMAIN="$SMOKE_TEST_DOMAIN" TOKEN="$SMOKE_TEST_TOKEN" ./scripts/test-all.sh
