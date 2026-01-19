@@ -27,6 +27,7 @@ import styles from './AdminDashboard.module.css';
 import AnalyticsPanel from './AnalyticsPanel';
 import DataManager from './DataManager';
 import AuthDebugPanel from './AuthDebugPanel';
+import JsonViewerEditable from './JsonViewerEditable';
 
 const LANGUAGES = ['en', 'es', 'fr', 'de', 'ar-AE', 'hi', 'id', 'my', 'si', 'ta', 'th'];
 const COLLECTION_TYPES = ['config', 'data'];
@@ -128,6 +129,12 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [activeLanguage, setActiveLanguage] = useState('en');
   const [activeCollectionType, setActiveCollectionType] = useState('config');
+  const [activeCollectionFile, setActiveCollectionFile] = useState(null);
+  const [collectionFiles, setCollectionFiles] = useState([]);
+  const [collectionContent, setCollectionContent] = useState(null);
+  const [collectionContentLoading, setCollectionContentLoading] = useState(false);
+  const [collectionContentEdited, setCollectionContentEdited] = useState(false);
+  const [collectionContentSaving, setCollectionContentSaving] = useState(false);
   const [syncData, setSyncData] = useState(null);
   const [syncLoading, setSyncLoading] = useState(false);
   const [dataCounts, setDataCounts] = useState({});
@@ -592,6 +599,123 @@ export default function AdminDashboard() {
   }
 
   /**
+   * Load available collection files for selected language and type
+   */
+  async function loadCollectionFiles(language, collectionType) {
+    try {
+      setCollectionContentLoading(true);
+      setCollectionFiles([]);
+      setActiveCollectionFile(null);
+      setCollectionContent(null);
+      
+      console.log(`[Collections] Loading files for ${language}/${collectionType}`);
+      
+      // Fetch from database
+      const response = await authenticatedFetch(`/api/collections/files?language=${language}&type=${collectionType}`);
+      const data = await response.json();
+      
+      if (data.status === 'success' && data.files) {
+        const files = data.files.map(f => ({
+          filename: f.filename || f,
+          name: (f.filename || f).replace('.json', '')
+        }));
+        console.log(`[Collections] Loaded ${files.length} files`);
+        setCollectionFiles(files);
+      } else {
+        console.warn('[Collections] No files found:', data);
+        setCollectionFiles([]);
+      }
+    } catch (error) {
+      console.error('[Collections] Error loading files:', error);
+      setCollectionFiles([]);
+    } finally {
+      setCollectionContentLoading(false);
+    }
+  }
+
+  /**
+   * Load content for selected collection file
+   */
+  async function loadCollectionContent(language, collectionType, filename) {
+    try {
+      setCollectionContentLoading(true);
+      setCollectionContent(null);
+      setCollectionContentEdited(false);
+      
+      const cleanFilename = filename.replace('.json', '');
+      console.log(`[Collections] Loading content: ${language}/${collectionType}/${cleanFilename}`);
+      
+      // Fetch content from API endpoint
+      const response = await authenticatedFetch(`/api/collections/${language}/${collectionType}/${cleanFilename}`);
+      const data = await response.json();
+      
+      if (data.status === 'success' && data.data) {
+        console.log(`[Collections] Loaded content for ${cleanFilename}`);
+        setCollectionContent({
+          id: data.data.id,
+          content: data.data.content || {},
+          fileHash: data.data.file_hash,
+          updatedAt: data.data.updated_at
+        });
+      } else {
+        console.warn('[Collections] Failed to load content:', data);
+        setCollectionContent(null);
+      }
+    } catch (error) {
+      console.error('[Collections] Error loading content:', error);
+      setCollectionContent(null);
+    } finally {
+      setCollectionContentLoading(false);
+    }
+  }
+
+  /**
+   * Save collection content back to database
+   */
+  async function saveCollectionContent() {
+    if (!collectionContent) return;
+    
+    try {
+      setCollectionContentSaving(true);
+      
+      const cleanFilename = activeCollectionFile.replace('.json', '');
+      console.log(`[Collections] Saving content for ${activeLanguage}/${activeCollectionType}/${cleanFilename}`);
+      
+      // Save to database via API
+      const response = await authenticatedFetch(`/api/collections/${activeLanguage}/${activeCollectionType}/${cleanFilename}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: collectionContent.content
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.status === 'success') {
+        console.log('[Collections] ✅ Content saved successfully');
+        setCollectionContentEdited(false);
+        // Reload the content to reflect updates
+        await loadCollectionContent(activeLanguage, activeCollectionType, activeCollectionFile);
+        alert('✅ Content saved successfully!');
+      } else {
+        console.error('[Collections] Save failed:', result);
+        alert('❌ Error saving content: ' + (result.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('[Collections] Error saving content:', error);
+      alert('❌ Error: ' + error.message);
+    } finally {
+      setCollectionContentSaving(false);
+    }
+  }
+
+  // Load collection files when language or type changes
+  useEffect(() => {
+    loadCollectionFiles(activeLanguage, activeCollectionType);
+  }, [activeLanguage, activeCollectionType]);
+
+  /**
    * Collections Tab Component
    */
   function CollectionsTabContent() {
@@ -625,11 +749,72 @@ export default function AdminDashboard() {
               ))}
             </select>
           </div>
+
+          <div className={styles.selectorGroup}>
+            <label>Filename:</label>
+            <select 
+              value={activeCollectionFile || ''}
+              onChange={(e) => {
+                const file = e.target.value;
+                setActiveCollectionFile(file);
+                if (file) {
+                  loadCollectionContent(activeLanguage, activeCollectionType, file);
+                }
+              }}
+              className={styles.select}
+              disabled={collectionContentLoading || collectionFiles.length === 0}
+            >
+              <option value="">-- Select a file --</option>
+              {collectionFiles.map(file => (
+                <option key={file.filename} value={file.filename}>
+                  {file.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+
+        {collectionContent && (
+          <section className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h3>📄 Content: {activeLanguage} / {activeCollectionType} / {activeCollectionFile}</h3>
+              {collectionContentEdited && (
+                <button 
+                  className={styles.saveButton}
+                  onClick={saveCollectionContent}
+                  disabled={collectionContentSaving}
+                >
+                  {collectionContentSaving ? '💾 Saving...' : '💾 Save Changes'}
+                </button>
+              )}
+            </div>
+            
+            <div className={styles.jsonViewerContainer}>
+              <JsonViewerEditable 
+                content={collectionContent.content}
+                onContentChange={(newContent) => {
+                  setCollectionContent({...collectionContent, content: newContent});
+                  setCollectionContentEdited(true);
+                }}
+              />
+            </div>
+
+            <div className={styles.metaInfo}>
+              <p>Updated: {new Date(collectionContent.updatedAt).toLocaleString()}</p>
+              <p>Hash: {collectionContent.fileHash?.substring(0, 16)}...</p>
+            </div>
+          </section>
+        )}
+
+        {!collectionContent && activeCollectionFile && collectionContentLoading && (
+          <section className={styles.section}>
+            <p className={styles.placeholder}>⏳ Loading content...</p>
+          </section>
+        )}
 
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h3>Files: {activeLanguage} / {activeCollectionType}</h3>
+            <h3>Sync Status: {activeLanguage} / {activeCollectionType}</h3>
             <button 
               className={styles.syncButton}
               onClick={() => handleSyncData('collections')}

@@ -218,3 +218,83 @@ export async function DELETE(request, { params }) {
     }, { status: 500 });
   }
 }
+
+/**
+ * PUT /api/collections/[language]/[type]/[file]
+ * Update collection content in database
+ */
+export async function PUT(request, { params }) {
+  try {
+    const { language, type, file } = await params;
+    const { content } = await request.json();
+
+    if (!content) {
+      return NextResponse.json({
+        status: 'error',
+        error: 'Missing content in request body'
+      }, { status: 400 });
+    }
+
+    const lang = decodeURIComponent(language);
+    const contentType = decodeURIComponent(type);
+    const filename = decodeURIComponent(file);
+
+    console.log(`[COLLECTIONS API] PUT /${lang}/${contentType}/${filename} - Updating content`);
+
+    // Update database
+    const result = await sql`
+      UPDATE collections
+      SET 
+        content = ${JSON.stringify(content)},
+        updated_at = CURRENT_TIMESTAMP
+      WHERE language = ${lang}
+        AND type = ${contentType}
+        AND (filename = ${filename} OR filename = ${filename + '.json'})
+      RETURNING id, language, type, filename, file_hash, content, updated_at
+    `;
+
+    if (result.length === 0) {
+      console.log(`[COLLECTIONS API] ❌ Not found for update: ${lang}/${contentType}/${filename}`);
+      return NextResponse.json({
+        status: 'error',
+        error: 'Collection not found'
+      }, { status: 404 });
+    }
+
+    // Invalidate cache
+    const cacheKey = `collections:${lang}:${contentType}:${filename}`;
+    const redis = getRedis();
+    if (redis) {
+      try {
+        await redis.del(cacheKey);
+        console.log(`[COLLECTIONS API] ✅ Cache invalidated after update`);
+      } catch (cacheError) {
+        console.warn('[COLLECTIONS API] Cache invalidation error:', cacheError.message);
+      }
+    }
+
+    const updated = result[0];
+    console.log(`[COLLECTIONS API] ✅ Updated: ${lang}/${contentType}/${filename}`);
+
+    return NextResponse.json({
+      status: 'success',
+      data: {
+        id: updated.id,
+        language: updated.language,
+        type: updated.type,
+        filename: updated.filename,
+        content: updated.content,
+        file_hash: updated.file_hash,
+        updated_at: updated.updated_at
+      },
+      message: 'Collection updated successfully'
+    });
+
+  } catch (error) {
+    console.error('[COLLECTIONS API] Update error:', error.message);
+    return NextResponse.json({
+      status: 'error',
+      error: error.message
+    }, { status: 500 });
+  }
+}
