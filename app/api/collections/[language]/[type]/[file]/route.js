@@ -177,13 +177,15 @@ export async function GET(request, { params }) {
     
     return NextResponse.json({
       status: 'success',
-      data: content,
-      metadata: {
+      data: {
         id: record.id,
         language: record.language,
         type: record.type,
         filename: record.filename,
+        file_path: record.file_path,
         file_hash: record.file_hash,
+        content: content,
+        created_at: record.created_at,
         updated_at: record.updated_at
       },
       source: 'database',

@@ -649,11 +649,17 @@ export default function AdminDashboard() {
       const response = await authenticatedFetch(`/api/collections/${language}/${collectionType}/${cleanFilename}`);
       const data = await response.json();
       
+      console.log(`[Collections] API Response:`, data);
+      
       if (data.status === 'success' && data.data) {
         console.log(`[Collections] Loaded content for ${cleanFilename}`, data.data);
         const contentData = data.data.content;
+        console.log(`[Collections] Raw content type: ${typeof contentData}, value:`, contentData);
+        
         // Handle string content (parse if needed)
         const parsedContent = typeof contentData === 'string' ? JSON.parse(contentData) : contentData;
+        console.log(`[Collections] Parsed content:`, parsedContent);
+        console.log(`[Collections] Content keys:`, Object.keys(parsedContent).length, Object.keys(parsedContent));
         
         setCollectionContent({
           id: data.data.id,
