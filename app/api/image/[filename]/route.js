@@ -1,12 +1,12 @@
 /**
- * app/api/image/[filename] - Serve images directly
+ * app/api/image/[filename] - Serve images from database
  * 
  * GET /api/image/{filename} - Returns the actual image file with proper content-type
  */
 
-import { NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import path from 'path';
+import sql from '@/lib/postgres';
 
 // Map file extensions to MIME types
 const MIME_TYPES = {
@@ -27,7 +27,7 @@ export async function GET(request, { params }) {
     const { filename } = resolvedParams;
     
     if (!filename) {
-      return NextResponse.json(
+      return Response.json(
         { error: 'Filename is required' },
         { status: 400 }
       );
@@ -35,14 +35,59 @@ export async function GET(request, { params }) {
 
     // Security: Prevent path traversal attacks
     if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
-      return NextResponse.json(
+      return Response.json(
         { error: 'Invalid filename' },
         { status: 400 }
       );
     }
 
-    // Construct the path to the image in public/image directory
-    const imagePath = path.join(process.cwd(), 'public', 'image', filename);
+    // Decode the filename if it's URL encoded
+    const decodedFilename = decodeURIComponent(filename);
+
+    // Try to fetch from database first
+    console.log(`[IMAGE API] Fetching image: ${decodedFilename}`);
+    
+    try {
+      const records = await sql`
+        SELECT filename, image_content
+        FROM images
+        WHERE filename = ${decodedFilename}
+        LIMIT 1
+      `;
+
+      if (records.length > 0 && records[0].image_content) {
+        const record = records[0];
+        const imageBuffer = Buffer.isBuffer(record.image_content) 
+          ? record.image_content 
+          : Buffer.from(record.image_content);
+
+        // Determine content type from file extension
+        const ext = path.extname(decodedFilename).toLowerCase();
+        const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+
+        console.log(`[IMAGE API] ✅ Serving from DB: ${decodedFilename} (${imageBuffer.length} bytes)`);
+
+        // Return the image with proper headers
+        return new Response(imageBuffer, {
+          status: 200,
+          headers: {
+            'Content-Type': contentType,
+            'Content-Length': imageBuffer.length.toString(),
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
+        });
+      }
+    } catch (dbError) {
+      console.warn('[IMAGE API] Database lookup failed:', dbError.message);
+      // Fall through to filesystem
+    }
+
+    // Fallback: Try filesystem (for development)
+    console.log('[IMAGE API] Attempting filesystem fallback');
+    const imagePath = path.join(process.cwd(), 'public', 'image', decodedFilename);
     
     console.log('[IMAGE API] Reading from path:', imagePath);
     
