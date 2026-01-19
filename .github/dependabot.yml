@@ -1,0 +1,67 @@
+version: 2
+updates:
+  # npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "kuhandransamudrapandiyan"
+    assignees:
+      - "kuhandransamudrapandiyan"
+    commit-message:
+      prefix: "deps:"
+      prefix-development: "deps-dev:"
+    pull-request-branch-name:
+      separator: "/"
+    rebase-strategy: "disabled"
+    allow:
+      - dependency-type: "all"
+    ignore:
+      # Add packages to ignore if needed
+      # - dependency-name: "package-name"
+    security-updates-only: false
+    raise-on-behalf-of: true
+    labels:
+      - "dependencies"
+      - "npm"
+    milestone: 1
+    target-branch: "develop"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    reviewers:
+      - "kuhandransamudrapandiyan"
+    commit-message:
+      prefix: "ci:"
+    labels:
+      - "github-actions"
+      - "ci"
+    rebase-strategy: "disabled"
+
+  # Docker (if applicable)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+    reviewers:
+      - "kuhandransamudrapandiyan"
+    commit-message:
+      prefix: "docker:"
+    labels:
+      - "docker"
+      - "dependencies"
+    rebase-strategy: "disabled"
+
+# Configuration for pull requests
+pull-request-interrupt: false

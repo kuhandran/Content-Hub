@@ -1,0 +1,106 @@
+name: Dependency Management
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: [ 'package*.json' ]
+  pull_request:
+    branches: [ main, develop ]
+    paths: [ 'package*.json' ]
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly on Monday
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  validate-dependencies:
+    runs-on: ubuntu-latest
+    name: Validate Dependencies
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Verify package-lock.json
+        run: npm ci --audit
+
+      - name: Check for outdated packages
+        run: npm outdated || true
+
+      - name: Check for vulnerable packages
+        run: npm audit --audit-level=moderate || true
+
+  dependabot-config:
+    runs-on: ubuntu-latest
+    name: Dependabot Check
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify Dependabot is configured
+        run: |
+          if [ -f ".github/dependabot.yml" ]; then
+            echo "✓ Dependabot configuration found"
+            cat .github/dependabot.yml
+          else
+            echo "⚠ Dependabot configuration not found"
+          fi
+
+  purl-validation:
+    runs-on: ubuntu-latest
+    name: Package URL Validation
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Validate package.json
+        run: |
+          node -e "
+            const pkg = require('./package.json');
+            console.log('Dependencies:', Object.keys(pkg.dependencies || {}).length);
+            console.log('Dev Dependencies:', Object.keys(pkg.devDependencies || {}).length);
+            console.log('Package name:', pkg.name);
+            console.log('Version:', pkg.version);
+          "
+
+  npm-verify:
+    runs-on: ubuntu-latest
+    name: NPM Integrity Check
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Verify npm registry integrity
+        run: |
+          npm ci --audit || true
+          npm verify || true

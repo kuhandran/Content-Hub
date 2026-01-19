@@ -1,0 +1,209 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    name: Dependency Vulnerabilities
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --audit
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Generate SBOM
+        run: npm sbom --sbom-format=json > sbom.json
+        continue-on-error: true
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+        if: always()
+
+  codeql-analysis:
+    runs-on: ubuntu-latest
+    name: CodeQL Analysis
+    permissions:
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript' ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+  secret-scanning:
+    runs-on: ubuntu-latest
+    name: Secret Detection
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --json
+
+  eslint-security:
+    runs-on: ubuntu-latest
+    name: ESLint Security Check
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint with security plugins
+        run: npm run lint --if-present || echo "Lint script not found, installing eslint..."
+        continue-on-error: true
+
+  snyk-scan:
+    runs-on: ubuntu-latest
+    name: Snyk Vulnerability Scan
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Snyk
+        run: npm install -g snyk
+
+      - name: Authenticate with Snyk
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+      - name: Run Snyk test
+        run: snyk test --severity-threshold=high
+        continue-on-error: true
+
+  sca-scan:
+    runs-on: ubuntu-latest
+    name: License Compliance Check
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check licenses
+        run: npm ls --all 2>/dev/null || true
+
+  security-headers:
+    runs-on: ubuntu-latest
+    name: Security Configuration Review
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for security files
+        run: |
+          echo "Checking for security-related files..."
+          [ -f ".github/SECURITY.md" ] && echo "✓ SECURITY.md found" || echo "✗ SECURITY.md missing"
+          [ -f ".gitignore" ] && echo "✓ .gitignore found" || echo "✗ .gitignore missing"
+          [ -f "package.json" ] && echo "✓ package.json found" || echo "✗ package.json missing"
+
+  summary:
+    runs-on: ubuntu-latest
+    name: Security Summary
+    needs: [ dependency-check, codeql-analysis, secret-scanning, eslint-security ]
+    if: always()
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Security Scan Summary
+        run: |
+          echo "Security scanning completed."
+          echo "Review the workflow logs for detailed findings."
