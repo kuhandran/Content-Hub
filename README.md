@@ -56,12 +56,32 @@ See [API_ARCHITECTURE.md](API_ARCHITECTURE.md) for detailed refactoring guide.
 
 ## Documentation
 
-- [API Architecture](API_ARCHITECTURE.md) - Complete refactoring guide
-- [Quick Start](docs/QUICK_START.md)
-- [Database Schema](docs/DATABASE_SCHEMA.sql)
+### Essential Documentation
+
+- [Quick Start Guide](docs/QUICK_START.md)
+- [API Architecture](API_ARCHITECTURE.md)
 - [Authentication Setup](docs/AUTH_SETUP.md)
 - [API Reference](docs/api.md)
-- [Deployment](docs/DEPLOYMENT_TESTING.md)
+- [Database Schema](docs/DATABASE_SCHEMA.sql)
+- [Deployment Guide](docs/DEPLOYMENT_TESTING.md)
+- [Security Policy](docs/SECURITY.md)
+
+For advanced topics, changelogs, and additional guides, see the [docs/ folder](docs/).
+
+## Developer Docs Index
+
+- [Quick Start](docs/QUICK_START.md): Step-by-step setup and first run
+- [Project Architecture](API_ARCHITECTURE.md): How the codebase is structured
+- [API Reference](docs/api.md): Endpoints, request/response, usage
+- [Authentication & MFA](docs/AUTH_SETUP.md): Auth flow, MFA, security notes
+- [Database Schema](docs/DATABASE_SCHEMA.sql): Table structure and relationships
+- [Deployment Guide](docs/DEPLOYMENT_TESTING.md): How to deploy and test
+- [Security Policy](docs/SECURITY.md): Vulnerability reporting and best practices
+- [Resume Upload Setup](docs/RESUME_UPLOAD_SETUP.md): For resume-related features
+- [Collections Editor Overview](docs/COLLECTIONS_EDITOR_README.md): Guide to the collections editor
+- [Changelog & Updates](docs/COLLECTIONS_EDITOR_CHANGE_LOG.md): Recent changes and improvements
+
+For more, see the [docs/ folder](docs/).
 
 	- User scans the QR in their authenticator and submits the 6-digit code.
 	- Backend verifies the code and stores the secret encrypted (AES-256-GCM) using `MFA_ENCRYPTION_KEY`.
