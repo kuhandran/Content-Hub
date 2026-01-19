@@ -6,14 +6,19 @@
  * URL Pattern: /api/collections/:language/:type/:file
  * 
  * Examples:
- * - GET /api/collections/en/data/experience
- * - GET /api/collections/de/config/navigation
- * - GET /api/collections/en/layout/homepage
+ * - GET /api/collections/en/data/experience                    - Returns full content
+ * - GET /api/collections/en/data/contentLabels?config=true     - Returns config/metadata only
+ * - GET /api/collections/de/config/navigation?metadata=true    - Returns metadata only
+ * 
+ * Query Parameters:
+ * - config=true      : Return only metadata/config (no content data)
+ * - metadata=true    : Same as config=true
  * 
  * Features:
- * - Redis caching with 5-minute TTL
+ * - Redis caching with 5-minute TTL (content only)
  * - JSON content delivery
  * - Cache invalidation support
+ * - Lightweight metadata-only mode
  */
 
 import { NextResponse } from 'next/server';
@@ -44,16 +49,20 @@ export async function GET(request, { params }) {
     const contentType = decodeURIComponent(type);
     const filename = decodeURIComponent(file);
     
+    // Check if user wants config/metadata only or full content
+    const { searchParams } = new URL(request.url);
+    const configOnly = searchParams.get('config') === 'true' || searchParams.get('metadata') === 'true';
+    
     // Create cache key
-    const cacheKey = `collections:${lang}:${contentType}:${filename}`;
+    const cacheKey = `collections:${lang}:${contentType}:${filename}${configOnly ? ':config' : ''}`;
     
-    console.log(`[COLLECTIONS API] GET /${lang}/${contentType}/${filename}`);
+    console.log(`[COLLECTIONS API] GET /${lang}/${contentType}/${filename}${configOnly ? ' (config only)' : ''}`);
     
-    // Try Redis cache first
+    // Try Redis cache first (skip cache for config-only requests as they're lightweight)
     let cachedData = null;
     const redis = getRedis();
     
-    if (redis) {
+    if (redis && !configOnly) {
       try {
         cachedData = await redis.get(cacheKey);
         if (cachedData) {
@@ -75,17 +84,31 @@ export async function GET(request, { params }) {
     console.log(`[COLLECTIONS API] Cache MISS - fetching from DB`);
     
     // Query the collections table
-    // Try with exact filename first, then try with .json extension
-    let result = await sql`
-      SELECT 
-        id, language, type, filename, file_path, file_hash, 
-        content, created_at, updated_at
-      FROM collections
-      WHERE language = ${lang}
-        AND type = ${contentType}
-        AND (filename = ${filename} OR filename = ${filename + '.json'})
-      LIMIT 1
-    `;
+    // If config-only, don't fetch content (large field)
+    let result;
+    if (configOnly) {
+      result = await sql`
+        SELECT 
+          id, language, type, filename, file_path, file_hash, 
+          created_at, updated_at
+        FROM collections
+        WHERE language = ${lang}
+          AND type = ${contentType}
+          AND (filename = ${filename} OR filename = ${filename + '.json'})
+        LIMIT 1
+      `;
+    } else {
+      result = await sql`
+        SELECT 
+          id, language, type, filename, file_path, file_hash, 
+          content, created_at, updated_at
+        FROM collections
+        WHERE language = ${lang}
+          AND type = ${contentType}
+          AND (filename = ${filename} OR filename = ${filename + '.json'})
+        LIMIT 1
+      `;
+    }
     
     if (result.length === 0) {
       console.log(`[COLLECTIONS API] ❌ Not found: ${lang}/${contentType}/${filename}`);
@@ -97,6 +120,28 @@ export async function GET(request, { params }) {
     }
     
     const record = result[0];
+    
+    // If config-only, return metadata only
+    if (configOnly) {
+      console.log(`[COLLECTIONS API] ✅ Config fetch - ${Date.now() - startTime}ms`);
+      return NextResponse.json({
+        status: 'success',
+        config: {
+          id: record.id,
+          language: record.language,
+          type: record.type,
+          filename: record.filename,
+          file_path: record.file_path,
+          file_hash: record.file_hash,
+          api_url: `/api/collections/${lang}/${contentType}/${filename}`,
+          created_at: record.created_at,
+          updated_at: record.updated_at
+        },
+        source: 'database',
+        responseTime: Date.now() - startTime
+      });
+    }
+    
     const content = record.content;
     
     // Store in Redis cache
