@@ -67,8 +67,8 @@ export async function GET(request, { params }) {
 
     console.log(`[RESUME API] ✅ Serving resume: ${decodedFilename} (${buffer.length} bytes)`);
 
-    // Return the PDF with proper headers
-    return new NextResponse(buffer, {
+    // Return the PDF with proper headers using Response API for binary data
+    return new Response(buffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

@@ -51,11 +51,12 @@ export async function GET(request, { params }) {
     const ext = path.extname(filename).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
     
-    // Return the image with proper headers
-    return new NextResponse(imageBuffer, {
+    // Return the image with proper headers using Response API for binary data
+    return new Response(imageBuffer, {
       status: 200,
       headers: {
         'Content-Type': contentType,
+        'Content-Length': imageBuffer.length.toString(),
         'Cache-Control': 'public, max-age=31536000, immutable',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
