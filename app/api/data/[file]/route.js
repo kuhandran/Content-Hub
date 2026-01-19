@@ -14,6 +14,7 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/postgres';
 import { getRedis } from '@/lib/redis';
+import { getCorsHeaders } from '@/lib/cors';
 
 const CACHE_TTL = 300; // 5 minutes cache
 
@@ -29,11 +30,7 @@ export async function GET(request, { params }) {
         error: 'Missing required parameter: file'
       }, { 
         status: 400,
-        headers: {
-          'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        }
+        headers: getCorsHeaders(request.headers.get('origin') || '')
       });
     }
 
@@ -56,9 +53,7 @@ export async function GET(request, { params }) {
             responseTime: Date.now() - startTime
           }, {
             headers: {
-              'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
-              'Access-Control-Allow-Methods': 'GET, OPTIONS',
-              'Access-Control-Allow-Headers': 'Content-Type',
+              ...getCorsHeaders(request.headers.get('origin') || ''),
               'Cache-Control': 'public, max-age=300',
             }
           });
@@ -86,17 +81,13 @@ export async function GET(request, { params }) {
         filename
       }, { 
         status: 404,
-        headers: {
-          'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        }
+        headers: getCorsHeaders(request.headers.get('origin') || '')
       });
     }
-    
+
     const record = result[0];
     const content = record.content;
-    
+
     // Store in Redis cache
     if (redis && content) {
       try {
@@ -123,14 +114,8 @@ export async function GET(request, { params }) {
       source: 'database',
       responseTime: Date.now() - startTime
     }, {
-      headers: {
-        'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Cache-Control': 'public, max-age=300',
-      }
+      headers: getCorsHeaders(request.headers.get('origin') || '')
     });
-    
   } catch (error) {
     console.error('[DATA API] Error:', error.message);
     return NextResponse.json({
@@ -138,24 +123,15 @@ export async function GET(request, { params }) {
       error: error.message
     }, { 
       status: 500,
-      headers: {
-        'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      }
+      headers: getCorsHeaders(request.headers.get('origin') || '')
     });
   }
 }
 
 // Handle OPTIONS request for CORS preflight
-export async function OPTIONS() {
+export async function OPTIONS(request) {
   return new NextResponse(null, {
     status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Max-Age': '86400',
-    },
+    headers: getCorsHeaders(request.headers.get('origin') || '')
   });
 }

@@ -7,6 +7,7 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/postgres';
 import { getRedis } from '@/lib/redis';
+import { getCorsHeaders } from '@/lib/cors';
 
 const CACHE_TTL = 60; // 1 minute cache for listing
 
@@ -31,9 +32,7 @@ export async function GET(request) {
           console.log(`[DATA LIST] ✅ Cache HIT - ${Date.now() - startTime}ms`);
           return NextResponse.json(JSON.parse(cached), {
             headers: {
-              'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
-              'Access-Control-Allow-Methods': 'GET, OPTIONS',
-              'Access-Control-Allow-Headers': 'Content-Type',
+              ...getCorsHeaders(request.headers.get('origin') || ''),
               'Cache-Control': 'public, max-age=60',
             }
           });
@@ -85,13 +84,8 @@ export async function GET(request) {
     console.log(`[DATA LIST] ✅ DB fetch - ${Date.now() - startTime}ms`);
     
     return NextResponse.json(response, {
-      headers: {
-        'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      }
+      headers: getCorsHeaders(request.headers.get('origin') || '')
     });
-    
   } catch (error) {
     console.error('[DATA LIST] Error:', error.message);
     return NextResponse.json({
@@ -99,24 +93,15 @@ export async function GET(request) {
       error: error.message
     }, { 
       status: 500,
-      headers: {
-        'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      }
+      headers: getCorsHeaders(request.headers.get('origin') || '')
     });
   }
 }
 
 // Handle OPTIONS request for CORS preflight
-export async function OPTIONS() {
+export async function OPTIONS(request) {
   return new NextResponse(null, {
     status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Max-Age': '86400',
-    },
+    headers: getCorsHeaders(request.headers.get('origin') || '')
   });
 }
