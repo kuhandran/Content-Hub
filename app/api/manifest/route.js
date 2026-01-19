@@ -6,8 +6,9 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import manifestData from '../../../lib/manifest-data.js';
+import { getCorsHeaders } from '@/lib/cors';
 
-export async function GET() {
+export async function GET(request) {
   // Try to read manifest from filesystem first (in case it's been updated)
   const possiblePaths = [
     path.join(process.cwd(), 'public', 'manifest.json'),
@@ -22,9 +23,7 @@ export async function GET() {
         console.log('[API/manifest] Loaded from:', manifestPath, 'Files:', manifest.files?.length || 0);
         return NextResponse.json(manifest, {
           headers: {
-            'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
+            ...getCorsHeaders(request.headers.get('origin') || ''),
             'Cache-Control': 'public, max-age=60',
           },
         });
@@ -39,22 +38,18 @@ export async function GET() {
   
   return NextResponse.json(manifestData, {
     headers: {
-      'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      ...getCorsHeaders(request.headers.get('origin') || ''),
       'Cache-Control': 'public, max-age=60',
     },
   });
 }
 
 // Handle OPTIONS request for CORS preflight
-export async function OPTIONS() {
+export async function OPTIONS(request) {
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': 'https://www.kuhandranchatbot.info',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      ...getCorsHeaders(request.headers.get('origin') || ''),
       'Access-Control-Max-Age': '86400',
     },
   });

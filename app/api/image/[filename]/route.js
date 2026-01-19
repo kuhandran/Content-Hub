@@ -8,6 +8,7 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import sql from '@/lib/postgres';
 import { NextResponse } from 'next/server';
+import { getCorsHeaders } from '@/lib/cors';
 
 // Map file extensions to MIME types
 const MIME_TYPES = {
@@ -72,12 +73,10 @@ export async function GET(request, { params }) {
         return new Response(imageBuffer, {
           status: 200,
           headers: {
+            ...getCorsHeaders(request.headers.get('origin') || ''),
             'Content-Type': contentType,
             'Content-Length': imageBuffer.length.toString(),
             'Cache-Control': 'public, max-age=31536000, immutable',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
           },
         });
       } else {
@@ -105,13 +104,12 @@ export async function GET(request, { params }) {
 }
 
 // Handle OPTIONS for CORS preflight
-export async function OPTIONS() {
+export async function OPTIONS(request) {
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      ...getCorsHeaders(request.headers.get('origin') || ''),
+      'Access-Control-Max-Age': '86400',
     },
   });
 }

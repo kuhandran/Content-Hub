@@ -6,6 +6,7 @@
 
 import { NextResponse } from 'next/server';
 import sql from '@/lib/postgres';
+import { getCorsHeaders } from '@/lib/cors';
 
 export async function GET(request, { params }) {
   try {
@@ -71,13 +72,11 @@ export async function GET(request, { params }) {
     return new Response(buffer, {
       status: 200,
       headers: {
+        ...getCorsHeaders(request.headers.get('origin') || ''),
         'Content-Type': 'application/pdf',
         'Content-Length': buffer.length.toString(),
         'Content-Disposition': `inline; filename="${decodedFilename}"`,
         'Cache-Control': 'public, max-age=86400, immutable',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
       },
     });
 
@@ -92,26 +91,31 @@ export async function GET(request, { params }) {
           message: 'pdf_content column does not exist. Run migration to add it.',
           details: error.message
         },
-        { status: 500 }
+        { 
+          status: 500,
+          headers: getCorsHeaders(request.headers.get('origin') || '')
+        }
       );
     }
     
     // Other errors
     return NextResponse.json(
       { error: 'Failed to load resume', message: error.message },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: getCorsHeaders(request.headers.get('origin') || '')
+      }
     );
   }
 }
 
 // Handle OPTIONS for CORS preflight
-export async function OPTIONS() {
+export async function OPTIONS(request) {
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      ...getCorsHeaders(request.headers.get('origin') || ''),
+      'Access-Control-Max-Age': '86400',
     },
   });
 }
