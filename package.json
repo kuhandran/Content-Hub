@@ -30,7 +30,7 @@
   "author": "kuhandran",
   "license": "MIT",
   "engines": {
-    "node": "20.x"
+    "node": ">=24.0.0"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.90.1",
