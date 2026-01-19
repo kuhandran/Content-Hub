@@ -7,6 +7,7 @@
 import { readFile } from 'fs/promises';
 import path from 'path';
 import sql from '@/lib/postgres';
+import { NextResponse } from 'next/server';
 
 // Map file extensions to MIME types
 const MIME_TYPES = {
