@@ -83,31 +83,50 @@ export async function GET(request, { params }) {
     // Cache miss - fetch from database
     console.log(`[COLLECTIONS API] Cache MISS - fetching from DB`);
     
+    // Helper function to execute query with timeout
+    const executeQueryWithTimeout = (query, timeoutMs = 15000) => {
+      return Promise.race([
+        query,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Database query timeout')), timeoutMs)
+        )
+      ]);
+    };
+    
     // Query the collections table
     // If config-only, don't fetch content (large field)
     let result;
-    if (configOnly) {
-      result = await sql`
-        SELECT 
-          id, language, type, filename, file_path, file_hash, 
-          created_at, updated_at
-        FROM collections
-        WHERE language = ${lang}
-          AND type = ${contentType}
-          AND (filename = ${filename} OR filename = ${filename + '.json'})
-        LIMIT 1
-      `;
-    } else {
-      result = await sql`
-        SELECT 
-          id, language, type, filename, file_path, file_hash, 
-          content, created_at, updated_at
-        FROM collections
-        WHERE language = ${lang}
-          AND type = ${contentType}
-          AND (filename = ${filename} OR filename = ${filename + '.json'})
-        LIMIT 1
-      `;
+    try {
+      if (configOnly) {
+        result = await executeQueryWithTimeout(sql`
+          SELECT 
+            id, language, type, filename, file_path, file_hash, 
+            created_at, updated_at
+          FROM collections
+          WHERE language = ${lang}
+            AND type = ${contentType}
+            AND (filename = ${filename} OR filename = ${filename + '.json'})
+          LIMIT 1
+        `, 10000);
+      } else {
+        result = await executeQueryWithTimeout(sql`
+          SELECT 
+            id, language, type, filename, file_path, file_hash, 
+            content, created_at, updated_at
+          FROM collections
+          WHERE language = ${lang}
+            AND type = ${contentType}
+            AND (filename = ${filename} OR filename = ${filename + '.json'})
+          LIMIT 1
+        `, 15000);
+      }
+    } catch (queryError) {
+      console.error(`[COLLECTIONS API] Query error:`, queryError.message);
+      return NextResponse.json({
+        status: 'error',
+        error: 'Database query failed',
+        details: queryError.message
+      }, { status: 500 });
     }
     
     if (result.length === 0) {

@@ -650,10 +650,14 @@ export default function AdminDashboard() {
       const data = await response.json();
       
       if (data.status === 'success' && data.data) {
-        console.log(`[Collections] Loaded content for ${cleanFilename}`);
+        console.log(`[Collections] Loaded content for ${cleanFilename}`, data.data);
+        const contentData = data.data.content;
+        // Handle string content (parse if needed)
+        const parsedContent = typeof contentData === 'string' ? JSON.parse(contentData) : contentData;
+        
         setCollectionContent({
           id: data.data.id,
-          content: data.data.content || {},
+          content: parsedContent || {},
           fileHash: data.data.file_hash,
           updatedAt: data.data.updated_at
         });
@@ -788,20 +792,26 @@ export default function AdminDashboard() {
                 </button>
               )}
             </div>
-            
-            <div className={styles.jsonViewerContainer}>
-              <JsonViewerEditable 
-                content={collectionContent.content}
-                onContentChange={(newContent) => {
-                  setCollectionContent({...collectionContent, content: newContent});
-                  setCollectionContentEdited(true);
-                }}
-              />
-            </div>
+
+            {Object.keys(collectionContent.content).length === 0 ? (
+              <div className={styles.placeholder}>
+                ⚠️ This collection is empty. Click "✎ Edit" to add content.
+              </div>
+            ) : (
+              <div className={styles.jsonViewerContainer}>
+                <JsonViewerEditable 
+                  content={collectionContent.content}
+                  onContentChange={(newContent) => {
+                    setCollectionContent({...collectionContent, content: newContent});
+                    setCollectionContentEdited(true);
+                  }}
+                />
+              </div>
+            )}
 
             <div className={styles.metaInfo}>
-              <p>Updated: {new Date(collectionContent.updatedAt).toLocaleString()}</p>
-              <p>Hash: {collectionContent.fileHash?.substring(0, 16)}...</p>
+              <p>Updated: {collectionContent.updatedAt ? new Date(collectionContent.updatedAt).toLocaleString() : 'N/A'}</p>
+              <p>Hash: {collectionContent.fileHash ? collectionContent.fileHash.substring(0, 16) + '...' : 'N/A'}</p>
             </div>
           </section>
         )}
