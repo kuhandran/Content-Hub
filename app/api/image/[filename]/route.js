@@ -80,50 +80,23 @@ export async function GET(request, { params }) {
             'Access-Control-Allow-Headers': 'Content-Type',
           },
         });
+      } else {
+        console.warn(`[IMAGE API] Image not found in database: ${decodedFilename}`);
+        return NextResponse.json(
+          { error: 'Image not found' },
+          { status: 404 }
+        );
       }
     } catch (dbError) {
-      console.warn('[IMAGE API] Database lookup failed:', dbError.message);
-      // Fall through to filesystem
+      console.error('[IMAGE API] Database error:', dbError.message);
+      return NextResponse.json(
+        { error: 'Failed to fetch image from database', message: dbError.message },
+        { status: 500 }
+      );
     }
-
-    // Fallback: Try filesystem (for development)
-    console.log('[IMAGE API] Attempting filesystem fallback');
-    const imagePath = path.join(process.cwd(), 'public', 'image', decodedFilename);
-    
-    console.log('[IMAGE API] Reading from path:', imagePath);
-    
-    // Read the file
-    const imageBuffer = await readFile(imagePath);
-    
-    // Determine content type from file extension
-    const ext = path.extname(filename).toLowerCase();
-    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-    
-    // Return the image with proper headers using Response API for binary data
-    return new Response(imageBuffer, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Content-Length': imageBuffer.length.toString(),
-        'Cache-Control': 'public, max-age=31536000, immutable',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    });
 
   } catch (error) {
     console.error('[IMAGE API] Error:', error.message);
-    
-    // If file not found
-    if (error.code === 'ENOENT') {
-      return NextResponse.json(
-        { error: 'Image not found' },
-        { status: 404 }
-      );
-    }
-    
-    // Other errors
     return NextResponse.json(
       { error: 'Failed to load image', message: error.message },
       { status: 500 }
