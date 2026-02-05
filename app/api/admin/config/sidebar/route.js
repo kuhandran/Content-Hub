@@ -269,7 +269,7 @@ export async function GET(request) {
       timestamp: new Date().toISOString()
     };
 
-    logResponse(request, response);
+    logResponse(200, response, { route: 'GET /api/admin/config/sidebar' });
     return NextResponse.json(response);
 
   } catch (error) {
@@ -334,7 +334,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    logError('POST /api/admin/config/sidebar', error);
+    logError(error, { route: 'POST /api/admin/config/sidebar' });
     return NextResponse.json(
       { status: 'error', error: error.message },
       { status: 500 }
