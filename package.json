@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "next dev --port 3000",
     "start": "next start --port 3000",
-   "build": "next build",
+    "build": "next build",
     "lint": "next lint",
     "test": "jest",
     "db:drop-images": "node scripts/drop-image-tables.js",
@@ -30,7 +30,7 @@
   "author": "kuhandran",
   "license": "MIT",
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=22.18.0"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.90.1",
