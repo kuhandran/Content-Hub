@@ -9,8 +9,8 @@
   },
   "scripts": {
     "dev": "next dev --port 3000",
-    "build": "next build",
     "start": "next start --port 3000",
+    "build": "next build && next export",
     "lint": "next lint",
     "test": "jest",
     "db:drop-images": "node scripts/drop-image-tables.js",
