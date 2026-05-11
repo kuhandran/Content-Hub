@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "next dev --port 3000",
     "start": "next start --port 3000",
-    "build": "next build && next export",
+   "build": "next build",
     "lint": "next lint",
     "test": "jest",
     "db:drop-images": "node scripts/drop-image-tables.js",
